@@ -1,0 +1,53 @@
+{
+  "name": "tibco-dynamic-log",
+  "title": "Custom Log",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "description": "Logs a message with dynamic content based on the provided JSON schema or object.",
+  "ref": "github.com/mpandav/activity/dynamic-log",
+  "settings": [
+    {
+      "name": "logLevel",
+      "type": "string",
+      "required": true,
+      "value": "INFO",
+      "display": {
+        "name": "Log Level",
+        "description": "Set the log level for this activity."
+      },
+      "allowed": ["INFO", "WARN", "ERROR", "DEBUG"]
+    },
+    {
+      "name": "includeFlowInfo",
+      "type": "boolean",
+      "value": true,
+      "display": {
+        "name": "Include Standard Fields (ECS)",
+        "description": "If true, automatically merges standard fields like @timestamp, service.name, etc., into the log. User-provided data takes precedence."
+      }
+    },
+      {
+      "name": "logAsJson",
+      "type": "boolean",
+      "value": false,
+      "display": {
+        "name": "Log as JSON",
+        "description": "If checked, the output will be a structured JSON object. Otherwise, it will be a simple key=value string."
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "name": "logObject",
+      "type": "object",
+      "display": {
+        "name": "Log Schema",
+        "description": "Define a JSON schema or object here. The Flogo UI will create mappable fields based on its structure.",
+        "type": "texteditor",
+        "syntax": "json",
+        "mappable": true
+      }
+    }
+  ],
+  "outputs": []
+}

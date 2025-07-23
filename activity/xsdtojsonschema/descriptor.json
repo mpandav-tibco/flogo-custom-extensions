@@ -1,0 +1,29 @@
+{
+  "name": "xsdtojsonschema",
+  "title": "XSD to JSON Schema Transformer",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "description": "Converts an XML Schema Definition (XSD) to a JSON Schema string.",
+  "ref": "github.com/mpandav/activity/xsdtojsonschema",
+  "inputs": [
+    {
+      "name": "xsdString",
+      "type": "string",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "jsonSchemaString",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "boolean"
+    },
+    {
+      "name": "errorMessage",
+      "type": "string"
+    }
+  ]
+}

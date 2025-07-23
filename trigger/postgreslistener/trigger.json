@@ -1,0 +1,183 @@
+{
+  "name": "postgreslistener",
+  "type": "flogo:trigger",
+  "title": "PostgreSQL Listener",
+  "version": "0.1.0",
+  "author": "Milind Pandav",
+  "description": "A trigger that listens for PostgreSQL NOTIFY messages on a specified channel",
+  "settings": [
+    {
+      "name": "host",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "Host",
+        "appPropertySupport": true,
+        "description": "PostgreSQL database host address"
+      }
+    },
+    {
+      "name": "port",
+      "type": "integer",
+      "required": true,
+      "display": {
+        "name": "Port",
+        "appPropertySupport": true,
+        "description": "PostgreSQL database port"
+      }
+    },
+    {
+      "name": "user",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "User",
+        "appPropertySupport": true,
+        "description": "Username for database connection"
+      }
+    },
+    {
+      "name": "password",
+      "type": "password",
+      "required": true,
+      "display": {
+        "name": "Password",
+        "appPropertySupport": true,
+        "description": "Password for database connection"
+      }
+    },
+    {
+      "name": "databaseName",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "Database Name",
+        "appPropertySupport": true,
+        "description": "Name of the database to connect to"
+      }
+    },
+    {
+      "name": "sslmode",
+      "type": "string",
+      "required": false,
+      "value": "disable",
+      "allowed": ["disable", "require", "verify-ca", "verify-full"],
+      "display": {
+        "name": "SSL Mode",
+        "appPropertySupport": true,
+        "description": "SSL mode for the connection (disable, require, verify-ca, verify-full)"
+      }
+    },
+    {
+      "name": "connectionTimeout",
+      "type": "integer",
+      "required": false,
+      "value": 5,
+      "display": {
+        "name": "Connection Timeout (seconds)",
+        "appPropertySupport": true,
+        "description": "Timeout for establishing the database connection"
+      }
+    },
+    {
+      "name": "maxConnectAttempts",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Max Connection Retry Attempts",
+        "appPropertySupport": true,
+        "description": "Maximum number of times to retry connecting to the database (0 for no retries)"
+      }
+    },
+    {
+      "name": "connectionRetryDelay",
+      "type": "integer",
+      "required": false,
+      "value": 5,
+      "display": {
+        "name": "Connection Retry Delay (seconds)",
+        "appPropertySupport": true,
+        "description": "Delay between connection retry attempts"
+      }
+    },
+    {
+      "name": "tlsConfig",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Enable TLS Configuration",
+        "appPropertySupport": true,
+        "description": "Enable advanced TLS configuration (e.g., custom certificates)"
+      }
+    },
+    {
+      "name": "tlsParam",
+      "type": "string",
+      "required": false,
+      "value": "disable",
+      "allowed": ["VerifyCA", "VerifyFull"],
+      "display": {
+        "name": "TLS Parameter",
+        "appPropertySupport": true,
+        "description": "TLS verification mode (VerifyCA, VerifyFull). Only applicable if TLS Configuration is enabled.",
+        "visible": false
+      }
+    },
+    {
+      "name": "cacert",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "CA Certificate",
+        "appPropertySupport": true,
+        "description": "Base64 encoded CA Certificate content (PEM format)",
+        "visible": false
+      }
+    },
+    {
+      "name": "clientCert",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Client Certificate",
+        "appPropertySupport": true,
+        "description": "Base64 encoded Client Certificate content (PEM format)",
+        "visible": false
+      }
+    },
+    {
+      "name": "clientKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Client Key",
+        "appPropertySupport": true,
+        "description": "Base64 encoded Client Key content (PEM format)",
+        "visible": false
+      }
+    }
+  ],
+  "handler": {
+    "settings": [
+      {
+        "name": "channel",
+        "type": "string",
+        "required": true,
+        "display": {
+          "name": "Channel Name",
+          "appPropertySupport": true,
+          "description": "The PostgreSQL channel name to listen on (e.g., 'my_channel')"
+        }
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "name": "payload",
+      "type": "string"
+    }
+  ],
+  "ref": "github.com/mpandav/trigger/postgreslistener"
+}
