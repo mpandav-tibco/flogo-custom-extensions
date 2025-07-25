@@ -7,17 +7,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/invopop/jsonschema"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/coerce"
 )
 
 // Constants for identifying inputs and outputs
 const (
-	ivJsonSchemaString = "jsonSchemaString"
+	ivJSONSchemaString = "jsonSchemaString"
 	ivRootElementName  = "rootElementName"
 	ivTargetNamespace  = "targetNamespace"
-	ovXsdString        = "xsdString"
+	ovXSDString        = "xsdString"
 	ovError            = "error"
 	ovErrorMessage     = "errorMessage"
 )
@@ -54,26 +53,27 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return true, nil
 	}
 
-	// --- 2. Perform Transformation Logic ---
-	logger.Debug("Attempting to convert JSON Schema to XSD")
-
-	var schema jsonschema.Schema
-	if err := json.Unmarshal([]byte(input.JsonSchemaString), &schema); err != nil {
+	// --- 2. Parse JSON Schema ---
+	logger.Debug("Parsing JSON Schema")
+	var schema JSONSchema
+	if err := json.Unmarshal([]byte(input.JSONSchemaString), &schema); err != nil {
 		logger.Errorf("Failed to parse input JSON Schema: %v", err)
 		setErrorOutputs(ctx, fmt.Sprintf("Invalid JSON Schema provided: %v", err), "SCHEMA_PARSE_ERROR")
-		return true, nil
+		return false, err
 	}
 
+	// --- 3. Generate XSD ---
+	logger.Debug("Converting JSON Schema to XSD")
 	xsdString, err := generateXSD(input, &schema)
 	if err != nil {
 		logger.Errorf("Failed to generate XSD from schema: %v", err)
 		setErrorOutputs(ctx, fmt.Sprintf("Could not convert to XSD: %v", err), "XSD_CONVERSION_ERROR")
-		return true, nil
+		return false, err
 	}
 
 	// --- 3. Set Success Outputs ---
 	logger.Info("Successfully converted JSON Schema to XSD.")
-	ctx.SetOutput(ovXsdString, xsdString)
+	ctx.SetOutput(ovXSDString, xsdString)
 	ctx.SetOutput(ovError, false)
 	ctx.SetOutput(ovErrorMessage, "")
 
@@ -85,20 +85,43 @@ func coerceAndValidateInputs(ctx activity.Context) (*Input, error) {
 	input := &Input{}
 	var err error
 
-	input.JsonSchemaString, err = coerce.ToString(ctx.GetInput(ivJsonSchemaString))
-	if err != nil || strings.TrimSpace(input.JsonSchemaString) == "" {
+	input.JSONSchemaString, err = coerce.ToString(ctx.GetInput(ivJSONSchemaString))
+	if err != nil || strings.TrimSpace(input.JSONSchemaString) == "" {
 		return nil, fmt.Errorf("input 'jsonSchemaString' is required and cannot be empty")
 	}
 
+	// Get root element name with default fallback
 	input.RootElementName, err = coerce.ToString(ctx.GetInput(ivRootElementName))
 	if err != nil || strings.TrimSpace(input.RootElementName) == "" {
-		return nil, fmt.Errorf("input 'rootElementName' is required and cannot be empty")
+		input.RootElementName = "RootElement" // Default root element name
 	}
 
-	// TargetNamespace is optional
+	// Get target namespace - optional field, defaults to empty
 	input.TargetNamespace, _ = coerce.ToString(ctx.GetInput(ivTargetNamespace))
 
 	return input, nil
+}
+
+// --- JSON Schema Types ---
+
+// JSONSchema represents a JSON Schema document
+type JSONSchema struct {
+	Type        string                 `json:"type"`
+	Properties  map[string]*JSONSchema `json:"properties"`
+	Items       *JSONSchema            `json:"items"`
+	Required    []string               `json:"required"`
+	Enum        []interface{}          `json:"enum"`
+	AnyOf       []*JSONSchema          `json:"anyOf"`
+	OneOf       []*JSONSchema          `json:"oneOf"`
+	AllOf       []*JSONSchema          `json:"allOf"`
+	Pattern     string                 `json:"pattern"`
+	MinLength   *int                   `json:"minLength"`
+	MaxLength   *int                   `json:"maxLength"`
+	Minimum     *float64               `json:"minimum"`
+	Maximum     *float64               `json:"maximum"`
+	Format      string                 `json:"format"`
+	Title       string                 `json:"title"`
+	Description string                 `json:"description"`
 }
 
 // --- XSD Generation Logic ---
@@ -119,10 +142,17 @@ type XSDSequence struct {
 	Elements []XSDElement `xml:"xs:element"`
 }
 
+// XSDChoice represents an <xs:choice>
+type XSDChoice struct {
+	XMLName  xml.Name     `xml:"xs:choice"`
+	Elements []XSDElement `xml:"xs:element"`
+}
+
 // XSDComplexType represents an <xs:complexType>
 type XSDComplexType struct {
 	XMLName  xml.Name     `xml:"xs:complexType"`
 	Sequence *XSDSequence `xml:",omitempty"`
+	Choice   *XSDChoice   `xml:",omitempty"`
 }
 
 // XSDSchema represents the root <xs:schema> element
@@ -135,9 +165,9 @@ type XSDSchema struct {
 }
 
 // generateXSD converts a parsed JSON schema into an XSD string
-func generateXSD(input *Input, schema *jsonschema.Schema) (string, error) {
+func generateXSD(input *Input, schema *JSONSchema) (string, error) {
 	if schema.Type != "object" {
-		return "", fmt.Errorf("root of JSON schema must be of type 'object'")
+		return "", fmt.Errorf("root of JSON schema must be of type 'object', got '%s'", schema.Type)
 	}
 
 	rootElement, err := jsonSchemaToXSDElement(input.RootElementName, schema, schema.Required, true)
@@ -164,7 +194,7 @@ func generateXSD(input *Input, schema *jsonschema.Schema) (string, error) {
 }
 
 // jsonSchemaToXSDElement recursively converts a JSON schema property to an XSD element
-func jsonSchemaToXSDElement(name string, schema *jsonschema.Schema, requiredProps []string, isRoot bool) (*XSDElement, error) {
+func jsonSchemaToXSDElement(name string, schema *JSONSchema, requiredProps []string, isRoot bool) (*XSDElement, error) {
 	element := &XSDElement{Name: name}
 
 	// The root element is always required (minOccurs=1), child elements depend on the 'required' array.
@@ -181,12 +211,21 @@ func jsonSchemaToXSDElement(name string, schema *jsonschema.Schema, requiredProp
 		}
 	}
 
+	// Handle union types first
+	if len(schema.AnyOf) > 0 {
+		return handleUnionType(element, schema.AnyOf, "anyOf")
+	}
+	if len(schema.OneOf) > 0 {
+		return handleUnionType(element, schema.OneOf, "oneOf")
+	}
+	if len(schema.AllOf) > 0 {
+		return handleAllOfType(element, schema.AllOf)
+	}
+
 	switch schema.Type {
 	case "object":
 		var childElements []XSDElement
-		for pair := schema.Properties.Oldest(); pair != nil; pair = pair.Next() {
-			propName := pair.Key
-			propSchema := pair.Value
+		for propName, propSchema := range schema.Properties {
 			// Child elements are never the root, so pass 'false'
 			child, err := jsonSchemaToXSDElement(propName, propSchema, schema.Required, false)
 			if err != nil {
@@ -199,6 +238,7 @@ func jsonSchemaToXSDElement(name string, schema *jsonschema.Schema, requiredProp
 				Elements: childElements,
 			},
 		}
+
 	case "array":
 		element.MaxOccurs = "unbounded"
 		if schema.Items == nil {
@@ -212,24 +252,89 @@ func jsonSchemaToXSDElement(name string, schema *jsonschema.Schema, requiredProp
 		}
 		element.Type = itemElement.Type
 		element.ComplexType = itemElement.ComplexType
+
 	case "string":
-		element.Type = "xs:string"
+		element.Type = mapStringType(schema)
 	case "number":
 		element.Type = "xs:decimal"
 	case "integer":
 		element.Type = "xs:integer"
 	case "boolean":
 		element.Type = "xs:boolean"
+	case "null":
+		element.Type = "xs:string"
+		element.MinOccurs = "0"
 	default:
-		return nil, fmt.Errorf("unsupported JSON schema type: %s for property %s", schema.Type, name)
+		if schema.Type == "" && len(schema.Enum) > 0 {
+			// Handle enum without explicit type
+			element.Type = "xs:string"
+		} else {
+			return nil, fmt.Errorf("unsupported JSON schema type: %s for property %s", schema.Type, name)
+		}
 	}
 
 	return element, nil
 }
 
+// mapStringType maps JSON Schema string type with constraints to XSD type
+func mapStringType(schema *JSONSchema) string {
+	// For now, all strings map to xs:string
+	// In the future, we could add restrictions based on:
+	// - schema.Pattern (regex pattern)
+	// - schema.Format (date, time, email, etc.)
+	// - schema.MinLength, MaxLength
+	// - schema.Enum (enumeration)
+	return "xs:string"
+}
+
+// handleUnionType processes anyOf/oneOf union types
+func handleUnionType(element *XSDElement, schemas []*JSONSchema, unionType string) (*XSDElement, error) {
+	// For XSD, we'll use xs:choice to represent unions
+	var choiceElements []XSDElement
+	for i, unionSchema := range schemas {
+		choiceName := fmt.Sprintf("%s_choice_%d", element.Name, i)
+		choice, err := jsonSchemaToXSDElement(choiceName, unionSchema, nil, false)
+		if err != nil {
+			return nil, err
+		}
+		choiceElements = append(choiceElements, *choice)
+	}
+	element.ComplexType = &XSDComplexType{
+		Choice: &XSDChoice{
+			Elements: choiceElements,
+		},
+	}
+	return element, nil
+}
+
+// handleAllOfType processes allOf composition
+func handleAllOfType(element *XSDElement, schemas []*JSONSchema) (*XSDElement, error) {
+	// For allOf, we merge all properties into a single sequence
+	var allElements []XSDElement
+
+	for _, schema := range schemas {
+		if schema.Type == "object" {
+			for propName, propSchema := range schema.Properties {
+				child, err := jsonSchemaToXSDElement(propName, propSchema, schema.Required, false)
+				if err != nil {
+					return nil, err
+				}
+				allElements = append(allElements, *child)
+			}
+		}
+	}
+
+	element.ComplexType = &XSDComplexType{
+		Sequence: &XSDSequence{
+			Elements: allElements,
+		},
+	}
+	return element, nil
+}
+
 // setErrorOutputs is a helper function to set all error-related outputs at once.
 func setErrorOutputs(ctx activity.Context, message, code string) {
-	ctx.SetOutput(ovXsdString, "")
+	ctx.SetOutput(ovXSDString, "")
 	ctx.SetOutput(ovError, true)
 	ctx.SetOutput(ovErrorMessage, fmt.Sprintf("[%s] %s", code, message))
 }
@@ -238,14 +343,14 @@ func setErrorOutputs(ctx activity.Context, message, code string) {
 
 // Input struct now holds all dynamic inputs
 type Input struct {
-	JsonSchemaString string `md:"jsonSchemaString,required"`
+	JSONSchemaString string `md:"jsonSchemaString,required"`
 	RootElementName  string `md:"rootElementName,required"`
 	TargetNamespace  string `md:"targetNamespace"`
 }
 
 // Output struct remains the same
 type Output struct {
-	XsdString    string `md:"xsdString"`
+	XSDString    string `md:"xsdString"`
 	Error        bool   `md:"error"`
 	ErrorMessage string `md:"errorMessage"`
 }
