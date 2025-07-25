@@ -1,12 +1,7 @@
 # Avro Schema Transformer Activity
 
 This Flogo activity transforms Avro schemas to JSON Schema and/or XSD formats. It provides flexible conversion capabilities allowing you to generate JSON Schema, XSD, or both formats simultaneously.
-
-## Installation
-
-```bash
-flogo install github.com/milindpandav/activity/avroschematransform
-```
+`
 
 ## Configuration
 
