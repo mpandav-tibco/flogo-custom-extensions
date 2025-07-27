@@ -1,6 +1,6 @@
 # XML Filter Activity
 
-![XML Filter Activity](icons/xml-filter@2x.png)
+![XML Filter Activity](https://github.com/mpandav-tibco/flogo-custom-extensions/blob/main/activity/xmlfilter/icons/xmlfilter%402x.png)
 
 This Flogo activity filters XML content based on multiple XPath expressions with configurable AND/OR logic. It evaluates XPath conditions against XML input and returns the original XML string only if the conditions are satisfied according to the specified logic.
 
