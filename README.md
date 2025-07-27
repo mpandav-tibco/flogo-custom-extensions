@@ -5,13 +5,16 @@ This repository hosts a collection of custom activities and triggers developed f
 ## Table of Contents
 
 * [Overview](#overview)
+* [Project Structure](#project-structure)
 * [Custom Activities](#custom-activities)
-    * [Dynamic Log Activity](#dynamic-log-activity)
-    * [JSON Schema to XSD Activity](#json-schema-to-xsd-activity)
-    * [XSD to JSON Schema Activity](#xsd-to-json-schema-activity)
+    * [Write Log Activity](#write-log-activity)
+    * [Schema Transform Activities](#schema-transform-activities)
+        * [Avro Schema Transform Activity](#avro-schema-transform-activity)
+        * [JSON Schema Transform Activity](#json-schema-transform-activity)
+        * [XSD Schema Transform Activity](#xsd-schema-transform-activity)
     * [XML Filter Activity](#xml-filter-activity)
 * [Custom Triggers](#custom-triggers)
-    * [PostgreSQL Lister Trigger](#postgresql-lister-trigger)
+    * [PostgreSQL Listener Trigger](#postgresql-listener-trigger)
 * [Examples](#examples)
 * [Usage](#usage)
 * [Contributing](#contributing)
@@ -23,40 +26,60 @@ TIBCO Flogo is an ultra-lightweight integration framework ideal for edge computi
 
 These extensions are intended to be easily integrated into your Flogo applications, allowing you to leverage their features within your flows.
 
+## Project Structure
+
+```
+├── activity/
+│   ├── schema-transform/
+│   │   ├── avroschematransform/     # Avro to JSON Schema/XSD converter
+│   │   ├── jsonschematransform/     # JSON Schema to XSD/Avro converter
+│   │   └── xsdschematransform/      # XSD to JSON Schema/Avro converter
+│   ├── write-log/                   # Advanced logging with ECS compliance
+│   └── xmlfilter/                   # XML filtering with XPath conditions
+├── trigger/
+│   └── postgreslistener/            # PostgreSQL NOTIFY listener
+└── examples/
+    └── schema_converter/             # Schema transformation API example
+```
+
 ## Custom Activities
 
 The `activity` folder contains the following custom Flogo activities:
 
-### Dynamic Log Activity
+### Write Log Activity
 
-This activity provides enhanced logging capabilities, allowing for more flexible and dynamic control over logging messages within a Flogo flow. It can be particularly useful for debugging or for injecting variable data into logs at runtime.
+This activity provides structured logging with OpenTracing/OpenTelemetry integration, ECS (Elastic Common Schema) compliance, field filtering, and sensitive data masking capabilities. It offers advanced formatting options for enterprise-grade logging requirements, including automatic trace correlation and standardized field mapping.
 
-### JSON Schema to XSD Activity
+### Schema Transform Activities
 
-Transforms a given JSON Schema into an equivalent XML Schema Definition (XSD). This is highly useful in scenarios where you need to integrate JSON-based systems with XML-based systems, enabling schema validation and transformation across different data formats.
+A comprehensive suite of schema transformation activities that enable interoperability between different data formats:
 
-### XSD to JSON Schema Activity
+#### Avro Schema Transform Activity
+Transforms Avro schemas to JSON Schema and/or XSD formats, providing flexible conversion capabilities with support for multiple output formats simultaneously.
 
-Converts an XML Schema Definition (XSD) into its corresponding JSON Schema. Similar to its counterpart, this activity facilitates interoperability between XML and JSON data models, allowing you to generate JSON schemas from existing XML definitions.
+#### JSON Schema Transform Activity  
+Transforms JSON Schema to XSD and Avro schema formats, enabling bidirectional schema conversion with comprehensive support for JSON Schema features including unions, conditional schemas, and validation constraints.
+
+#### XSD Schema Transform Activity
+Provides comprehensive XSD (XML Schema Definition) transformation capabilities, supporting conversion to JSON Schema and Avro Schema formats with extensive configuration options for handling complex XSD features and namespace management.
 
 ### XML Filter Activity
 
-Provides functionality to filter XML content based on specified criteria. This activity can be used to extract, modify, or remove specific elements or attributes from an XML document, offering fine-grained control over XML data processing within Flogo flows.
+Filters XML content based on XPath expressions with support for multiple conditions and logical operators (AND/OR). This activity evaluates XML documents against specified XPath conditions and returns match results, enabling sophisticated XML content filtering within Flogo flows.
 
 ## Custom Triggers
 
 The `trigger` folder currently holds the following custom Flogo trigger:
 
-### PostgreSQL Lister Trigger
+### PostgreSQL Listener Trigger
 
-This trigger is designed to listen for and process events or changes from a PostgreSQL database. It can be configured to poll tables, listen to notification events, or react to other database-level changes, making it ideal for event-driven architectures built around PostgreSQL.
+This trigger listens for PostgreSQL NOTIFY messages on specified channels, enabling event-driven architectures built around PostgreSQL database notifications. It can be configured with database connection parameters and supports real-time message processing, making it ideal for reactive applications that respond to database-level events.
 
 ## Examples
 
-The `examples` folder provides practical implementations demonstrating the usage of some of our custom extensions:
+The `examples` folder provides practical implementations demonstrating the usage of our custom extensions:
 
-* **XSD to JSON Schema Usage:** An example Flogo application showcasing how to use the `XSD to JSON Schema Activity` to perform conversions.
-* **JSON Schema to XSD Usage:** An example Flogo application demonstrating the application of the `JSON Schema to XSD Activity` for transforming schemas.
+* **Schema Converter API:** A comprehensive Flogo application showcasing the usage of multiple schema transformation activities (JSON Schema, XSD, and Avro transformations) in an integrated REST API format.
 
 These examples serve as a guide to help you quickly understand and implement the custom activities in your own Flogo projects.
 
