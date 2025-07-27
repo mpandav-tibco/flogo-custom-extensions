@@ -1,7 +1,6 @@
 # Avro Schema Transformer Activity
 
 This Flogo activity transforms Avro schemas to JSON Schema and/or XSD formats. It provides flexible conversion capabilities allowing you to generate JSON Schema, XSD, or both formats simultaneously.
-`
 
 ## Configuration
 
@@ -31,75 +30,6 @@ This Flogo activity transforms Avro schemas to JSON Schema and/or XSD formats. I
 
 **Note**: The activity intelligently processes only the required inputs based on the selected outputFormat. When outputFormat is 'json', XML-related inputs (rootElementName, targetNamespace) are ignored. When outputFormat is 'xsd' or 'both', these inputs are processed with default values if not provided.
 
-## Usage Examples
-
-### Example 1: Transform to Both Formats
-
-```json
-{
-  "id": "avro_transform",
-  "name": "Transform Avro Schema",
-  "activity": {
-    "ref": "github.com/milindpandav/activity/avroschematransform",
-    "settings": {
-      "outputFormat": "both",
-      "rootElementName": "User",
-      "targetNamespace": "http://example.com/user"
-    },
-    "input": {
-      "avroSchemaString": "=$.avroSchema"
-    },
-    "output": {
-      "jsonResult": "=$.jsonSchema",
-      "xsdResult": "=$.xsdString"
-    }
-  }
-}
-```
-
-### Example 2: Transform to JSON Schema Only
-
-```json
-{
-  "id": "avro_to_json",
-  "name": "Avro to JSON Schema",
-  "activity": {
-    "ref": "github.com/milindpandav/activity/avroschematransform",
-    "settings": {
-      "outputFormat": "json"
-    },
-    "input": {
-      "avroSchemaString": "=$.avroSchema"
-    },
-    "output": {
-      "jsonResult": "=$.jsonSchema"
-    }
-  }
-}
-```
-
-### Example 3: Transform to XSD Only
-
-```json
-{
-  "id": "avro_to_xsd",
-  "name": "Avro to XSD",
-  "activity": {
-    "ref": "github.com/milindpandav/activity/avroschematransform",
-    "settings": {
-      "outputFormat": "xsd",
-      "rootElementName": "Employee",
-      "targetNamespace": "http://company.com/employee"
-    },
-    "input": {
-      "avroSchemaString": "=$.avroSchema"
-    },
-    "output": {
-      "xsdResult": "=$.xsdString"
-    }
-  }
-}
-```
 
 ## Supported Avro Types
 
