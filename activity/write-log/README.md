@@ -20,8 +20,8 @@ This Flogo activity provides structured logging with OpenTracing/OpenTelemetry i
 
 ### 🔒 Sensitive Data Masking
 - **Field-Level Masking**: Mask specific fields by name
-- **Pattern-Based Masking**: Support for regex patterns (credit cards, emails, etc.)
-- **Configurable Mask Character**: Customize masking output
+- **Wildcard Pattern Support**: Support for wildcard patterns in field names (e.g., *_card, email_*)
+
 
 ### 🎯 Field Management
 - **Include Filters**: Specify which fields to include in output
