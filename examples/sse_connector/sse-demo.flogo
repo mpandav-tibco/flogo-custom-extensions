@@ -1,0 +1,273 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/milindpandav/flogo-extensions/sse/activity",
+    "github.com/project-flogo/flow/activity/subflow",
+    "github.com/milindpandav/flogo-extensions/sse/trigger",
+    "github.com/tibco/flogo-general/src/app/General/trigger/timer",
+    "github.com/project-flogo/contrib/function/datetime",
+    "github.com/project-flogo/contrib/function/string"
+  ],
+  "name": "SSE_Demo",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#trigger",
+      "name": "sse",
+      "description": "Server-Sent Events trigger for real-time data streaming to web clients with event buffering, topic filtering, and enterprise features",
+      "settings": {
+        "port": 9998,
+        "path": "/events",
+        "maxConnections": 1000,
+        "enableCORS": true,
+        "corsOrigins": "*",
+        "keepAliveInterval": 30,
+        "enableEventStore": true,
+        "eventStoreSize": 100,
+        "eventTTL": 3600
+      },
+      "id": "Server-SentEvents(SSE)",
+      "handlers": [
+        {
+          "description": "SSE Server that registers external clients and brodcast events",
+          "settings": {
+            "topic": "",
+            "eventType": "message"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SSE_Server"
+            },
+            "input": {
+              "connectionId": "=$.connectionId",
+              "clientIP": "=$.clientIP",
+              "userAgent": "=$.userAgent",
+              "topic": "=$.topic",
+              "lastEventId": "=$.lastEventId",
+              "timestamp": "=$.timestamp",
+              "headers": "=$.headers"
+            }
+          },
+          "schemas": {
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"parameterName\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"repeating\":{\"type\":\"string\"},\"required\":{\"type\":\"string\"},\"visible\":{\"type\":\"boolean\"}},\"required\":[\"parameterName\",\"type\",\"repeating\",\"required\",\"visible\"]}}",
+                "fe_metadata": "[{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"User-Agent\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cache-Control\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Origin\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Last-Event-ID\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "SSE_Server"
+        }
+      ]
+    },
+    {
+      "ref": "#timer",
+      "name": "tibco-wi-timer",
+      "description": "Simple Timer trigger",
+      "settings": {},
+      "id": "TimerTrigger",
+      "handlers": [
+        {
+          "description": "Scheduler Flow that triggers our SSE Event flow that sent events to registered clients",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Start Time": "",
+            "Repeating": true,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Minute",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:Scheduler"
+            }
+          },
+          "name": "Scheduler"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:SSE_Server",
+      "data": {
+        "name": "SSE Server",
+        "description": "SSE Server that registers external clients and brodcast events",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "SSESend",
+            "type": "label",
+            "label": "StartActivity to SSESend"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SSESend",
+            "name": "SSESend",
+            "description": "Send Server-Sent Events (SSE) to connected clients",
+            "activity": {
+              "ref": "#activity",
+              "settings": {
+                "sseServerRef": "default",
+                "topic": "",
+                "eventType": "message",
+                "retry": 30000
+              },
+              "input": {
+                "connectionId": "=$flow.connectionId",
+                "target": "all",
+                "eventId": "",
+                "topic": "=$flow.topic",
+                "eventType": "",
+                "format": "auto",
+                "enableValidation": true,
+                "data": {
+                  "mapping": {
+                    "msg": "=string.concat(\"welcome tp sse events\", datetime.currentDatetime())"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "data": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"msg\":{\"type\":\"string\"}}}",
+                    "fe_metadata": "{\n    \"msg\":\"\"\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiU1NFU2VuZCI6eyJ4IjozNjYsInkiOjkxfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "connectionId",
+              "type": "string"
+            },
+            {
+              "name": "clientIP",
+              "type": "string"
+            },
+            {
+              "name": "userAgent",
+              "type": "string"
+            },
+            {
+              "name": "headers",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Authorization\":{\"type\":\"string\",\"visible\":false},\"User-Agent\":{\"type\":\"string\",\"visible\":false},\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Cache-Control\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Origin\":{\"type\":\"string\",\"visible\":false},\"Last-Event-ID\":{\"type\":\"string\",\"visible\":false}}"
+              }
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "lastEventId",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"Server-SentEvents(SSE)\",\"properties\":{\"connectionId\":{\"type\":\"string\",\"required\":false},\"clientIP\":{\"type\":\"string\",\"required\":false},\"userAgent\":{\"type\":\"string\",\"required\":false},\"headers\":{\"type\":\"object\",\"properties\":{\"Authorization\":{\"type\":\"string\",\"visible\":false},\"User-Agent\":{\"type\":\"string\",\"visible\":false},\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Cache-Control\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Origin\":{\"type\":\"string\",\"visible\":false},\"Last-Event-ID\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"topic\":{\"type\":\"string\",\"required\":false},\"lastEventId\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:Scheduler",
+      "data": {
+        "name": "Scheduler",
+        "description": "Scheduler Flow that triggers our SSE Event flow that sent events to registered clients",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "StartaSubFlow",
+            "type": "label",
+            "label": "StartActivity to StartaSubFlow"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "StartaSubFlow",
+            "name": "StartaSubFlow",
+            "description": "Simple SubFlow Activity",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:SSE_Server",
+                "detached": false
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"title\":\"Server-SentEvents(SSE)\",\"properties\":{\"connectionId\":{\"type\":\"string\",\"required\":false},\"clientIP\":{\"type\":\"string\",\"required\":false},\"userAgent\":{\"type\":\"string\",\"required\":false},\"headers\":{\"type\":\"object\",\"properties\":{\"Authorization\":{\"type\":\"string\",\"visible\":false},\"User-Agent\":{\"type\":\"string\",\"visible\":false},\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Cache-Control\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Origin\":{\"type\":\"string\",\"visible\":false},\"Last-Event-ID\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"topic\":{\"type\":\"string\",\"required\":false},\"lastEventId\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"title\":\"Server-SentEvents(SSE)\",\"properties\":{\"connectionId\":{\"type\":\"string\",\"required\":false},\"clientIP\":{\"type\":\"string\",\"required\":false},\"userAgent\":{\"type\":\"string\",\"required\":false},\"headers\":{\"type\":\"object\",\"properties\":{\"Authorization\":{\"type\":\"string\",\"visible\":false},\"User-Agent\":{\"type\":\"string\",\"visible\":false},\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Cache-Control\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Origin\":{\"type\":\"string\",\"visible\":false},\"Last-Event-ID\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"topic\":{\"type\":\"string\",\"required\":false},\"lastEventId\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiU3RhcnRhU3ViRmxvdyI6eyJ4Ijo0MjAsInkiOjEwMX19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvZmxvZ28tZXh0ZW5zaW9ucy9zc2UvdHJpZ2dlciIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlNlcnZlci1TZW50RXZlbnRzKFNTRSkiLCJpZCI6InNzZSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L3RyaWdnZXIvdHJpZ2dlciIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL21pbGluZHBhbmRhdi9mbG9nby1leHRlbnNpb25zL3NzZS9hY3Rpdml0eSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlNTRVNlbmQiLCJpZCI6InNzZS1zZW5kIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0RlZmF1bHQvYWN0aXZpdHkvYWN0aXZpdHkiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuNyIsInRhZyI6IjEuNi43LWIwMyIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.25.7"
+  }
+}
