@@ -4,13 +4,6 @@
   "version": "1.0.0",
   "type": "flogo:activity",
   "description": "Enterprise-grade logging activity with OpenTracing/OpenTelemetry integration, ECS compliance, field filtering, and sensitive data masking capabilities.",
-  "display": {
-    "category": "General",
-    "visible": true,
-    "description": "Enterprise-grade logging activity with OpenTracing/OpenTelemetry integration, ECS compliance, and structured output formats",
-    "smallIcon": "icons/log-file.svg",
-    "largeIcon": "icons/log-file@2x.png"
-  },
   "ref": "github.com/milindpandav/activity/write-log",
   "settings": [
     {
