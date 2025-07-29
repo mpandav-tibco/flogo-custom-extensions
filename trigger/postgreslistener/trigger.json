@@ -2,9 +2,9 @@
   "name": "postgreslistener",
   "type": "flogo:trigger",
   "title": "PostgreSQL Listener",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Milind Pandav",
-  "description": "A trigger that listens for PostgreSQL NOTIFY messages on a specified channel",
+  "description": "A PostgreSQL listenertrigger that listens for PostgreSQL NOTIFY messages with enhanced logging, OpenTelemetry tracing, and enterprise-grade connection management",
   "settings": [
     {
       "name": "host",
@@ -12,18 +12,19 @@
       "required": true,
       "display": {
         "name": "Host",
-        "appPropertySupport": true,
-        "description": "PostgreSQL database host address"
+        "description": "PostgreSQL server host",
+        "appPropertySupport": true
       }
     },
     {
       "name": "port",
       "type": "integer",
       "required": true,
+      "value": 5432,
       "display": {
         "name": "Port",
-        "appPropertySupport": true,
-        "description": "PostgreSQL database port"
+        "description": "PostgreSQL server port",
+        "appPropertySupport": true
       }
     },
     {
@@ -32,18 +33,19 @@
       "required": true,
       "display": {
         "name": "User",
-        "appPropertySupport": true,
-        "description": "Username for database connection"
+        "description": "Database user",
+        "appPropertySupport": true
       }
     },
     {
       "name": "password",
-      "type": "password",
+      "type": "string",
       "required": true,
       "display": {
         "name": "Password",
-        "appPropertySupport": true,
-        "description": "Password for database connection"
+        "description": "Database password",
+        "type": "password",
+        "appPropertySupport": true
       }
     },
     {
@@ -52,110 +54,97 @@
       "required": true,
       "display": {
         "name": "Database Name",
-        "appPropertySupport": true,
-        "description": "Name of the database to connect to"
+        "description": "Database name",
+        "appPropertySupport": true
       }
     },
     {
-      "name": "sslmode",
+      "name": "sslMode",
       "type": "string",
-      "required": false,
       "value": "disable",
       "allowed": ["disable", "require", "verify-ca", "verify-full"],
       "display": {
         "name": "SSL Mode",
-        "appPropertySupport": true,
-        "description": "SSL mode for the connection (disable, require, verify-ca, verify-full)"
-      }
-    },
-    {
-      "name": "connectionTimeout",
-      "type": "integer",
-      "required": false,
-      "value": 5,
-      "display": {
-        "name": "Connection Timeout (seconds)",
-        "appPropertySupport": true,
-        "description": "Timeout for establishing the database connection"
-      }
-    },
-    {
-      "name": "maxConnectAttempts",
-      "type": "integer",
-      "required": false,
-      "value": 0,
-      "display": {
-        "name": "Max Connection Retry Attempts",
-        "appPropertySupport": true,
-        "description": "Maximum number of times to retry connecting to the database (0 for no retries)"
-      }
-    },
-    {
-      "name": "connectionRetryDelay",
-      "type": "integer",
-      "required": false,
-      "value": 5,
-      "display": {
-        "name": "Connection Retry Delay (seconds)",
-        "appPropertySupport": true,
-        "description": "Delay between connection retry attempts"
+        "description": "SSL connection mode",
+        "type": "dropdown"
       }
     },
     {
       "name": "tlsConfig",
       "type": "boolean",
-      "required": false,
       "value": false,
       "display": {
         "name": "Enable TLS Configuration",
-        "appPropertySupport": true,
-        "description": "Enable advanced TLS configuration (e.g., custom certificates)"
+        "description": "Enable advanced TLS certificate configuration"
       }
     },
     {
-      "name": "tlsParam",
+      "name": "tlsMode",
       "type": "string",
-      "required": false,
-      "value": "disable",
+      "value": "VerifyCA",
       "allowed": ["VerifyCA", "VerifyFull"],
       "display": {
-        "name": "TLS Parameter",
-        "appPropertySupport": true,
-        "description": "TLS verification mode (VerifyCA, VerifyFull). Only applicable if TLS Configuration is enabled.",
-        "visible": false
+        "name": "TLS Mode",
+        "description": "TLS verification mode",
+        "type": "dropdown",
+        "visible": "=$property[\"tlsConfig\"] == true"
       }
     },
     {
       "name": "cacert",
       "type": "string",
-      "required": false,
       "display": {
         "name": "CA Certificate",
-        "appPropertySupport": true,
-        "description": "Base64 encoded CA Certificate content (PEM format)",
-        "visible": false
+        "description": "CA certificate (base64 encoded)",
+        "type": "textbox",
+        "visible": "=$property[\"tlsConfig\"] == true"
       }
     },
     {
-      "name": "clientCert",
+      "name": "clientcert",
       "type": "string",
-      "required": false,
       "display": {
         "name": "Client Certificate",
-        "appPropertySupport": true,
-        "description": "Base64 encoded Client Certificate content (PEM format)",
-        "visible": false
+        "description": "Client certificate (base64 encoded)",
+        "type": "textbox",
+        "visible": "=$property[\"tlsConfig\"] == true"
       }
     },
     {
-      "name": "clientKey",
+      "name": "clientkey",
       "type": "string",
-      "required": false,
       "display": {
         "name": "Client Key",
-        "appPropertySupport": true,
-        "description": "Base64 encoded Client Key content (PEM format)",
-        "visible": false
+        "description": "Client key (base64 encoded)",
+        "type": "textbox",
+        "visible": "=$property[\"tlsConfig\"] == true"
+      }
+    },
+    {
+      "name": "connectionTimeout",
+      "type": "integer",
+      "value": 30,
+      "display": {
+        "name": "Connection Timeout",
+        "description": "Connection timeout in seconds"
+      }
+    },
+    {
+      "name": "maxConnRetryAttempts",
+      "type": "integer",
+      "value": 3,
+      "display": {
+        "name": "Max Connection Retry Attempts",
+        "description": "Maximum number of connection retry attempts"
+      }
+    },
+    {
+      "name": "connectionRetryDelay",
+      "type": "integer",
+      "value": 5,
+      "display": {
+        "name": "Connection Retry Delay",
+        "description": "Delay between connection retries in seconds"
       }
     }
   ],

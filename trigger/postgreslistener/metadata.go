@@ -1,25 +1,58 @@
 package postgreslistener
 
 import (
+	"fmt"
+
 	"github.com/project-flogo/core/data/coerce"
 )
 
 // Settings structure for the PostgreSQL Listener Trigger
 type Settings struct {
-	Host                 string `md:"host,required"`
-	Port                 int    `md:"port,required"`
-	User                 string `md:"user,required"`
-	Password             string `md:"password,required"`
-	DatabaseName         string `md:"databaseName,required"` // Changed from DbName to DatabaseName for consistency
-	SSLMode              string `md:"sslmode"`
-	ConnectionTimeout    int    `md:"connectionTimeout"`    // In seconds
-	MaxConnRetryAttempts int    `md:"maxConnectAttempts"`   // Max connection retry attempts
-	TLSConfig            bool   `md:"tlsConfig"`            // Whether TLS is configured
-	TLSMode              string `md:"tlsParam"`             // TLS parameter (e.g., VerifyCA, VerifyFull)
-	Cacert               string `md:"cacert"`               // CA Certificate content (base64 encoded)
-	Clientcert           string `md:"clientCert"`           // Client Certificate content (base64 encoded)
-	Clientkey            string `md:"clientKey"`            // Client Key content (base64 encoded)
-	ConnectionRetryDelay int    `md:"connectionRetryDelay"` // Delay between connection retry attempts in seconds
+	// Connection settings
+	Host         string `md:"host,required"`         // PostgreSQL server host
+	Port         int    `md:"port,required"`         // PostgreSQL server port
+	User         string `md:"user,required"`         // Database user
+	Password     string `md:"password,required"`     // Database password
+	DatabaseName string `md:"databaseName,required"` // Database name
+
+	// SSL/TLS settings
+	SSLMode    string `md:"sslMode"`    // SSL mode (disable, require, verify-ca, verify-full)
+	TLSConfig  bool   `md:"tlsConfig"`  // Enable TLS configuration
+	TLSMode    string `md:"tlsMode"`    // TLS mode (VerifyCA, VerifyFull)
+	Cacert     string `md:"cacert"`     // CA certificate (base64 encoded)
+	Clientcert string `md:"clientcert"` // Client certificate (base64 encoded)
+	Clientkey  string `md:"clientkey"`  // Client key (base64 encoded)
+
+	// Connection management
+	ConnectionTimeout    int `md:"connectionTimeout"`    // Connection timeout in seconds
+	MaxConnRetryAttempts int `md:"maxConnRetryAttempts"` // Maximum connection retry attempts
+	ConnectionRetryDelay int `md:"connectionRetryDelay"` // Delay between connection retries in seconds
+}
+
+// GetConnectionDetails returns connection details from the settings
+func (s *Settings) GetConnectionDetails() (*ConnectionDetails, error) {
+	if s.Host == "" || s.Port == 0 || s.User == "" || s.DatabaseName == "" {
+		return nil, fmt.Errorf("host, port, user, and databaseName are required")
+	}
+
+	return &ConnectionDetails{
+		Host:         s.Host,
+		Port:         s.Port,
+		User:         s.User,
+		Password:     s.Password,
+		DatabaseName: s.DatabaseName,
+		SSLMode:      s.SSLMode,
+	}, nil
+}
+
+// ConnectionDetails represents database connection information
+type ConnectionDetails struct {
+	Host         string
+	Port         int
+	User         string
+	Password     string
+	DatabaseName string
+	SSLMode      string
 }
 
 // HandlerSettings structure for individual channels to listen on

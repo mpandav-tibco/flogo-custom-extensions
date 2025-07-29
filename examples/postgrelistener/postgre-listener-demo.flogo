@@ -1,0 +1,143 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/milindpandav/activity/write-log",
+    "github.com/mpandav/postgreslistener",
+    "github.com/project-flogo/contrib/function/coerce"
+  ],
+  "name": "postgre-listener-demo",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#postgreslistener",
+      "name": "postgreslistener",
+      "description": "A PostgreSQL listenertrigger that listens for PostgreSQL NOTIFY messages with enhanced logging, OpenTelemetry tracing, and enterprise-grade connection management",
+      "settings": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "postgres",
+        "password": "SECRET:6NilF3gsDfzVP+F2IyrsSL5Z6xFHfVLt",
+        "databaseName": "postgres",
+        "sslMode": "disable",
+        "tlsConfig": false,
+        "tlsMode": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": "",
+        "connectionTimeout": 30,
+        "maxConnRetryAttempts": 3,
+        "connectionRetryDelay": 5
+      },
+      "id": "PostgreSQLListener",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "channel": "low_stock"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:Receive_Database_Notifications"
+            },
+            "input": {
+              "payload": "=$.payload"
+            }
+          },
+          "name": "Receive_Database_Notifications"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:Receive_Database_Notifications",
+      "data": {
+        "name": "Receive Database Notifications",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "WriteLog",
+            "type": "label",
+            "label": "StartActivity to WriteLog"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "WriteLog",
+            "name": "WriteLog",
+            "description": "Enterprise-grade logging activity with OpenTracing/OpenTelemetry integration, ECS compliance, field filtering, and sensitive data masking capabilities.",
+            "activity": {
+              "ref": "#write-log",
+              "settings": {
+                "logLevel": "INFO",
+                "includeFlowInfo": true,
+                "outputFormat": "JSON",
+                "addFlowDetails": false
+              },
+              "input": {
+                "logLevel": "",
+                "logObject": "=coerce.toObject($flow.payload)"
+              },
+              "schemas": {
+                "input": {
+                  "logObject": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                    "fe_metadata": "{}"
+                  },
+                  "sensitiveFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fieldNamesToHide\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"maskWith\":{\"type\":\"string\", \"default\":\"*****\"},\"maskLength\":{\"type\":\"number\",\"default\":0}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fieldNamesToHide\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"maskWith\":{\"type\":\"string\", \"default\":\"*****\"},\"maskLength\":{\"type\":\"number\",\"default\":0}}}"
+                  },
+                  "fieldFilters": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"include\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"exclude\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"include\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"exclude\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiV3JpdGVMb2ciOnsieCI6MzIxLCJ5Ijo4OH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "payload",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"PostgreSQLListener\",\"properties\":{\"payload\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2L3Bvc3RncmVzbGlzdGVuZXIiLCJ2ZXJzaW9uIjoiMC4yLjAiLCJ0YWciOiIwLjIuMCIsIm5hbWUiOiJQb3N0Z3JlU1FMTGlzdGVuZXIiLCJpZCI6InBvc3RncmVzbGlzdGVuZXIiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC90cmlnZ2VyL3Bvc3RncmVzbGlzdGVuZXIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9LHsicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvYWN0aXZpdHkvd3JpdGUtbG9nIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiV3JpdGVMb2ciLCJpZCI6InRpYmNvLXdyaXRlLWxvZyIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L3dyaXRlLWxvZyIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.25.7"
+  }
+}
