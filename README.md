@@ -35,6 +35,9 @@ This repository provides custom Flogo extensions including activities, triggers,
 3. Configure the extension path in Flogo VSCode extension settings
 4. Use the components in your Flogo flows
 
+<img width="1466" height="824" alt="image" src="https://github.com/user-attachments/assets/f73ae2d0-9c79-418a-94dd-61993b1e46e4" />
+
+
 ## 📚 Examples
 
 | Example | Components Used | Description |
@@ -42,14 +45,10 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, and Avro |
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 
-=======
-| [sse_connector	](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
->>>>>>> Stashed changes
-
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see individual component directories for specific contribution guidelines.
+We welcome contributions! 
 
 ## 📄 License
 
