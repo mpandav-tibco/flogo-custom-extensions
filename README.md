@@ -28,6 +28,7 @@ These extensions are intended to be easily integrated into your Flogo applicatio
 
 ## Project Structure
 
+<<<<<<< Updated upstream
 ```
 ├── activity/
 │   ├── schema-transform/
@@ -45,9 +46,30 @@ These extensions are intended to be easily integrated into your Flogo applicatio
 ## Custom Activities
 
 The `activity` folder contains the following custom Flogo activities:
+=======
+| Component | Version | Type | Description |
+|-----------|---------|------|-------------|
+| [PostgreSQL Listener](trigger/postgreslistener/) | 0.1.0 | Database | Listen for PostgreSQL NOTIFY messages on specified channels |
+| [SSE Trigger](sse/trigger/) | 1.0.0 | Real-time | Server-Sent Events trigger for streaming data to web clients |
+
+## 🚀 Quick Start
+
+Clone the repository. 
+
+### Usage in Flogo
+1. Navigate to the specific component directory
+2. Copy the extension source code to your local Flogo extensions directory
+3. Configure the extension path in Flogo VSCode extension settings
+4. Use the components in your Flogo flows
+
+![alt text](image.png)
+
+## 📚 Examples
+>>>>>>> Stashed changes
 
 ### Write Log Activity
 
+<<<<<<< Updated upstream
 This activity provides structured logging with OpenTracing/OpenTelemetry integration, ECS (Elastic Common Schema) compliance, field filtering, and sensitive data masking capabilities. It offers advanced formatting options for enterprise-grade logging requirements, including automatic trace correlation and standardized field mapping.
 
 ### Schema Transform Activities
@@ -59,15 +81,21 @@ Transforms Avro schemas to JSON Schema and/or XSD formats, providing flexible co
 
 #### JSON Schema Transform Activity  
 Transforms JSON Schema to XSD and Avro schema formats, enabling bidirectional schema conversion with comprehensive support for JSON Schema features including unions, conditional schemas, and validation constraints.
+=======
+
+>>>>>>> Stashed changes
 
 #### XSD Schema Transform Activity
 Provides comprehensive XSD (XML Schema Definition) transformation capabilities, supporting conversion to JSON Schema and Avro Schema formats with extensive configuration options for handling complex XSD features and namespace management.
 
 ### XML Filter Activity
 
+<<<<<<< Updated upstream
 Filters XML content based on XPath expressions with support for multiple conditions and logical operators (AND/OR). This activity evaluates XML documents against specified XPath conditions and returns match results, enabling sophisticated XML content filtering within Flogo flows.
 
 ## Custom Triggers
+=======
+>>>>>>> Stashed changes
 
 The `trigger` folder currently holds the following custom Flogo trigger:
 
