@@ -45,7 +45,6 @@ git clone https://github.com/mpandav-tibco/flogo-custom-extensions.git
 | Example | Components Used | Description |
 |---------|----------------|-------------|
 | [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, and Avro |
-| [SSE Demo](examples/sse_connector/) | SSE Trigger, SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 
 ## 🔧 Development Status
 
@@ -77,9 +76,3 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 📧 **Contact:** For questions or support, please open an issue in this repository.
-
-
-
-
-
-
