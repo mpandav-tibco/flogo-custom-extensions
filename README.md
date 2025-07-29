@@ -29,11 +29,14 @@ This repository provides custom Flogo extensions including activities, triggers,
 
 ## 🚀 Quick Start
 
+<<<<<<< Updated upstream
 ### Installation
 ```bash
 git clone https://github.com/mpandav-tibco/flogo-custom-extensions.git
 ```
 
+=======
+>>>>>>> Stashed changes
 ### Usage in Flogo
 1. Navigate to the specific component directory
 2. Copy the extension source code to your Flogo extensions directory
@@ -45,6 +48,7 @@ git clone https://github.com/mpandav-tibco/flogo-custom-extensions.git
 | Example | Components Used | Description |
 |---------|----------------|-------------|
 | [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, and Avro |
+<<<<<<< Updated upstream
 | [SSE Demo](examples/sse_connector/) | SSE Trigger, SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 
 ## 🔧 Development Status
@@ -77,9 +81,19 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 📧 **Contact:** For questions or support, please open an issue in this repository.
+=======
+| [sse_connector	](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
+>>>>>>> Stashed changes
 
 
+## 🤝 Contributing
 
+We welcome contributions! Please see individual component directories for specific contribution guidelines.
 
+## 📄 License
 
+MIT License - see [LICENSE](LICENSE) file for details.
 
+---
+
+📧 **Contact:** For questions or support, please open an issue in this repository.
