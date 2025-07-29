@@ -1,4 +1,4 @@
-# Flogo Custom Extensions - Component Catalog
+# Flogo Custom Extensions
 
 This repository provides custom Flogo extensions including activities, triggers, and connectors for TIBCO Flogo applications.
 
