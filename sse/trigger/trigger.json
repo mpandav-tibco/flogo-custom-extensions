@@ -1,0 +1,172 @@
+{
+  "name": "sse",
+  "type": "flogo:trigger",
+  "title": "Server-Sent Events (SSE)",
+  "version": "1.0.0",
+  "author": "Milind Pandav",
+  "description": "Server-Sent Events trigger for real-time data streaming to web clients with event buffering, topic filtering, and enterprise features",
+  "ref": "github.com/milindpandav/flogo-extensions/sse/trigger",
+  "settings": [
+    {
+      "name": "port",
+      "type": "integer",
+      "required": true,
+      "value": 9998,
+      "display": {
+        "name": "Server Port",
+        "description": "HTTP server port for SSE connections",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "path",
+      "type": "string",
+      "required": true,
+      "value": "/events",
+      "display": {
+        "name": "SSE Endpoint Path",
+        "description": "Base path for SSE endpoint (e.g., /events)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "maxConnections",
+      "type": "integer",
+      "required": false,
+      "value": 1000,
+      "display": {
+        "name": "Max Concurrent Connections",
+        "description": "Maximum number of concurrent SSE connections",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "enableCORS",
+      "type": "boolean",
+      "required": false,
+      "value": true,
+      "display": {
+        "name": "Enable CORS",
+        "description": "Enable Cross-Origin Resource Sharing for web clients",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "corsOrigins",
+      "type": "string",
+      "required": false,
+      "value": "*",
+      "display": {
+        "name": "CORS Origins",
+        "description": "Allowed origins for CORS (comma-separated or * for all)",
+        "appPropertySupport": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "keepAliveInterval",
+      "type": "integer",
+      "required": false,
+      "value": 30,
+      "display": {
+        "name": "Keep-Alive Interval (seconds)",
+        "description": "Interval for sending keep-alive messages to clients",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "enableEventStore",
+      "type": "boolean",
+      "required": false,
+      "value": true,
+      "display": {
+        "name": "Enable Event Store",
+        "description": "Enable event buffering for replay on reconnection",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "eventStoreSize",
+      "type": "integer",
+      "required": false,
+      "value": 100,
+      "display": {
+        "name": "Event Store Size",
+        "description": "Maximum number of events to store for replay",
+        "appPropertySupport": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "eventTTL",
+      "type": "integer",
+      "required": false,
+      "value": 3600,
+      "display": {
+        "name": "Event TTL (seconds)",
+        "description": "Time-to-live for stored events",
+        "appPropertySupport": true,
+        "visible": true
+      }
+    }
+  ],
+  "handler": {
+    "settings": [
+      {
+        "name": "topic",
+        "type": "string",
+        "required": false,
+        "display": {
+          "name": "Event Topic",
+          "description": "Topic/channel for event filtering (optional)",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "eventType",
+        "type": "string",
+        "required": false,
+        "value": "message",
+        "display": {
+          "name": "Default Event Type",
+          "description": "Default event type for SSE events",
+          "appPropertySupport": true
+        }
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "name": "connectionId",
+      "type": "string"
+    },
+    {
+      "name": "clientIP",
+      "type": "string"
+    },
+    {
+      "name": "userAgent",
+      "type": "string"
+    },
+    {
+      "name": "headers",
+      "type": "complex_object"
+    },
+    {
+      "name": "queryParams",
+      "type": "complex_object"
+    },
+    {
+      "name": "topic",
+      "type": "string"
+    },
+    {
+      "name": "lastEventId",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "string"
+    } 
+  ]
+}
