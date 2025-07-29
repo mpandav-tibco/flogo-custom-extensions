@@ -1,0 +1,148 @@
+{
+  "name": "sse-send",
+  "type": "flogo:activity",
+  "version": "1.0.0",
+  "title": "SSE Send",
+  "description": "Send Server-Sent Events (SSE) to connected clients",
+  "author": "Milind Pandav <milind.pandav@cloud.com>",
+  "homepage": "https://github.com/milindpandav/flogo-extensions",
+  "settings": [
+    {
+      "name": "sseServerRef",
+      "type": "string",
+      "value": "default",
+      "description": "Reference to the SSE server instance. Use trigger name or 'default' for single server",
+      "display": {
+        "name": "SSE Server Reference",
+        "description": "Name of the SSE trigger to send events to. Use 'default' for single server setup or specify trigger name for multiple servers",
+        "appPropertySupport": true
+      }
+    },
+
+    {
+      "name": "topic",
+      "type": "string",
+      "description": "Default topic/channel name for events",
+      "display": {
+        "name": "Default Topic",
+        "description": "Default topic name for events - can be overridden by input",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "eventType",
+      "type": "string",
+      "allowed": ["message", "notification", "update", "alert", "status", "data", "event", "error", "warning", "info", "heartbeat", "custom"],
+      "value": "message",
+      "description": "Default type of the event",
+      "display": {
+        "name": "Event Type",
+        "description": "Default type/category of the SSE event - can be overridden by input",
+        "appPropertySupport": true
+      }
+    },
+        {
+      "name": "retry",
+      "type": "integer",
+      "value": 30000,
+      "description": "Client reconnection timeout in milliseconds (sent in SSE retry field)",
+      "display": {
+        "name": "Retry Timeout",
+        "description": "How long clients should wait before reconnecting after connection loss (milliseconds)",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "name": "connectionId",
+      "type": "string",
+      "description": "Specific connection ID to send event to"
+    },
+    {
+      "name": "target",
+      "type": "string",
+      "required": false,
+      "value": "all",
+      "description": "Target for the event: 'all', 'connection:ID', or 'topic:NAME'. Auto-built if not provided."
+    },
+    {
+      "name": "eventId",
+      "type": "string",
+      "description": "Unique identifier for the event"
+    },
+    {
+      "name": "topic",
+      "type": "string",
+      "description": "Topic/channel name to send event to (overrides default topic setting)"
+    },
+    {
+      "name": "eventType",
+      "type": "string",
+      "allowed": ["message", "notification", "update", "alert", "status", "data", "event", "error", "warning", "info", "heartbeat", "custom"],
+      "description": "Default type of the event"
+    },
+    {
+      "name": "data",
+      "type": "any",
+      "required": true,
+      "description": "Event data (will be JSON stringified if object)",
+      "display": {
+        "name": "Event Data",
+        "description": "The data payload to send with the event",
+        "appPropertySupport": true,
+        "mappable": true
+      }
+    },
+    {
+      "name": "format",
+      "type": "string",
+      "allowed": ["json", "string", "auto"],
+      "value": "auto",
+      "description": "Data format - json, string, or auto-detect",
+      "display": {
+        "name": "Data Format",
+        "description": "How to format the data payload",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "enableValidation",
+      "type": "boolean",
+      "value": true,
+      "description": "Enable input validation",
+      "display": {
+        "name": "Enable Validation",
+        "description": "Validate inputs before sending event",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "name": "success",
+      "type": "boolean",
+      "description": "Whether the event was sent successfully"
+    },
+    {
+      "name": "sentCount",
+      "type": "integer", 
+      "description": "Number of clients that received the event"
+    },
+    {
+      "name": "eventId",
+      "type": "string",
+      "description": "The event ID that was sent (generated if not provided)"
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "description": "Timestamp when the event was sent"
+    },
+    {
+      "name": "error",
+      "type": "string",
+      "description": "Error message if sending failed"
+    }
+  ]
+}
