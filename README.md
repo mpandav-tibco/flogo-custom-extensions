@@ -25,6 +25,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | Component | Version | Type | Description |
 |-----------|---------|------|-------------|
 | [PostgreSQL Listener](trigger/postgreslistener/) | 0.1.0 | Database | Listen for PostgreSQL NOTIFY messages on specified channels |
+| [Universal Database Listener](trigger/universaldblistener/) | 1.0.0 | Database | Universal database change listener supporting PostgreSQL, MySQL, MariaDB, Oracle, and SQL Server |
 | [SSE Trigger](sse/trigger/) | 1.0.0 | Real-time | Server-Sent Events trigger for streaming data to web clients |
 
 ## 🚀 Quick Start
@@ -44,6 +45,8 @@ This repository provides custom Flogo extensions including activities, triggers,
 |---------|----------------|-------------|
 | [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, and Avro |
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
+| [PostgreSQL Listener Demo](examples/postgrelistener/) | PostgreSQL Listener Trigger, Write Log Activity | Database change notification demo with NOTIFY/LISTEN and enterprise logging |
+| [Write Log Demo](examples/write_log/) | Write Log Activity | Enterprise logging demonstration with various log levels and structured output |
 
 
 ## 🤝 Contributing
