@@ -25,11 +25,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | Component | Version | Type | Description |
 |-----------|---------|------|-------------|
 | [PostgreSQL Listener](trigger/postgreslistener/) | 0.1.0 | Database | Listen for PostgreSQL NOTIFY messages on specified channels |
-<<<<<<< Updated upstream
-=======
 | [MySQL Binlog Listener](trigger/mysql-binlog-listener/) | 1.1.0 | Database | Real-time MySQL/MariaDB binlog streaming for change data capture with SSL/TLS support |
-| [Universal Database Listener](trigger/universaldblistener/) | 1.0.0 | Database | Universal database change listener supporting PostgreSQL, MySQL, MariaDB, Oracle, and SQL Server |
->>>>>>> Stashed changes
 | [SSE Trigger](sse/trigger/) | 1.0.0 | Real-time | Server-Sent Events trigger for streaming data to web clients |
 
 ## 🚀 Quick Start
@@ -49,14 +45,9 @@ This repository provides custom Flogo extensions including activities, triggers,
 |---------|----------------|-------------|
 | [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, and Avro |
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
-<<<<<<< Updated upstream
-=======
 | [PostgreSQL Listener Demo](examples/postgrelistener/) | PostgreSQL Listener Trigger, Write Log Activity | Database change notification demo with NOTIFY/LISTEN and logging |
 | [MySQL Binlog Listener Demo](examples/mysqllistener/) | MySQL Binlog Listener Trigger, Write Log Activity | Real-time MySQL/MariaDB binlog streaming demo for change data capture |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
->>>>>>> Stashed changes
-
-
 
 ## 🤝 Contributing
 
