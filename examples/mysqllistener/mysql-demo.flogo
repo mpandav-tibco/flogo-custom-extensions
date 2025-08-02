@@ -1,0 +1,213 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/milindpandav/activity/write-log",
+    "github.com/milindpandav/flogo-custom-extensions/trigger/mysql-binlog-listener",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string"
+  ],
+  "name": "MySQL-Streaming-Demo",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#mysql-binlog-listener",
+      "name": "mysql-binlog-listener",
+      "description": "A dedicated MySQL/MariaDB binlog streaming trigger that captures real-time database changes",
+      "settings": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "testuser",
+        "password": "",
+        "databaseName": "testdb",
+        "sslMode": "require",
+        "sslCA": "",
+        "sslCert": "",
+        "sslKey": "",
+        "skipSSLVerify": true,
+        "connectionTimeout": "30s",
+        "readTimeout": "30s",
+        "maxRetryAttempts": "3",
+        "retryDelay": "5s",
+        "healthCheckInterval": "60s",
+        "enableHeartbeat": true,
+        "heartbeatInterval": "30s"
+      },
+      "id": "MySQLBinlogListener",
+      "handlers": [
+        {
+          "description": "Change Data Capture with MySQL- Realtime event streaming",
+          "settings": {
+            "serverID": 1001,
+            "binlogFile": "",
+            "binlogPos": 0,
+            "tables": "",
+            "eventTypes": "ALL",
+            "includeSchema": true,
+            "maxRetries": 3,
+            "retryDelay": "5s"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:Realtime_binlog_Streaming"
+            },
+            "input": {
+              "eventID": "=$.eventID",
+              "eventType": "=$.eventType",
+              "database": "=$.database",
+              "table": "=$.table",
+              "timestamp": "=$.timestamp",
+              "data": "=$.data",
+              "schema": "=$.schema",
+              "binlogFile": "=$.binlogFile",
+              "binlogPos": "=$.binlogPos",
+              "serverID": "=$.serverID",
+              "gtid": "=$.gtid",
+              "correlationID": "=$.correlationID"
+            }
+          },
+          "name": "Realtime_binlog_Streaming"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:Realtime_binlog_Streaming",
+      "data": {
+        "name": "Realtime binlog Streaming",
+        "description": "Change Data Capture with MySQL- Realtime event streaming",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "WriteLog",
+            "type": "label",
+            "label": "StartActivity to WriteLog"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "WriteLog",
+            "name": "WriteLog",
+            "description": "Enterprise-grade logging activity with OpenTracing/OpenTelemetry integration, ECS compliance, field filtering, and sensitive data masking capabilities.",
+            "activity": {
+              "ref": "#write-log",
+              "settings": {
+                "logLevel": "INFO",
+                "includeFlowInfo": false,
+                "outputFormat": "JSON",
+                "addFlowDetails": false
+              },
+              "input": {
+                "logLevel": "",
+                "logObject": {
+                  "mapping": {
+                    "data": "=string.concat($flow.eventID , \" \", $flow.eventType , \" \", $flow.database , \" \", $flow.table , \" \", $flow.timestamp , \" \", coerce.toString($flow.data) , \" \", coerce.toString($flow.schema) , \" \", $flow.binlogFile , \" \", coerce.toString($flow.binlogPos) , \" \",coerce.toString($flow.serverID)   , \" \", $flow.gtid , \" \", $flow.correlationID)"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "logObject": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"}}}",
+                    "fe_metadata": "{\n    \"data\":\"\"\n}"
+                  },
+                  "sensitiveFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fieldNamesToHide\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"maskWith\":{\"type\":\"string\", \"default\":\"*****\"},\"maskLength\":{\"type\":\"number\",\"default\":0}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fieldNamesToHide\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"maskWith\":{\"type\":\"string\", \"default\":\"*****\"},\"maskLength\":{\"type\":\"number\",\"default\":0}}}"
+                  },
+                  "fieldFilters": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"include\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"exclude\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"include\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"exclude\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiV3JpdGVMb2ciOnsieCI6MzQzLCJ5Ijo4OX19",
+        "metadata": {
+          "input": [
+            {
+              "name": "eventID",
+              "type": "string"
+            },
+            {
+              "name": "eventType",
+              "type": "string"
+            },
+            {
+              "name": "database",
+              "type": "string"
+            },
+            {
+              "name": "table",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "type": "string"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            },
+            {
+              "name": "schema",
+              "type": "object"
+            },
+            {
+              "name": "binlogFile",
+              "type": "string"
+            },
+            {
+              "name": "binlogPos",
+              "type": "integer"
+            },
+            {
+              "name": "serverID",
+              "type": "integer"
+            },
+            {
+              "name": "gtid",
+              "type": "string"
+            },
+            {
+              "name": "correlationID",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"MySQLBinlogListener\",\"properties\":{\"eventID\":{\"type\":\"string\",\"required\":false},\"eventType\":{\"type\":\"string\",\"required\":false},\"database\":{\"type\":\"string\",\"required\":false},\"table\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false},\"data\":{\"type\":\"object\"},\"schema\":{\"type\":\"object\"},\"binlogFile\":{\"type\":\"string\",\"required\":false},\"binlogPos\":{\"type\":\"integer\",\"required\":false},\"serverID\":{\"type\":\"integer\",\"required\":false},\"gtid\":{\"type\":\"string\",\"required\":false},\"correlationID\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvZmxvZ28tY3VzdG9tLWV4dGVuc2lvbnMvdHJpZ2dlci9teXNxbC1iaW5sb2ctbGlzdGVuZXIiLCJ2ZXJzaW9uIjoiMS4xLjAiLCJ0YWciOiIxLjEuMCIsIm5hbWUiOiJNeVNRTEJpbmxvZ0xpc3RlbmVyIiwiaWQiOiJteXNxbC1iaW5sb2ctbGlzdGVuZXIiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC90cmlnZ2VyL215c3FsLWJpbmxvZy1saXN0ZW5lciIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL21pbGluZHBhbmRhdi9hY3Rpdml0eS93cml0ZS1sb2ciLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJXcml0ZUxvZyIsImlkIjoidGliY28td3JpdGUtbG9nIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0RlZmF1bHQvYWN0aXZpdHkvd3JpdGUtbG9nIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.25.7"
+  }
+}
