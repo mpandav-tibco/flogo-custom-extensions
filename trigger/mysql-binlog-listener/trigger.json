@@ -1,0 +1,374 @@
+{
+  "name": "mysql-binlog-listener",
+  "type": "flogo:trigger",
+  "version": "1.1.0",
+  "title": "MySQL Binlog Listener",
+  "description": "A dedicated MySQL/MariaDB binlog streaming trigger that captures real-time database changes",
+  "homepage": "https://github.com/project-flogo/contrib",
+
+  "settings": [
+    {
+      "name": "host",
+      "type": "string",
+      "required": true,
+      "value": "localhost",
+      "description": "MySQL/MariaDB server host",
+      "display": {
+        "name": "Host",
+        "description": "MySQL/MariaDB server host",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "port",
+      "type": "integer",
+      "required": true,
+      "value": 3306,
+      "description": "MySQL/MariaDB server port",
+      "display": {
+        "name": "Port",
+        "description": "MySQL/MariaDB server port",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "user",
+      "type": "string",
+      "required": true,
+      "value": "root",
+      "description": "MySQL/MariaDB username with REPLICATION privileges",
+      "display": {
+        "name": "User",
+        "description": "MySQL/MariaDB username with REPLICATION privileges",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "required": true,
+      "value": "password",
+      "description": "MySQL/MariaDB password",
+      "display": {
+        "name": "Password",
+        "description": "MySQL/MariaDB password",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "databaseName",
+      "type": "string",
+      "required": true,
+      "value": "mysql",
+      "description": "Target database name to monitor",
+      "display": {
+        "name": "Database Name",
+        "description": "Target database name to monitor",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "sslMode",
+      "type": "string",
+      "value": "disable",
+      "allowed": ["disable", "require", "verify-ca", "verify-full"],
+      "description": "SSL mode: disable, require, verify-ca, verify-full",
+      "display": {
+        "name": "SSL Mode",
+        "description": "SSL mode: disable, require, verify-ca, verify-full",
+        "type": "dropdown",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "sslCA",
+      "type": "string",
+      "description": "SSL CA certificate file path (required for verify-ca and verify-full modes)",
+      "display": {
+        "name": "SSL CA Certificate",
+        "description": "SSL CA certificate file path (required for verify-ca and verify-full modes)",
+        "type": "fileselector",
+        "fileExtensions": [".crt", ".pem", ".cer", ".der"],
+        "visible": "=$property[\"sslMode\"] == \"verify-ca\" || $property[\"sslMode\"] == \"verify-full\"",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "sslCert",
+      "type": "string",
+      "description": "SSL client certificate file path (optional for client authentication)",
+      "display": {
+        "name": "SSL Client Certificate",
+        "description": "SSL client certificate file path (optional for client authentication)",
+        "type": "fileselector",
+        "fileExtensions": [".crt", ".pem", ".cer", ".der"],
+        "visible": "=$property[\"sslMode\"] != \"disable\"",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "sslKey",
+      "type": "string",
+      "description": "SSL client private key file path (required if client certificate is provided)",
+      "display": {
+        "name": "SSL Client Private Key",
+        "description": "SSL client private key file path (required if client certificate is provided)",
+        "type": "fileselector",
+        "fileExtensions": [".key", ".pem", ".der"],
+        "visible": "=$property[\"sslMode\"] != \"disable\"",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "skipSSLVerify",
+      "type": "boolean",
+      "value": false,
+      "description": "Skip SSL certificate verification (for testing only)",
+      "display": {
+        "name": "Skip SSL Verification",
+        "description": "Skip SSL certificate verification (for testing only)",
+        "visible": "=$property[\"sslMode\"] == \"require\"",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "connectionTimeout",
+      "type": "string",
+      "value": "30s",
+      "description": "Connection timeout duration (e.g., '30s', '5m')",
+      "display": {
+        "name": "Connection Timeout",
+        "description": "Connection timeout duration (e.g., '30s', '5m')",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "readTimeout",
+      "type": "string",
+      "value": "30s",
+      "description": "Read timeout duration",
+      "display": {
+        "name": "Read Timeout",
+        "description": "Read timeout duration",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "maxRetryAttempts",
+      "type": "string",
+      "value": "3",
+      "description": "Maximum retry attempts for failed operations",
+      "display": {
+        "name": "Max Retry Attempts",
+        "description": "Maximum retry attempts for failed operations",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "retryDelay",
+      "type": "string",
+      "value": "5s",
+      "description": "Delay between retry attempts",
+      "display": {
+        "name": "Retry Delay",
+        "description": "Delay between retry attempts",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "healthCheckInterval",
+      "type": "string",
+      "value": "60s",
+      "description": "Health check interval",
+      "display": {
+        "name": "Health Check Interval",
+        "description": "Health check interval",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "enableHeartbeat",
+      "type": "boolean",
+      "value": true,
+      "description": "Enable heartbeat for connection monitoring",
+      "display": {
+        "name": "Enable Heartbeat",
+        "description": "Enable heartbeat for connection monitoring",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "heartbeatInterval",
+      "type": "string",
+      "value": "30s",
+      "description": "Heartbeat interval",
+      "display": {
+        "name": "Heartbeat Interval",
+        "description": "Heartbeat interval",
+        "visible": "=$property[\"enableHeartbeat\"] == true",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "handler": {
+    "settings": [
+      {
+        "name": "serverID",
+        "type": "integer",
+        "required": true,
+        "value": 1001,
+        "description": "Unique server ID for binlog streaming (must be unique across all clients)",
+        "display": {
+          "name": "Server ID",
+          "description": "Unique server ID for binlog streaming (must be unique across all clients)",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "binlogFile",
+        "type": "string",
+        "description": "Starting binlog file name (optional, defaults to latest)",
+        "display": {
+          "name": "Binlog File",
+          "description": "Starting binlog file name (optional, defaults to latest)",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "binlogPos",
+        "type": "integer",
+        "value": 4,
+        "description": "Starting binlog position (only used when binlogFile is specified, defaults to 4)",
+        "display": {
+          "name": "Binlog Position",
+          "description": "Starting binlog position (only used when binlogFile is specified, defaults to 4)",
+          "visible": "=$property[\"binlogFile\"] != null && $property[\"binlogFile\"] != \"\"",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "tables",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "List of table names to monitor (empty means all tables)",
+        "display": {
+          "name": "Tables to Monitor",
+          "description": "List of table names to monitor (empty means all tables)",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "eventTypes",
+        "type": "string",
+        "value": "ALL",
+        "allowed": ["ALL", "INSERT", "UPDATE", "DELETE"],
+        "description": "Types of events to capture",
+        "display": {
+          "name": "Event Types",
+          "description": "Types of events to capture",
+          "type": "dropdown",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "includeSchema",
+        "type": "boolean",
+        "value": false,
+        "description": "Include schema information in events",
+        "display": {
+          "name": "Include Schema",
+          "description": "Include schema information in events",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "maxRetries",
+        "type": "integer",
+        "value": 3,
+        "description": "Maximum retry attempts for failed operations",
+        "display": {
+          "name": "Max Retries",
+          "description": "Maximum retry attempts for failed operations",
+          "appPropertySupport": true
+        }
+      },
+      {
+        "name": "retryDelay",
+        "type": "string",
+        "value": "5s",
+        "description": "Delay between retry attempts",
+        "display": {
+          "name": "Retry Delay",
+          "description": "Delay between retry attempts",
+          "appPropertySupport": true
+        }
+      }
+    ]
+  },
+  "output": [
+    {
+      "name": "eventID",
+      "type": "string",
+      "description": "Unique event identifier"
+    },
+    {
+      "name": "eventType",
+      "type": "string",
+      "description": "Type of database event (INSERT, UPDATE, DELETE)"
+    },
+    {
+      "name": "database",
+      "type": "string",
+      "description": "Database name"
+    },
+    {
+      "name": "table",
+      "type": "string",
+      "description": "Table name"
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "description": "Event timestamp in RFC3339 format"
+    },
+    {
+      "name": "data",
+      "type": "object",
+      "description": "Event data containing row information"
+    },
+    {
+      "name": "schema",
+      "type": "object",
+      "description": "Table schema information (columns, types, constraints) when includeSchema=true"
+    },
+    {
+      "name": "binlogFile",
+      "type": "string",
+      "description": "Binlog file name where event occurred"
+    },
+    {
+      "name": "binlogPos",
+      "type": "integer",
+      "description": "Binlog position of the event"
+    },
+    {
+      "name": "serverID",
+      "type": "integer",
+      "description": "MySQL server ID that generated the event"
+    },
+    {
+      "name": "gtid",
+      "type": "string",
+      "description": "Global Transaction ID (if GTID enabled)"
+    },
+    {
+      "name": "correlationID",
+      "type": "string",
+      "description": "Correlation ID for tracking related events"
+    }
+  ],
+  "ref": "github.com/mpandav-tibco/flogo-custom-extensions/trigger/mysql-binlog-listener"
+}
