@@ -1,0 +1,30 @@
+Subject: We Apologize for the Inconvenience - {{.subject | default "Your Recent Experience"}}
+
+Dear {{.customerName | default "Valued Customer"}},
+
+We sincerely apologize for {{.issueDescription | default "the inconvenience you experienced"}}. 
+
+{{if .orderNumber}}
+Regarding your order #{{.orderNumber}}, we understand your frustration and want to make this right.
+{{end}}
+
+Here's what we're doing to resolve this:
+{{range .resolutionSteps}}
+• {{.}}
+{{end}}
+
+{{if .compensationOffered}}
+As an apology, we're pleased to offer you {{.compensationOffered}}.
+{{end}}
+
+{{if .newDeliveryDate}}
+Your updated delivery date is: {{.newDeliveryDate}}
+{{end}}
+
+We value your business and appreciate your patience. If you have any questions, please don't hesitate to contact us at {{.supportEmail | default "support@company.com"}} or {{.supportPhone | default "1-800-SUPPORT"}}.
+
+Thank you for your understanding.
+
+Best regards,
+{{.agentName | default "Customer Service Team"}}
+{{.companyName | default "Your Company"}}

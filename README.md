@@ -15,6 +15,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | Component | Version | Category | Description |
 |-----------|---------|----------|-------------|
 | [Write Log](activity/write-log/) | 1.0.0 | Logging | Enterprise-grade logging with OpenTracing/OpenTelemetry integration and ECS compliance |
+| [Template Engine](activity/templateengine/) | 1.0.0 | Content Generation | Dynamic content generation with Go templates, 29 built-in functions, and OOTB business templates |
 | [XML Filter](activity/xmlfilter/) | 0.1.0 | XML Processing | Filter XML content using XPath expressions with AND/OR logic support |
 | [Avro Schema Transform](activity/schema-transform/avroschematransform/) | 1.0.0 | Schema Transform | Transform Avro schemas to JSON Schema and/or XSD formats |
 | [JSON Schema Transform](activity/schema-transform/jsonschematransform/) | 1.0.0 | Schema Transform | Transform JSON Schema to XSD and Avro formats |
@@ -47,6 +48,8 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 | [PostgreSQL Listener Demo](examples/postgrelistener/) | PostgreSQL Listener Trigger, Write Log Activity | Database change notification demo with NOTIFY/LISTEN and logging |
 | [MySQL Binlog Listener Demo](examples/mysqllistener/) | MySQL Binlog Listener Trigger, Write Log Activity | Real-time MySQL/MariaDB binlog streaming demo for change data capture |
+| [Universal Database Listener Demo](examples/universaldblistener/) | Universal Database Listener Trigger, Write Log Activity | Multi-database listener demo supporting PostgreSQL, MySQL, MariaDB with unified event handling |
+| [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
 
 ## 🤝 Contributing

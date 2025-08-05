@@ -1,0 +1,60 @@
+{{.contractType | default "SERVICE AGREEMENT" | upper}}
+
+This agreement is entered into on {{.effectiveDate | default "_date"}} between:
+
+PROVIDER:
+{{.provider.name}}
+{{.provider.address}}
+{{.provider.city}}, {{.provider.state}} {{.provider.zipCode}}
+
+CLIENT:
+{{.client.name}}
+{{.client.address}}
+{{.client.city}}, {{.client.state}} {{.client.zipCode}}
+
+1. SCOPE OF WORK
+{{.scopeOfWork}}
+
+2. TIMELINE
+Start Date: {{.startDate}}
+{{if .endDate}}End Date: {{.endDate}}{{end}}
+{{if .milestones}}
+Key Milestones:
+{{range .milestones}}
+• {{.date}}: {{.description}}
+{{end}}
+{{end}}
+
+3. COMPENSATION
+{{if .paymentTerms}}
+Payment Terms: {{.paymentTerms}}
+{{end}}
+{{if .totalAmount}}
+Total Contract Value: {{.currency | default "$"}}{{.totalAmount}}
+{{end}}
+{{if .paymentSchedule}}
+Payment Schedule:
+{{range .paymentSchedule}}
+• {{.date}}: {{$.currency}}{{.amount}} - {{.description}}
+{{end}}
+{{end}}
+
+4. TERMS AND CONDITIONS
+{{.termsAndConditions}}
+
+{{if .additionalClauses}}
+{{range .additionalClauses}}
+{{.number}}. {{.title | upper}}
+{{.content}}
+
+{{end}}
+{{end}}
+
+IN WITNESS WHEREOF, the parties have executed this agreement on the date first written above.
+
+PROVIDER:                           CLIENT:
+
+_________________________           _________________________
+{{.provider.signatoryName}}           {{.client.signatoryName}}
+{{.provider.signatoryTitle}}          {{.client.signatoryTitle}}
+Date: _______________               Date: _______________

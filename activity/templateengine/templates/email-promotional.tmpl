@@ -1,0 +1,53 @@
+Subject: {{.subject | default "Special Offer Just for You!"}} 🎉
+
+Hi {{.customerName | default "Valued Customer"}},
+
+{{.openingMessage | default "We have something special just for you!"}}
+
+{{if .offerDetails}}
+🎁 {{.offerDetails.title}}
+
+{{.offerDetails.description}}
+
+{{if .offerDetails.discount}}
+Save {{.offerDetails.discount}}% on {{.offerDetails.applicableItems | default "your next purchase"}}
+{{end}}
+
+{{if .offerDetails.promoCode}}
+Use code: {{.offerDetails.promoCode}}
+{{end}}
+
+{{if .offerDetails.validUntil}}
+⏰ Offer valid until: {{.offerDetails.validUntil}}
+{{end}}
+{{end}}
+
+{{if .featuredProducts}}
+Featured Products:
+{{range .featuredProducts}}
+• {{.name}} - {{$.currency | default "$"}}{{.price}} {{if .originalPrice}}(was {{$.currency}}{{.originalPrice}}){{end}}
+  {{.description}}
+{{end}}
+{{end}}
+
+{{if .callToAction}}
+{{.callToAction.text | default "Shop Now"}}
+{{.callToAction.url}}
+{{end}}
+
+{{if .personalizedRecommendations}}
+Based on your previous purchases, you might like:
+{{range .personalizedRecommendations}}
+• {{.name}} - {{$.currency | default "$"}}{{.price}}
+{{end}}
+{{end}}
+
+Don't miss out - this offer won't last long!
+
+Happy shopping,
+{{.teamName | default "The Sales Team"}}
+{{.companyName | default "Your Company"}}
+
+{{if .unsubscribeUrl}}
+You can unsubscribe from promotional emails here: {{.unsubscribeUrl}}
+{{end}}

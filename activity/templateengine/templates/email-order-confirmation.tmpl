@@ -1,0 +1,48 @@
+Subject: Order Confirmation - #{{.orderNumber}}
+
+Thank you for your order, {{.customerName | default "Valued Customer"}}!
+
+Order Details:
+• Order Number: {{.orderNumber}}
+• Order Date: {{.orderDate | default "_date"}}
+• Total Amount: {{.currency | default "$"}}{{.totalAmount}}
+
+{{if .billingAddress}}
+Billing Address:
+{{.billingAddress.name}}
+{{.billingAddress.street}}
+{{.billingAddress.city}}, {{.billingAddress.state}} {{.billingAddress.zipCode}}
+{{end}}
+
+{{if .shippingAddress}}
+Shipping Address:
+{{.shippingAddress.name}}
+{{.shippingAddress.street}}
+{{.shippingAddress.city}}, {{.shippingAddress.state}} {{.shippingAddress.zipCode}}
+{{end}}
+
+Items Ordered:
+{{range .items}}
+• {{.name}} - Qty: {{.quantity}} - {{$.currency | default "$"}}{{.price}}
+{{if .description}}  {{.description}}{{end}}
+{{end}}
+
+{{if .shippingMethod}}
+Shipping Method: {{.shippingMethod}}
+{{if .estimatedDelivery}}
+Estimated Delivery: {{.estimatedDelivery}}
+{{end}}
+{{end}}
+
+{{if .trackingNumber}}
+Tracking Number: {{.trackingNumber}}
+Track your order: {{.trackingUrl | default "#"}}
+{{end}}
+
+Need help? Contact us:
+• Email: {{.supportEmail | default "support@company.com"}}
+• Phone: {{.supportPhone | default "1-800-SUPPORT"}}
+
+Thank you for your business!
+
+{{.companyName | default "Your Company"}}

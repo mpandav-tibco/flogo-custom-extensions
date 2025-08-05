@@ -1,0 +1,35 @@
+Subject: Welcome to {{.companyName | default "Our Service"}}! 🎉
+
+Hello {{.customerName | default "there"}},
+
+Welcome to {{.companyName | default "our service"}}! We're thrilled to have you join our community.
+
+{{if .accountDetails}}
+Here are your account details:
+• Username: {{.accountDetails.username}}
+• Account ID: {{.accountDetails.accountId}}
+{{if .accountDetails.subscriptionPlan}}
+• Plan: {{.accountDetails.subscriptionPlan}}
+{{end}}
+{{end}}
+
+To get started:
+{{range .gettingStartedSteps}}
+{{.stepNumber}}. {{.description}}
+{{end}}
+
+{{if .specialOffer}}
+🎁 Special Welcome Offer: {{.specialOffer}}
+{{end}}
+
+Useful links:
+• Getting Started Guide: {{.gettingStartedUrl | default "#"}}
+• Support Center: {{.supportUrl | default "#"}}
+• Contact Us: {{.contactUrl | default "#"}}
+
+If you have any questions, our support team is here to help at {{.supportEmail | default "support@company.com"}}.
+
+Welcome aboard!
+
+{{.teamName | default "The Team"}}
+{{.companyName | default "Your Company"}}

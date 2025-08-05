@@ -1,0 +1,201 @@
+{
+    "name": "tibco-template-engine",
+    "title": "Template Engine",
+    "version": "1.0.0",
+    "type": "flogo:activity",
+    "description": "Dynamic content generation using configurable templates with support for Go templates, Handlebars-style syntax, and OOTB business templates",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/templateengine",
+    "settings": [
+        {
+            "name": "templateEngine",
+            "type": "string",
+            "required": false,
+            "allowed": [
+                "go",
+                "handlebars-basic",
+                "mustache-basic"
+            ],
+            "value": "go",
+            "display": {
+                "name": "Template Engine",
+                "description": "Template engine selection:\n• go: Full Go template engine with 29 functions (recommended)\n• handlebars-basic: Basic {{variable}} syntax compatibility, uses Go engine internally\n• mustache-basic: Basic {{variable}} syntax compatibility, uses Go engine internally\n\nAll engines support the same 29 template functions and performance features. Basic engines provide syntax compatibility but not advanced block helpers or partials.",
+                "type": "dropdown",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "templateCacheSize",
+            "type": "int",
+            "required": false,
+            "value": 100,
+            "display": {
+                "name": "Template Cache Size",
+                "description": "Maximum number of templates to cache in memory for performance",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "enableSafeMode",
+            "type": "bool",
+            "required": false,
+            "value": true,
+            "allowed": [
+                true,
+                false
+            ],
+            "display": {
+                "name": "Enable Safe Mode",
+                "description": "Enable safe mode to prevent access to system functions and file operations",
+                "type": "dropdown",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "templatePath",
+            "type": "string",
+            "required": false,
+            "value": "",
+            "display": {
+                "name": "Template Path",
+                "description": "Path to directory containing template files. Use browse button to select folder or enter path manually. If empty, auto-detection will find templates relative to activity source",
+                "type": "fileselector",
+                "fileType": "folder",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "name": "templateType",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Template Type",
+                "description": "Type of OOTB template to use. Leave empty to use custom template.",
+                "type": "dropdown",
+                "mappable": true
+            },
+            "allowed": [
+                "email-apology",
+                "email-welcome",
+                "email-order-confirmation",
+                "email-order-update",
+                "email-promotional",
+                "report-summary",
+                "notification-alert",
+                "invoice-template",
+                "contract-template",
+                "meeting-reminder",
+                "custom"
+            ]
+        },
+        {
+            "name": "outputFormat",
+            "type": "string",
+            "required": false,
+            "allowed": [
+                "text",
+                "html",
+                "json",
+                "xml",
+                "markdown"
+            ],
+            "value": "text"
+        },
+        {
+            "name": "enableFormatting",
+            "type": "bool",
+            "required": false,
+            "value": true,
+            "allowed": [
+                true,
+                false
+            ]
+        },
+        {
+            "name": "escapeHtml",
+            "type": "bool",
+            "required": false,
+            "allowed": [
+                true,
+                false
+            ],
+            "value": true
+        },
+        {
+            "name": "strictMode",
+            "type": "bool",
+            "required": false,
+            "value": true,
+            "allowed": [
+                true,
+                false
+            ]
+        },
+        {
+            "name": "template",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Custom Template",
+                "description": "Custom template with placeholders. Use when templateType is 'custom' or empty.",
+                "type": "texteditor",
+                "mappable": true,
+                "appPropertySupport": true,
+                "syntax": "handlebars"
+            }
+        },
+        {
+            "name": "templateData",
+            "type": "object",
+            "required": true,
+            "display": {
+                "name": "Template Data",
+                "description": "Data object containing variables to be substituted in the template",
+                "type": "texteditor",
+                "mappable": true,
+                "appPropertySupport": true,
+                "syntax": "json"
+            }
+        },
+        {
+            "name": "templateVariables",
+            "type": "object",
+            "required": false,
+            "display": {
+                "name": "Additional Variables",
+                "description": "Additional template variables to merge with templateData",
+                "type": "texteditor",
+                "mappable": true,
+                "appPropertySupport": true,
+                "syntax": "json"
+            }
+        }
+    ],
+    "output": [
+        {
+            "name": "result",
+            "type": "string"
+        },
+        {
+            "name": "success",
+            "type": "bool"
+        },
+        {
+            "name": "error",
+            "type": "string"
+        },
+        {
+            "name": "templateUsed",
+            "type": "string"
+        },
+        {
+            "name": "processingTime",
+            "type": "int"
+        },
+        {
+            "name": "variablesUsed",
+            "type": "array"
+        }
+    ]
+}

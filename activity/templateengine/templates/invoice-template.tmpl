@@ -1,0 +1,40 @@
+INVOICE
+
+{{.companyInfo.name | default "Your Company"}}
+{{.companyInfo.address}}
+{{.companyInfo.city}}, {{.companyInfo.state}} {{.companyInfo.zipCode}}
+{{if .companyInfo.phone}}Phone: {{.companyInfo.phone}}{{end}}
+{{if .companyInfo.email}}Email: {{.companyInfo.email}}{{end}}
+
+BILL TO:
+{{.billTo.name}}
+{{.billTo.address}}
+{{.billTo.city}}, {{.billTo.state}} {{.billTo.zipCode}}
+
+Invoice #: {{.invoiceNumber}}
+Date: {{.invoiceDate | default "_date"}}
+{{if .dueDate}}Due Date: {{.dueDate}}{{end}}
+{{if .poNumber}}PO Number: {{.poNumber}}{{end}}
+
+DESCRIPTION                          QTY    RATE      AMOUNT
+================================================================
+{{range .lineItems}}
+{{printf "%-35s %3d  %8s  %10s" .description .quantity .rate .amount}}
+{{end}}
+
+                                              SUBTOTAL: {{.currency | default "$"}}{{.subtotal}}
+{{if .taxRate}}                                    TAX ({{.taxRate}}%): {{.currency}}{{.taxAmount}}{{end}}
+{{if .discount}}                               DISCOUNT: -{{.currency}}{{.discount}}{{end}}
+                                                 TOTAL: {{.currency}}{{.total}}
+
+{{if .paymentInstructions}}
+PAYMENT INSTRUCTIONS:
+{{.paymentInstructions}}
+{{end}}
+
+{{if .terms}}
+TERMS:
+{{.terms}}
+{{end}}
+
+Thank you for your business!

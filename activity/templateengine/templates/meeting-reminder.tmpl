@@ -1,0 +1,38 @@
+Subject: {{.meetingType | default "Meeting"}} Reminder - {{.meetingTitle}}
+
+Dear {{.attendeeName | default "Team Member"}},
+
+This is a reminder for the upcoming {{.meetingType | default "meeting"}}:
+
+📅 **Meeting Details:**
+• Title: {{.meetingTitle}}
+• Date: {{.meetingDate}}
+• Time: {{.meetingTime}}
+• Duration: {{.duration | default "1 hour"}}
+{{if .location}}• Location: {{.location}}{{end}}
+{{if .meetingLink}}• Join Link: {{.meetingLink}}{{end}}
+
+{{if .agenda}}
+📋 **Agenda:**
+{{range .agenda}}
+• {{.}}
+{{end}}
+{{end}}
+
+{{if .materials}}
+📁 **Pre-meeting Materials:**
+{{range .materials}}
+• {{.title}}: {{.url}}
+{{end}}
+{{end}}
+
+{{if .preparation}}
+⚠️ **Please Prepare:**
+{{.preparation}}
+{{end}}
+
+If you cannot attend, please let us know as soon as possible.
+
+Best regards,
+{{.organizerName | default "Meeting Organizer"}}
+{{if .organizerEmail}}{{.organizerEmail}}{{end}}

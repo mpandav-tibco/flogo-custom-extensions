@@ -1,0 +1,53 @@
+🚨 {{.alertType | default "ALERT" | upper}}: {{.title}}
+
+{{if eq .severity "critical"}}
+🔴 CRITICAL
+{{else if eq .severity "warning"}}
+🟡 WARNING  
+{{else if eq .severity "info"}}
+🔵 INFO
+{{else}}
+⚪ NOTICE
+{{end}}
+
+Time: {{._timestamp}}
+{{if .source}}Source: {{.source}}{{end}}
+
+Description:
+{{.description}}
+
+{{if .affectedSystems}}
+Affected Systems:
+{{range .affectedSystems}}
+• {{.}}
+{{end}}
+{{end}}
+
+{{if .metrics}}
+Current Metrics:
+{{range .metrics}}
+• {{.name}}: {{.value}} {{.unit}}
+{{end}}
+{{end}}
+
+{{if .actionRequired}}
+ACTION REQUIRED:
+{{.actionRequired}}
+{{end}}
+
+{{if .resolution}}
+Resolution Steps:
+{{range .resolution}}
+{{.step}}. {{.description}}
+{{end}}
+{{end}}
+
+{{if .contactInfo}}
+For immediate assistance, contact:
+{{.contactInfo}}
+{{end}}
+
+Status: {{.status | default "ACTIVE"}}
+{{if .acknowledgeUrl}}
+Acknowledge this alert: {{.acknowledgeUrl}}
+{{end}}

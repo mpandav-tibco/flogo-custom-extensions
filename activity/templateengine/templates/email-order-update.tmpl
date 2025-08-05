@@ -1,0 +1,55 @@
+Subject: Update on Your Order #{{.orderNumber}}
+
+Hi {{.customerName | default "there"}},
+
+We have an update on your order #{{.orderNumber}}.
+
+{{if eq .updateType "shipped"}}
+🚚 Great news! Your order has been shipped.
+
+Shipping Details:
+• Carrier: {{.carrier}}
+• Tracking Number: {{.trackingNumber}}
+• Estimated Delivery: {{.estimatedDelivery}}
+• Track your package: {{.trackingUrl}}
+
+{{else if eq .updateType "delayed"}}
+⏰ Order Delay Notification
+
+We apologize, but your order has been delayed due to {{.delayReason | default "unforeseen circumstances"}}.
+
+New estimated delivery: {{.newEstimatedDelivery}}
+
+{{if .compensationOffered}}
+As an apology for this delay, we're offering {{.compensationOffered}}.
+{{end}}
+
+{{else if eq .updateType "delivered"}}
+✅ Order Delivered!
+
+Your order #{{.orderNumber}} has been delivered to {{.deliveryAddress}}.
+
+{{if .deliveryPhoto}}
+Delivery photo: {{.deliveryPhoto}}
+{{end}}
+
+{{if .signedBy}}
+Signed by: {{.signedBy}}
+{{end}}
+
+{{else}}
+Status Update: {{.customMessage}}
+{{end}}
+
+{{if .nextSteps}}
+Next Steps:
+{{range .nextSteps}}
+• {{.}}
+{{end}}
+{{end}}
+
+Questions? We're here to help:
+{{.supportEmail | default "support@company.com"}} | {{.supportPhone | default "1-800-SUPPORT"}}
+
+Best regards,
+{{.companyName | default "Your Company"}}
