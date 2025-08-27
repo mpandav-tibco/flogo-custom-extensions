@@ -32,3 +32,5 @@ go.work.sum
 # .vscode/
 activity/.DS_Store
 .DS_Store
+activity/xsdschematransform/.DS_Store
+bin/*

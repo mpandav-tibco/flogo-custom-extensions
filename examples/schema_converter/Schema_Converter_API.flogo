@@ -2,16 +2,16 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/milindpandav/activity/jsonschematoxsd",
+    "github.com/milindpandav/activity/jsonschematransform",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
     "github.com/project-flogo/contrib/activity/actreturn",
-    "github.com/mpandav/activity/xsdtojsonschema",
-    "github.com/milindpandav/activity/dynamic-log",
+    "github.com/project-flogo/custom-extensions/activity/xsdschematransform",
     "github.com/tibco/flogo-general/src/app/General/activity/parsejson",
     "github.com/tibco/flogo-general/src/app/General/activity/jsontoxml",
+    "github.com/milindpandav/activity/avroschematransform",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
-    "github.com/project-flogo/contrib/function/string",
     "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
     "git.tibco.com/git/product/ipaas/wi-contrib.git/function/boolean",
     "git.tibco.com/git/product/ipaas/wi-contrib.git/function/utility"
   ],
@@ -49,7 +49,7 @@
           "action": {
             "ref": "github.com/project-flogo/flow",
             "settings": {
-              "flowURI": "res://flow:JSON_Schema_to_XSD"
+              "flowURI": "res://flow:JSON_Schema_to_Other_Format"
             },
             "input": {
               "body": {
@@ -62,7 +62,7 @@
             },
             "output": {
               "code": "=$.code",
-              "message": "=$.message"
+              "data": "=$.data"
             }
           },
           "reply": {
@@ -72,6 +72,11 @@
           },
           "schemas": {
             "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
               "responseBody": {
                 "type": "json",
                 "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
@@ -96,7 +101,7 @@
               }
             }
           },
-          "name": "JSON_Schema_to_XSD"
+          "name": "JSON_Schema_to_Other_Format"
         },
         {
           "description": "Convert XSD To JSON Schema",
@@ -109,7 +114,7 @@
           "action": {
             "ref": "github.com/project-flogo/flow",
             "settings": {
-              "flowURI": "res://flow:XSD_To_JSON_Schema"
+              "flowURI": "res://flow:XSD_To_to_Other_Schema_Format"
             },
             "input": {
               "body": "=$.body",
@@ -151,7 +156,7 @@
               }
             }
           },
-          "name": "XSD_To_JSON_Schema"
+          "name": "XSD_To_to_Other_Schema_Format"
         },
         {
           "description": "Convert JSON Payload to XML Payload",
@@ -201,30 +206,86 @@
             }
           },
           "name": "JSON_To_XML"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/a2o/v1",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:AVRO_To_Other_Schema_Format"
+            },
+            "input": {
+              "headers": "=$.headers",
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "AVRO_To_Other_Schema_Format"
         }
       ]
     }
   ],
   "resources": [
     {
-      "id": "flow:JSON_Schema_to_XSD",
+      "id": "flow:JSON_Schema_to_Other_Format",
       "data": {
-        "name": "JSON Schema to XSD",
+        "name": "JSON Schema to Other Format",
         "description": "Convert JSON Schema to XSD",
         "links": [
           {
             "id": 1,
             "from": "StartActivity",
-            "to": "JSONSchematoXSD",
+            "to": "JSONSchemaTransformer1",
             "type": "label",
-            "label": "StartActivity to JSONSchematoXSD"
+            "label": "StartActivity to JSONSchemaTransformer1"
           },
           {
             "id": 2,
-            "from": "JSONSchematoXSD",
+            "from": "JSONSchemaTransformer1",
             "to": "LogSuccess",
-            "type": "exprOtherwise",
-            "label": "success"
+            "type": "expression",
+            "label": "JSONSchemaTransformer1 to LogSuccess",
+            "value": "$activity[JSONSchemaTransformer1].error != boolean.true()"
           },
           {
             "id": 3,
@@ -235,11 +296,10 @@
           },
           {
             "id": 4,
-            "from": "JSONSchematoXSD",
+            "from": "JSONSchemaTransformer1",
             "to": "LogError",
-            "type": "expression",
-            "label": "Error",
-            "value": "$activity[JSONSchematoXSD].error"
+            "type": "exprOtherwise",
+            "label": "JSONSchemaTransformer1 to LogError"
           },
           {
             "id": 5,
@@ -259,19 +319,21 @@
             }
           },
           {
-            "id": "JSONSchematoXSD",
-            "name": "JSONSchematoXSD",
-            "description": "Converts a JSON Schema string to an XML Schema Definition (XSD) string.",
+            "id": "JSONSchemaTransformer1",
+            "name": "JSONSchemaTransformer1",
+            "description": "Transforms JSON Schema to XSD, Avro, and other formats. Supports conversion to XSD, Avro, or both formats simultaneously with comprehensive feature support.",
             "activity": {
-              "ref": "#jsonschematoxsd",
+              "ref": "#jsonschematransform",
               "settings": {
-                "rootElementName": "root",
-                "targetNamespace": ""
+                "outputFormat": "both"
               },
               "input": {
                 "jsonSchemaString": "=$flow.body.jsonSchema",
+                "outputFormat": "",
                 "rootElementName": "=$flow.body.rootElementName",
-                "targetNamespace": "=$flow.body.targetNamespace"
+                "targetNamespace": "=$flow.body.targetNamespace",
+                "avroRecordName": "RootRecord",
+                "avroNamespace": "com.example"
               },
               "output": {
                 "error": false
@@ -287,7 +349,7 @@
               "input": {
                 "Log Level": "INFO",
                 "flowInfo": false,
-                "message": "=string.concat(\"###### XSD String - \", $activity[JSONSchematoXSD].xsdString)",
+                "message": "=string.concat(\"###### Transformed JSON Payload - \", coerce.toString($activity[JSONSchemaTransformer1]))",
                 "logLevel": ""
               }
             }
@@ -301,7 +363,7 @@
               "settings": {
                 "mappings": {
                   "code": 200,
-                  "message": "=$activity[JSONSchematoXSD].xsdString"
+                  "data": "=$activity[JSONSchemaTransformer1]"
                 }
               }
             }
@@ -315,7 +377,7 @@
               "input": {
                 "Log Level": "INFO",
                 "flowInfo": false,
-                "message": "=string.concat(\"###### ERROR in jsonSchema to XSD Conversion - \", $activity[JSONSchematoXSD].errorMessage)",
+                "message": "=string.concat(\"###### ERROR in jsonSchema to XSD Conversion - \", $activity[JSONSchemaTransformer1].errorMessage)",
                 "logLevel": ""
               }
             }
@@ -329,13 +391,13 @@
               "settings": {
                 "mappings": {
                   "code": 500,
-                  "message": "=coerce.toString($activity[JSONSchematoXSD])"
+                  "data": "=$activity[JSONSchemaTransformer1]"
                 }
               }
             }
           }
         ],
-        "fe_metadata": "eyIyMDAiOnsieCI6NzkzLCJ5Ijo5N30sIlN0YXJ0QWN0aXZpdHkiOnsieCI6MTAwLCJ5IjoxMDB9LCJKU09OU2NoZW1hdG9YU0QiOnsieCI6MjgzLCJ5Ijo5MX0sIkxvZ1N1Y2Nlc3MiOnsieCI6NTcxLCJ5Ijo5MX0sIkxvZ0Vycm9yIjp7IngiOjU3NSwieSI6MjM2fSwiRXJyb3IiOnsieCI6Nzk0LCJ5IjoyMzd9fQ==",
+        "fe_metadata": "eyIyMDAiOnsieCI6NzkzLCJ5Ijo5N30sIlN0YXJ0QWN0aXZpdHkiOnsieCI6MTAwLCJ5IjoxMDB9LCJKU09OU2NoZW1hVHJhbnNmb3JtZXIxIjp7IngiOjI4NCwieSI6OTR9LCJMb2dTdWNjZXNzIjp7IngiOjU3MSwieSI6OTF9LCJMb2dFcnJvciI6eyJ4Ijo1NzUsInkiOjIzNn0sIkVycm9yIjp7IngiOjc5NCwieSI6MjM4fX0=",
         "metadata": {
           "input": [
             {
@@ -369,59 +431,59 @@
               "type": "integer"
             },
             {
-              "name": "message",
-              "type": "string"
+              "name": "data",
+              "type": "object"
             }
           ],
           "fe_metadata": {
             "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"rootElementName\":{\"type\":\"string\"},\"targetNamespace\":{\"type\":\"string\"},\"jsonSchema\":{\"type\":\"string\"}}},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
-            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"message\":{\"type\":\"string\",\"required\":false}},\"required\":[]}"
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}},\"required\":[]}"
           }
         },
         "explicitReply": true
       }
     },
     {
-      "id": "flow:XSD_To_JSON_Schema",
+      "id": "flow:XSD_To_to_Other_Schema_Format",
       "data": {
-        "name": "XSD To JSON Schema",
+        "name": "XSD To to Other Schema Format",
         "description": "Convert XSD To JSON Schema",
         "links": [
           {
             "id": 1,
             "from": "StartActivity",
-            "to": "XSDtoJSONSchema",
+            "to": "XSDSchemaTransform",
             "type": "label",
-            "label": "StartActivity to XSDtoJSONSchemaTransformer"
+            "label": "StartActivity to XSDSchemaTransform"
           },
           {
             "id": 2,
-            "from": "XSDtoJSONSchema",
-            "to": "LogSuccess",
-            "type": "label",
-            "label": "success"
+            "from": "XSDSchemaTransform",
+            "to": "LogMessage",
+            "type": "expression",
+            "label": "XSDSchemaTransform to LogMessage",
+            "value": "$activity[XSDSchemaTransform].error != boolean.true()"
           },
           {
             "id": 3,
-            "from": "LogSuccess",
+            "from": "LogMessage",
             "to": "200",
             "type": "label",
-            "label": "CustomLog to Return"
+            "label": "LogMessage to 200"
           },
           {
             "id": 4,
-            "from": "XSDtoJSONSchema",
-            "to": "LogError",
-            "type": "expression",
-            "label": "Error",
-            "value": "$activity[XSDtoJSONSchema].error"
+            "from": "XSDSchemaTransform",
+            "to": "LogMessage1",
+            "type": "exprOtherwise",
+            "label": "XSDSchemaTransform to LogMessage1"
           },
           {
             "id": 5,
-            "from": "LogError",
+            "from": "LogMessage1",
             "to": "500",
             "type": "label",
-            "label": "CustomLog1 to CopyOfReturn"
+            "label": "LogMessage1 to 500"
           }
         ],
         "tasks": [
@@ -434,29 +496,44 @@
             }
           },
           {
-            "id": "XSDtoJSONSchema",
-            "name": "XSDtoJSONSchema",
-            "description": "Converts an XML Schema Definition (XSD) to a JSON Schema string.",
+            "id": "XSDSchemaTransform",
+            "name": "XSDSchemaTransform",
+            "description": "Comprehensive XSD Schema transformation activity supporting conversion to JSON Schema and Avro Schema with extensive feature coverage",
             "activity": {
-              "ref": "#xsdtojsonschema",
+              "ref": "#xsdschematransform",
               "input": {
-                "xsdString": "=$flow.body.xsd"
+                "xsdString": "=$flow.body.xsd",
+                "outputFormat": "both",
+                "validateInput": false,
+                "preserveOrder": false,
+                "optimizeOutput": false,
+                "jsonSchemaVersion": "2020-12",
+                "jsonSchemaTitle": "",
+                "jsonSchemaId": "",
+                "addExamples": false,
+                "avroRecordName": "RootRecord",
+                "avroNamespace": "com.example",
+                "avroLogicalTypes": false,
+                "avroUnionMode": "nullable",
+                "handleAny": "object",
+                "handleChoice": "union",
+                "includeAttributes": true,
+                "namespaceHandling": "ignore",
+                "complexTypeMode": "inline"
               }
             }
           },
           {
-            "id": "LogSuccess",
-            "name": "LogSuccess",
-            "description": "Logs a message with dynamic content based on the provided JSON schema or object.",
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
             "activity": {
-              "ref": "#dynamic-log",
-              "settings": {
-                "logLevel": "INFO",
-                "includeFlowInfo": true,
-                "logAsJson": false
-              },
+              "ref": "#log",
               "input": {
-                "logObject": "=$activity[XSDtoJSONSchema]"
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"###### Transformed Payload - \", coerce.toString($activity[XSDSchemaTransform]))",
+                "logLevel": ""
               }
             }
           },
@@ -469,24 +546,22 @@
               "settings": {
                 "mappings": {
                   "code": 200,
-                  "data": "=coerce.toObject($activity[XSDtoJSONSchema].jsonSchemaString)"
+                  "data": "=$activity[XSDSchemaTransform]"
                 }
               }
             }
           },
           {
-            "id": "LogError",
-            "name": "LogError",
-            "description": "Logs a message with dynamic content based on the provided JSON schema or object.",
+            "id": "LogMessage1",
+            "name": "LogMessage1",
+            "description": "Simple Log Message Activity",
             "activity": {
-              "ref": "#dynamic-log",
-              "settings": {
-                "logLevel": "INFO",
-                "includeFlowInfo": true,
-                "logAsJson": false
-              },
+              "ref": "#log",
               "input": {
-                "logObject": "=$activity[XSDtoJSONSchema]"
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"###### ERROR - \", coerce.toString($activity[XSDSchemaTransform]))",
+                "logLevel": ""
               }
             }
           },
@@ -499,13 +574,13 @@
               "settings": {
                 "mappings": {
                   "code": 500,
-                  "data": "=$activity[XSDtoJSONSchema]"
+                  "data": "=$activity[XSDSchemaTransform]"
                 }
               }
             }
           }
         ],
-        "fe_metadata": "eyIyMDAiOnsieCI6NzA1LCJ5Ijo5OX0sIjUwMCI6eyJ4Ijo3MDcsInkiOjIxN30sIlN0YXJ0QWN0aXZpdHkiOnsieCI6MTAwLCJ5IjoxMDB9LCJYU0R0b0pTT05TY2hlbWEiOnsieCI6MjI0LCJ5Ijo5Nn0sIkxvZ1N1Y2Nlc3MiOnsieCI6NDcwLCJ5Ijo5Nn0sIkxvZ0Vycm9yIjp7IngiOjQ3MiwieSI6MjE5fX0=",
+        "fe_metadata": "eyIyMDAiOnsieCI6NzA1LCJ5Ijo5OX0sIjUwMCI6eyJ4Ijo3MDcsInkiOjIxN30sIlN0YXJ0QWN0aXZpdHkiOnsieCI6MTAwLCJ5IjoxMDB9LCJYU0RTY2hlbWFUcmFuc2Zvcm0iOnsieCI6MjAyLCJ5IjoyMDl9LCJMb2dNZXNzYWdlIjp7IngiOjQxNSwieSI6ODh9LCJMb2dNZXNzYWdlMSI6eyJ4Ijo0NDQsInkiOjI1OH19",
         "metadata": {
           "input": [
             {
@@ -673,6 +748,174 @@
         },
         "explicitReply": true
       }
+    },
+    {
+      "id": "flow:AVRO_To_Other_Schema_Format",
+      "data": {
+        "name": "AVRO To Other Schema Format",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "AvroSchemaTransformer",
+            "type": "label",
+            "label": "StartActivity to AvroSchemaTransformer"
+          },
+          {
+            "id": 2,
+            "from": "AvroSchemaTransformer",
+            "to": "LogMessage",
+            "type": "expression",
+            "label": "AvroSchemaTransformer to LogMessage",
+            "value": "$activity[AvroSchemaTransformer].error != boolean.true()"
+          },
+          {
+            "id": 3,
+            "from": "LogMessage",
+            "to": "200",
+            "type": "label",
+            "label": "LogMessage to 200"
+          },
+          {
+            "id": 4,
+            "from": "AvroSchemaTransformer",
+            "to": "LogMessage1",
+            "type": "exprOtherwise",
+            "label": "AvroSchemaTransformer to LogMessage1"
+          },
+          {
+            "id": 5,
+            "from": "LogMessage1",
+            "to": "500",
+            "type": "label",
+            "label": "LogMessage1 to 500"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "AvroSchemaTransformer",
+            "name": "AvroSchemaTransformer",
+            "description": "Transforms Avro schema to JSON Schema and/or XSD format. Supports conversion to JSON Schema, XSD, or both formats simultaneously.",
+            "activity": {
+              "ref": "#avroschematransform",
+              "settings": {
+                "outputFormat": "both"
+              },
+              "input": {
+                "avroSchemaString": "=coerce.toString($flow.body)",
+                "outputFormat": "",
+                "rootElementName": "root",
+                "targetNamespace": ""
+              }
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"##### Transformed Payload - \", coerce.toString($activity[AvroSchemaTransformer]))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "200",
+            "name": "200",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[AvroSchemaTransformer]"
+                }
+              }
+            }
+          },
+          {
+            "id": "LogMessage1",
+            "name": "LogMessage1",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"##### ERROR - \", coerce.toString($activity[AvroSchemaTransformer]))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "500",
+            "name": "500",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 500,
+                  "data": "=$activity[AvroSchemaTransformer]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyIyMDAiOnsieCI6ODU3LCJ5Ijo5M30sIjUwMCI6eyJ4Ijo4NzUsInkiOjI3OX0sIlN0YXJ0QWN0aXZpdHkiOnsieCI6MTAwLCJ5IjoxMDB9LCJBdnJvU2NoZW1hVHJhbnNmb3JtZXIiOnsieCI6MzY3LCJ5Ijo5M30sIkxvZ01lc3NhZ2UiOnsieCI6NjMyLCJ5Ijo5MX0sIkxvZ01lc3NhZ2UxIjp7IngiOjU5NCwieSI6Mjc1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "headers",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}}"
+              }
+            },
+            {
+              "name": "body",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}},\"required\":[]}"
+          }
+        },
+        "explicitReply": true
+      }
     }
   ],
   "properties": [],
@@ -684,7 +927,7 @@
     }
   },
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuNyIsInRhZyI6IjEuNi43LWIwMyIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vbWlsaW5kcGFuZGF2L2FjdGl2aXR5L2pzb25zY2hlbWF0b3hzZCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IkpTT05TY2hlbWF0b1hTRCIsImlkIjoianNvbnNjaGVtYXRveHNkIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0RlZmF1bHQvYWN0aXZpdHkvanNvbnNjaGVtYXRveHNkIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfSx7InJlZiI6ImdpdGh1Yi5jb20vbXBhbmRhdi9hY3Rpdml0eS94c2R0b2pzb25zY2hlbWEiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJYU0R0b0pTT05TY2hlbWEiLCJpZCI6InhzZHRvanNvbnNjaGVtYSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L3hzZHRvanNvbnNjaGVtYSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL21pbGluZHBhbmRhdi9hY3Rpdml0eS9keW5hbWljLWxvZyIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IkxvZ1N1Y2Nlc3MiLCJpZCI6InRpYmNvLWR5bmFtaWMtbG9nIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0RlZmF1bHQvYWN0aXZpdHkvZHluYW1pYy1sb2ciLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuNyIsInRhZyI6IjEuNi43LWIwMyIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vbWlsaW5kcGFuZGF2L2FjdGl2aXR5L2pzb25zY2hlbWF0cmFuc2Zvcm0iLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJKU09OU2NoZW1hVHJhbnNmb3JtZXIxIiwiaWQiOiJqc29uc2NoZW1hdHJhbnNmb3JtIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0RlZmF1bHQvYWN0aXZpdHkvanNvbnNjaGVtYXRyYW5zZm9ybSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL3Byb2plY3QtZmxvZ28vY3VzdG9tLWV4dGVuc2lvbnMvYWN0aXZpdHkveHNkc2NoZW1hdHJhbnNmb3JtIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiWFNEU2NoZW1hVHJhbnNmb3JtIiwiaWQiOiJ4c2RzY2hlbWF0cmFuc2Zvcm0iLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC9hY3Rpdml0eS94c2RzY2hlbWF0cmFuc2Zvcm0iLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9LHsicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvYWN0aXZpdHkvYXZyb3NjaGVtYXRyYW5zZm9ybSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IkF2cm9TY2hlbWFUcmFuc2Zvcm1lciIsImlkIjoiYXZyb3NjaGVtYXRyYW5zZm9ybSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L2F2cm9zY2hlbWF0cmFuc2Zvcm0iLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
   "metadata": {
     "endpoints": [
       {
@@ -705,7 +948,7 @@
           "paths": {
             "/j2xsd/v1": {
               "post": {
-                "summary": "JSON Schema to XSD",
+                "summary": "JSON Schema to Other Format",
                 "operationId": "post_j2xsd_v1",
                 "parameters": [
                   {
@@ -722,7 +965,7 @@
                   "200": {
                     "description": "Rest Response",
                     "schema": {
-                      "type": "string"
+                      "$ref": "#/definitions/schema2"
                     }
                   }
                 },
@@ -734,7 +977,7 @@
             },
             "/xsd2json/v1": {
               "post": {
-                "summary": "XSD To JSON Schema",
+                "summary": "XSD To to Other Schema Format",
                 "operationId": "post_xsd2json_v1",
                 "parameters": [
                   {
@@ -743,7 +986,7 @@
                     "description": "request body parameter",
                     "required": true,
                     "schema": {
-                      "$ref": "#/definitions/schema2"
+                      "$ref": "#/definitions/schema3"
                     }
                   }
                 ],
@@ -751,7 +994,7 @@
                   "200": {
                     "description": "Rest Response",
                     "schema": {
-                      "$ref": "#/definitions/schema3"
+                      "$ref": "#/definitions/schema2"
                     }
                   }
                 },
@@ -772,7 +1015,7 @@
                     "description": "request body parameter",
                     "required": true,
                     "schema": {
-                      "$ref": "#/definitions/schema3"
+                      "$ref": "#/definitions/schema2"
                     }
                   }
                 ],
@@ -785,6 +1028,34 @@
                   }
                 },
                 "description": "Convert JSON Payload to XML Payload",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/a2o/v1": {
+              "post": {
+                "summary": "AVRO To Other Schema Format",
+                "operationId": "post_a2o_v1",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
                 "consumes": [
                   "application/json"
                 ]
@@ -808,15 +1079,15 @@
             },
             "schema2": {
               "type": "object",
+              "properties": {}
+            },
+            "schema3": {
+              "type": "object",
               "properties": {
                 "xsd": {
                   "type": "string"
                 }
               }
-            },
-            "schema3": {
-              "type": "object",
-              "properties": {}
             }
           }
         }
