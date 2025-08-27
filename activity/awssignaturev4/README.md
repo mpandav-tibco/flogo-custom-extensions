@@ -17,13 +17,9 @@ This activity provides a complete implementation of the AWS Signature Version 4 
 - **High Performance**: Optimized implementation using Go standard library
 - **Enterprise Ready**: Comprehensive error handling with structured error responses
 
-## Installation
 
-```bash
-flogo install github.com/mpandav-tibco/flogo-extensions/activity/awssignaturev4
-```
 
-## Schema
+## Configurations
 
 ### Inputs
 
@@ -59,24 +55,30 @@ flogo install github.com/mpandav-tibco/flogo-extensions/activity/awssignaturev4
 
 ## Configuration Examples
 
-### S3 Object GET Request
+### SQS Delete Queue  Msg Request
 ```json
-{
-  "id": "aws_sign_s3_get",
-  "name": "Sign S3 GET Request",
-  "activity": {
-    "ref": "github.com/mpandav-tibco/flogo-extensions/activity/awssignaturev4",
-    "input": {
-      "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
-      "secretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-      "region": "us-east-1",
-      "service": "s3",
-      "httpMethod": "GET",
-      "url": "https://s3.amazonaws.com/bucket-name/object-key",
-      "payload": ""
-    }
-  }
-}
+          {
+            "id": "AWSSignatureV4Generator1",
+            "name": "AWSSignatureV4Generator1",
+            "description": "Generates AWS Signature Version 4 authentication headers for REST API calls",
+            "activity": {
+              "ref": "#awssignaturev4",
+              "input": {
+                "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                "secretAccessKey": "AKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLE",
+                "region": "eu-central-1",
+                "service": "sqs",
+                "sessionToken": "AKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLE",
+                "httpMethod": "POST",
+                "url": "https://sqs.eu-central-1.amazonaws.com/accountId/queue-Name",
+                "payload": "Version=2012-11-05&Action=DeleteMessage&ReceiptHandle=\",$flow.Message[0].ReceiptHandle)",
+                "timestamp": ""
+              },
+              "output": {
+                "success": false
+              }
+            }
+          }
 ```
 
 ### S3 Object PUT Request with Custom Headers
