@@ -14,8 +14,6 @@ This activity provides a complete implementation of the AWS Signature Version 4 
 - **Custom Headers Support**: Allows additional headers to be included in the signature calculation
 - **Comprehensive Validation**: Input validation with detailed error messages
 - **Debug Support**: Provides canonical request and string-to-sign for debugging
-- **High Performance**: Optimized implementation using Go standard library
-- **Enterprise Ready**: Comprehensive error handling with structured error responses
 
 
 
