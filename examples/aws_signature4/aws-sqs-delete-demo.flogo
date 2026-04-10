@@ -35,7 +35,8 @@
             "VisibilityTimeout": 0,
             "WaitTimeSeconds": 0,
             "ReceiveRequestAttemptId": "",
-            "deleteMessage": false
+            "deleteMessage": false,
+            "messageDeletionStrategy": "Delete on receive"
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -163,7 +164,6 @@
                 "enableASR": false,
                 "swagger": "",
                 "authorization": false,
-                "authorizationConn": "",
                 "serviceName": "",
                 "resourcePath": "",
                 "Method": "POST",
@@ -361,9 +361,9 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1hd3Mtc3FzL3NyYy9hcHAvQW1hem9uU1FTIiwiaWQiOiJBbWF6b25TUVMiLCJ2ZXJzaW9uIjoiMS4wLjEiLCJ0YWciOiIxLjAuMS1iMDEiLCJuYW1lIjoiQW1hem9uIFNRUyIsInMzbG9jYXRpb24iOiJUaWJjby9BbWF6b25TUVMiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vbXBhbmRhdi10aWJjby9mbG9nby1leHRlbnNpb25zL2FjdGl2aXR5L2F3c3NpZ25hdHVyZXY0IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiQVdTU2lnbmF0dXJlVjRHZW5lcmF0b3IxIiwiaWQiOiJhd3NzaWduYXR1cmV2NCIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L2F3c3NpZ25hdHVyZXY0IiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjciLCJ0YWciOiIxLjYuNy1iMDMiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWF3cy9zcmMvYXBwL0FXUyIsImlkIjoiQVdTIiwidmVyc2lvbiI6IjEuMi4yIiwidGFnIjoiMS4yLjItYjAyIiwibmFtZSI6IkFXUyIsInMzbG9jYXRpb24iOiJUaWJjby9BV1MiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1hd3Mtc3FzL3NyYy9hcHAvQW1hem9uU1FTIiwiaWQiOiJBbWF6b25TUVMiLCJ2ZXJzaW9uIjoiMS4wLjIiLCJ0YWciOiIxLjAuMi1iMDEiLCJuYW1lIjoiQW1hem9uIFNRUyIsInMzbG9jYXRpb24iOiJUaWJjby9BbWF6b25TUVMiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vbXBhbmRhdi10aWJjby9mbG9nby1leHRlbnNpb25zL2FjdGl2aXR5L2F3c3NpZ25hdHVyZXY0IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiQVdTU2lnbmF0dXJlVjRHZW5lcmF0b3IxIiwiaWQiOiJhd3NzaWduYXR1cmV2NCIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L2F3c3NpZ25hdHVyZXY0IiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjExIiwidGFnIjoiMS42LjExLWIwMiIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tYXdzL3NyYy9hcHAvQVdTIiwiaWQiOiJBV1MiLCJ2ZXJzaW9uIjoiMS4yLjIiLCJ0YWciOiIxLjIuMi1iMDIiLCJuYW1lIjoiQVdTIiwiczNsb2NhdGlvbiI6IlRpYmNvL0FXUyIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
   "metadata": {
     "endpoints": [],
-    "flogoVersion": "2.25.7"
+    "flogoVersion": "2.26.0"
   }
 }

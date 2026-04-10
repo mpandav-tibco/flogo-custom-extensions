@@ -1,0 +1,125 @@
+{
+    "name": "kafka-stream-filter",
+    "title": "Kafka Stream Filter",
+    "version": "2.0.0",
+    "type": "flogo:activity",
+    "description": "Evaluates a predicate (or a multi-predicate AND/OR chain) against a Kafka message. Enterprise-ready: multi-predicate chains with configurable AND/OR logic, per-predicate regex, ErrorMessage DLQ output for evaluation failures.",
+    "ref": "github.com/milindpandav/flogo-extensions/kafka-stream/activity/filter",
+    "settings": [
+        {
+            "name": "field",
+            "type": "string",
+            "display": {
+                "name": "Field Name",
+                "description": "Single-predicate mode: name of the message field to evaluate. Leave empty when using the 'predicates' setting (multi-predicate mode)."
+            }
+        },
+        {
+            "name": "operator",
+            "type": "string",
+            "value": "gt",
+            "display": {
+                "name": "Operator",
+                "description": "Single-predicate mode: comparison operator. Numeric operators apply numeric comparison when both sides parse as numbers; otherwise falls back to string. Not used in multi-predicate mode."
+            },
+            "allowed": [
+                "eq",
+                "neq",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "contains",
+                "startsWith",
+                "endsWith",
+                "regex"
+            ]
+        },
+        {
+            "name": "value",
+            "type": "string",
+            "display": {
+                "name": "Compare Value",
+                "description": "Single-predicate mode: value to compare the field against. For regex, provide a Go regex (e.g. ^sensor-[0-9]+$). Not used in multi-predicate mode.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "passThroughOnMissing",
+            "type": "boolean",
+            "value": false,
+            "display": {
+                "name": "Pass Through on Missing Field",
+                "description": "When true, messages where the configured field does not exist will pass through. Applies to both single and multi-predicate modes."
+            }
+        },
+        {
+            "name": "predicates",
+            "type": "string",
+            "display": {
+                "name": "Predicates (JSON)",
+                "description": "Enterprise: JSON array of predicates for multi-predicate evaluation. Example: [{\"field\":\"price\",\"operator\":\"gt\",\"value\":\"100\"},{\"field\":\"region\",\"operator\":\"eq\",\"value\":\"US\"}]. When set, this takes priority over the single-predicate settings.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "predicateMode",
+            "type": "string",
+            "value": "and",
+            "display": {
+                "name": "Predicate Mode",
+                "description": "Enterprise: how multiple predicates are combined. 'and' (default): all predicates must pass. 'or': at least one predicate must pass."
+            },
+            "allowed": [
+                "and",
+                "or"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "name": "message",
+            "type": "object",
+            "required": true,
+            "display": {
+                "name": "Message",
+                "description": "Kafka message payload as a key-value object. Map from the Kafka Consumer trigger.",
+                "mappable": true
+            }
+        }
+    ],
+    "outputs": [
+        {
+            "name": "passed",
+            "type": "boolean",
+            "display": {
+                "name": "Passed",
+                "description": "True if the message passed all configured predicates. Use in a branch condition to skip downstream processing for filtered messages."
+            }
+        },
+        {
+            "name": "message",
+            "type": "object",
+            "display": {
+                "name": "Message",
+                "description": "Passthrough of the original input message. Populated only when passed=true."
+            }
+        },
+        {
+            "name": "reason",
+            "type": "string",
+            "display": {
+                "name": "Filter Reason",
+                "description": "Human-readable explanation of why the message was filtered out. Empty when passed=true."
+            }
+        },
+        {
+            "name": "errorMessage",
+            "type": "string",
+            "display": {
+                "name": "Error Message",
+                "description": "Enterprise: non-empty when the predicate evaluation itself failed (e.g. type coercion error). Route messages with a non-empty errorMessage to a dead-letter branch independently from normal filter failures (passed=false)."
+            }
+        }
+    ]
+}
