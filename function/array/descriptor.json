@@ -1,0 +1,84 @@
+{
+    "name": "array",
+    "type": "flogo:function",
+    "version": "1.0.0",
+    "title": "Extended Array Functions",
+    "description": "Additional array functions not available in the built-in set: min, max, avg, unique, indexOf",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/function/array",
+    "functions": [
+        {
+            "name": "min",
+            "description": "Returns the minimum numeric value in the array. array.min([3,1,4,1,5]) => 1",
+            "example": "array.min([3,1,4,1,5]) => 1",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "number"
+            }
+        },
+        {
+            "name": "max",
+            "description": "Returns the maximum numeric value in the array. array.max([3,1,4,1,5]) => 5",
+            "example": "array.max([3,1,4,1,5]) => 5",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "number"
+            }
+        },
+        {
+            "name": "avg",
+            "description": "Returns the arithmetic average of all numeric values in the array. array.avg([1,2,3,4,5]) => 3",
+            "example": "array.avg([1,2,3,4,5]) => 3",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "number"
+            }
+        },
+        {
+            "name": "unique",
+            "description": "Returns a new array with duplicate values removed, preserving original order. array.unique([1,2,2,3,1]) => [1,2,3]",
+            "example": "array.unique([1,2,2,3,1]) => [1,2,3]",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "array"
+            }
+        },
+        {
+            "name": "indexOf",
+            "description": "Returns the zero-based index of the first occurrence of value in the array, or -1 if not found. array.indexOf([\"a\",\"b\",\"c\"], \"b\") => 1",
+            "example": "array.indexOf([\"a\",\"b\",\"c\"], \"b\") => 1",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                },
+                {
+                    "name": "value",
+                    "type": "any"
+                }
+            ],
+            "return": {
+                "type": "integer"
+            }
+        }
+    ]
+}

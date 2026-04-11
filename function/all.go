@@ -1,0 +1,8 @@
+package function
+
+import (
+	_ "github.com/milindpandav/flogo-extensions/function/array"
+	_ "github.com/milindpandav/flogo-extensions/function/math"
+	_ "github.com/milindpandav/flogo-extensions/function/string"
+	_ "github.com/milindpandav/flogo-extensions/function/util"
+)

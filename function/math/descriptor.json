@@ -1,0 +1,42 @@
+{
+    "name": "math",
+    "type": "flogo:function",
+    "version": "1.0.0",
+    "title": "Extended Math Functions",
+    "description": "Additional math functions not available in the built-in set: abs, pow",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/function/math",
+    "functions": [
+        {
+            "name": "abs",
+            "description": "Returns the absolute value of x. Negative values become positive; positive values are unchanged.",
+            "example": "math.abs(-5.5) => 5.5",
+            "args": [
+                {
+                    "name": "x",
+                    "type": "number"
+                }
+            ],
+            "return": {
+                "type": "number"
+            }
+        },
+        {
+            "name": "pow",
+            "description": "Returns base raised to the power of exp. math.pow(2, 10) => 1024",
+            "example": "math.pow(2, 10) => 1024",
+            "args": [
+                {
+                    "name": "base",
+                    "type": "number"
+                },
+                {
+                    "name": "exp",
+                    "type": "number"
+                }
+            ],
+            "return": {
+                "type": "number"
+            }
+        }
+    ]
+}
