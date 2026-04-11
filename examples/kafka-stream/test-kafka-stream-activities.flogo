@@ -219,7 +219,7 @@
               "input": {
                 "Log Level": "INFO",
                 "flowInfo": false,
-                "message": "=string.concat(\"Aggregate Result \u2014 key=\", $activity[Aggregate].key, \" avg_temp=\", coerce.toString($activity[Aggregate].result), \" count=\", coerce.toString($activity[Aggregate].count))",
+                "message": "=string.concat(\"Aggregate Result — key=\", $activity[Aggregate].key, \" avg_temp=\", coerce.toString($activity[Aggregate].result), \" count=\", coerce.toString($activity[Aggregate].count))",
                 "logLevel": ""
               }
             }
