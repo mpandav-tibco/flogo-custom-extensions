@@ -15,12 +15,12 @@ This repository provides custom Flogo extensions including activities, triggers,
 
 | Package | Functions | Description |
 |---------|-----------|-------------|
-| [math](function/math/) | `abs`, `pow` | Absolute value and power |
-| [array](function/array/) | `min`, `max`, `avg`, `unique`, `indexOf` | Numeric aggregation, deduplication, search |
-| [string](function/string/) | `padLeft`, `padRight`, `mask` | Padding and PII masking |
+| [math](function/math/) | `abs`, `pow`, `sqrt`, `log`, `log2`, `log10`, `sign`, `clamp` | Absolute value, power, roots, logarithms, sign, range clamping |
+| [array](function/array/) | `min`, `max`, `avg`, `unique`, `indexOf`, `sort`, `sortDesc`, `first`, `last`, `sumBy` | Numeric aggregation, deduplication, search, sorting, field aggregation |
+| [string](function/string/) | `padLeft`, `padRight`, `mask`, `truncate`, `isBlank`, `isNumeric`, `camelCase`, `snakeCase` | Padding, PII masking, truncation, validation, case conversion |
 | [util](function/util/) | `coalesce`, `sha256` | Null-coalescing and SHA-256 hashing |
+| [datetime](function/datetime/) | `isBefore`, `isAfter`, `toEpoch`, `fromEpoch`, `isWeekend`, `isWeekday` | Datetime comparison, epoch conversion, business-day detection |
 
-> Import `github.com/milindpandav/flogo-extensions/function` — the root `all.go` registers all 11 functions via the standard TIBCO `wi-contrib` pattern.
 
 ### ⚡ Activities
 

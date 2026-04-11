@@ -3,7 +3,7 @@
     "type": "flogo:function",
     "version": "1.0.0",
     "title": "Extended String Functions",
-    "description": "Additional string functions not available in the built-in set: padLeft, padRight, mask",
+    "description": "Additional string functions not available in the built-in set: padLeft, padRight, mask, truncate, isBlank, isNumeric, camelCase, snakeCase",
     "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/function/string",
     "functions": [
         {
@@ -71,6 +71,45 @@
             "return": {
                 "type": "string"
             }
+        }
+    ,
+        {
+            "name": "truncate",
+            "description": "Truncates str to maxLen characters. If truncated, appends '...' (total length = maxLen).",
+            "example": "string.truncate(\"Hello, World!\", 8) => \"Hello...\"",
+            "args": [
+                { "name": "str", "type": "string" },
+                { "name": "maxLen", "type": "integer" }
+            ],
+            "return": { "type": "string" }
+        },
+        {
+            "name": "isBlank",
+            "description": "Returns true if str is nil, empty, or contains only whitespace.",
+            "example": "string.isBlank(\"  \") => true",
+            "args": [{ "name": "str", "type": "string" }],
+            "return": { "type": "boolean" }
+        },
+        {
+            "name": "isNumeric",
+            "description": "Returns true if str represents a valid decimal integer or float value.",
+            "example": "string.isNumeric(\"3.14\") => true",
+            "args": [{ "name": "str", "type": "string" }],
+            "return": { "type": "boolean" }
+        },
+        {
+            "name": "camelCase",
+            "description": "Converts str to lowerCamelCase, splitting on spaces, hyphens, underscores, and case transitions.",
+            "example": "string.camelCase(\"user_first_name\") => \"userFirstName\"",
+            "args": [{ "name": "str", "type": "string" }],
+            "return": { "type": "string" }
+        },
+        {
+            "name": "snakeCase",
+            "description": "Converts str to snake_case.",
+            "example": "string.snakeCase(\"userFirstName\") => \"user_first_name\"",
+            "args": [{ "name": "str", "type": "string" }],
+            "return": { "type": "string" }
         }
     ]
 }

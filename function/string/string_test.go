@@ -112,3 +112,192 @@ func TestMask(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+// ─── truncate ─────────────────────────────────────────────────────────────────
+
+func TestTruncate(t *testing.T) {
+	fn := &fnTruncate{}
+
+	t.Run("longer than maxLen", func(t *testing.T) {
+		out, err := fn.Eval("Hello, World!", 8)
+		require.NoError(t, err)
+		assert.Equal(t, "Hello...", out)
+	})
+	t.Run("exactly maxLen — no truncation", func(t *testing.T) {
+		out, err := fn.Eval("Hello", 5)
+		require.NoError(t, err)
+		assert.Equal(t, "Hello", out)
+	})
+	t.Run("shorter than maxLen — unchanged", func(t *testing.T) {
+		out, err := fn.Eval("Hi", 10)
+		require.NoError(t, err)
+		assert.Equal(t, "Hi", out)
+	})
+	t.Run("maxLen = 3 exactly fits ellipsis", func(t *testing.T) {
+		out, err := fn.Eval("LongString", 3)
+		require.NoError(t, err)
+		assert.Equal(t, "...", out)
+	})
+	t.Run("maxLen = 0", func(t *testing.T) {
+		out, err := fn.Eval("abc", 0)
+		require.NoError(t, err)
+		assert.Equal(t, "", out)
+	})
+	t.Run("empty string", func(t *testing.T) {
+		out, err := fn.Eval("", 5)
+		require.NoError(t, err)
+		assert.Equal(t, "", out)
+	})
+	t.Run("negative maxLen errors", func(t *testing.T) {
+		_, err := fn.Eval("abc", -1)
+		assert.Error(t, err)
+	})
+}
+
+// ─── isBlank ──────────────────────────────────────────────────────────────────
+
+func TestIsBlank(t *testing.T) {
+	fn := &fnIsBlank{}
+
+	t.Run("empty string", func(t *testing.T) {
+		out, err := fn.Eval("")
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("whitespace only", func(t *testing.T) {
+		out, err := fn.Eval("   \t\n")
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("nil", func(t *testing.T) {
+		out, err := fn.Eval(nil)
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("non-empty", func(t *testing.T) {
+		out, err := fn.Eval("hello")
+		require.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+	t.Run("space-padded content", func(t *testing.T) {
+		out, err := fn.Eval("  x  ")
+		require.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+}
+
+// ─── isNumeric ────────────────────────────────────────────────────────────────
+
+func TestIsNumeric(t *testing.T) {
+	fn := &fnIsNumeric{}
+
+	t.Run("integer", func(t *testing.T) {
+		out, err := fn.Eval("42")
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("float", func(t *testing.T) {
+		out, err := fn.Eval("3.14")
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("negative float", func(t *testing.T) {
+		out, err := fn.Eval("-2.5")
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("positive sign", func(t *testing.T) {
+		out, err := fn.Eval("+10")
+		require.NoError(t, err)
+		assert.Equal(t, true, out)
+	})
+	t.Run("alpha string", func(t *testing.T) {
+		out, err := fn.Eval("abc")
+		require.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+	t.Run("mixed alphanumeric", func(t *testing.T) {
+		out, err := fn.Eval("12px")
+		require.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+	t.Run("empty string", func(t *testing.T) {
+		out, err := fn.Eval("")
+		require.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+	t.Run("nil", func(t *testing.T) {
+		out, err := fn.Eval(nil)
+		require.NoError(t, err)
+		assert.Equal(t, false, out)
+	})
+}
+
+// ─── camelCase ────────────────────────────────────────────────────────────────
+
+func TestCamelCase(t *testing.T) {
+	fn := &fnCamelCase{}
+
+	t.Run("snake_case input", func(t *testing.T) {
+		out, err := fn.Eval("user_first_name")
+		require.NoError(t, err)
+		assert.Equal(t, "userFirstName", out)
+	})
+	t.Run("space separated", func(t *testing.T) {
+		out, err := fn.Eval("hello world")
+		require.NoError(t, err)
+		assert.Equal(t, "helloWorld", out)
+	})
+	t.Run("hyphen separated", func(t *testing.T) {
+		out, err := fn.Eval("my-field-name")
+		require.NoError(t, err)
+		assert.Equal(t, "myFieldName", out)
+	})
+	t.Run("already camel", func(t *testing.T) {
+		out, err := fn.Eval("helloWorld")
+		require.NoError(t, err)
+		assert.Equal(t, "helloWorld", out)
+	})
+	t.Run("all upper", func(t *testing.T) {
+		out, err := fn.Eval("FOO BAR")
+		require.NoError(t, err)
+		assert.Equal(t, "fooBar", out)
+	})
+	t.Run("empty string", func(t *testing.T) {
+		out, err := fn.Eval("")
+		require.NoError(t, err)
+		assert.Equal(t, "", out)
+	})
+}
+
+// ─── snakeCase ────────────────────────────────────────────────────────────────
+
+func TestSnakeCase(t *testing.T) {
+	fn := &fnSnakeCase{}
+
+	t.Run("camelCase input", func(t *testing.T) {
+		out, err := fn.Eval("userFirstName")
+		require.NoError(t, err)
+		assert.Equal(t, "user_first_name", out)
+	})
+	t.Run("space separated", func(t *testing.T) {
+		out, err := fn.Eval("Hello World")
+		require.NoError(t, err)
+		assert.Equal(t, "hello_world", out)
+	})
+	t.Run("hyphen separated", func(t *testing.T) {
+		out, err := fn.Eval("FOO-BAR")
+		require.NoError(t, err)
+		assert.Equal(t, "foo_bar", out)
+	})
+	t.Run("already snake", func(t *testing.T) {
+		out, err := fn.Eval("hello_world")
+		require.NoError(t, err)
+		assert.Equal(t, "hello_world", out)
+	})
+	t.Run("empty string", func(t *testing.T) {
+		out, err := fn.Eval("")
+		require.NoError(t, err)
+		assert.Equal(t, "", out)
+	})
+}
