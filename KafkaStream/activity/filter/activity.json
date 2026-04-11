@@ -1,0 +1,194 @@
+{
+    "name": "kafka-stream-filter",
+    "title": "Filter",
+    "version": "3.0.0",
+    "type": "flogo:activity",
+    "description": "Evaluates a predicate (or a multi-predicate AND/OR chain) against a Kafka message. Includes opt-in deduplication (TTL-based event-ID tracking) and rate limiting (token bucket, drop or wait mode).",
+    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/activity/filter",
+    "display": {
+        "category": "KafkaStream",
+        "visible": true,
+        "description": "Filter Kafka stream messages using single or multi-predicate AND/OR logic, with optional deduplication and rate limiting.",
+        "smallIcon": "icons/filter.png",
+        "largeIcon": "icons/filter.png"
+    },
+    "settings": [
+        {
+            "name": "operator",
+            "type": "string",
+            "value": "eq",
+            "display": {
+                "name": "Default Operator",
+                "description": "Default comparison operator used when the 'operator' input is not mapped at runtime."
+            },
+            "allowed": [
+                "eq",
+                "neq",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "contains",
+                "startsWith",
+                "endsWith",
+                "regex"
+            ]
+        },
+        {
+            "name": "predicateMode",
+            "type": "string",
+            "value": "and",
+            "display": {
+                "name": "Default Predicate Mode",
+                "description": "'and': all predicates must pass. 'or': at least one must pass."
+            },
+            "allowed": [
+                "and",
+                "or"
+            ]
+        },
+        {
+            "name": "passThroughOnMissing",
+            "type": "boolean",
+            "value": false,
+            "display": {
+                "name": "Pass Through on Missing Field",
+                "description": "When true, messages where the configured field does not exist will pass through."
+            }
+        },
+        {
+            "name": "enableDedup",
+            "type": "boolean",
+            "value": false,
+            "display": {
+                "name": "Enable Deduplication",
+                "description": "When true, duplicate messages are detected using the 'dedupField' runtime input as the unique event ID. Default: false."
+            }
+        },
+        {
+            "name": "dedupWindow",
+            "type": "string",
+            "value": "10m",
+            "display": {
+                "name": "Dedup Window",
+                "description": "How long to remember seen event IDs. Go duration string e.g. '10m', '1h'. Default: 10m."
+            }
+        },
+        {
+            "name": "dedupMaxEntries",
+            "type": "integer",
+            "value": 100000,
+            "display": {
+                "name": "Dedup Max Entries",
+                "description": "Maximum number of event IDs to track in memory. 0 = 100 000 default."
+            }
+        },
+        {
+            "name": "rateLimitRPS",
+            "type": "number",
+            "value": 0,
+            "display": {
+                "name": "Rate Limit (msgs/sec)",
+                "description": "Maximum messages per second. 0 = disabled."
+            }
+        },
+        {
+            "name": "rateLimitBurst",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Rate Limit Burst",
+                "description": "Maximum burst above the RPS limit. 0 defaults to rateLimitRPS value."
+            }
+        },
+        {
+            "name": "rateLimitMode",
+            "type": "string",
+            "value": "drop",
+            "display": {
+                "name": "Rate Limit Mode",
+                "description": "'drop': return passed=false immediately when limit exceeded. 'wait': block up to rateLimitMaxWaitMs."
+            },
+            "allowed": [
+                "drop",
+                "wait"
+            ]
+        },
+        {
+            "name": "rateLimitMaxWaitMs",
+            "type": "integer",
+            "value": 500,
+            "display": {
+                "name": "Rate Limit Max Wait (ms)",
+                "description": "Maximum milliseconds to wait in 'wait' mode before dropping. Default: 500ms."
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "name": "message",
+            "type": "object",
+            "required": true
+        },
+        {
+            "name": "field",
+            "type": "string"
+        },
+        {
+            "name": "operator",
+            "type": "string",
+            "value": "eq",
+            "allowed": [
+                "eq",
+                "neq",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "contains",
+                "startsWith",
+                "endsWith",
+                "regex"
+            ]
+        },
+        {
+            "name": "value",
+            "type": "string"
+        },
+        {
+            "name": "predicates",
+            "type": "string"
+        },
+        {
+            "name": "predicateMode",
+            "type": "string",
+            "value": "and",
+            "allowed": [
+                "and",
+                "or"
+            ]
+        },
+        {
+            "name": "dedupField",
+            "type": "string"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "passed",
+            "type": "boolean"
+        },
+        {
+            "name": "message",
+            "type": "object"
+        },
+        {
+            "name": "reason",
+            "type": "string"
+        },
+        {
+            "name": "errorMessage",
+            "type": "string"
+        }
+    ]
+}

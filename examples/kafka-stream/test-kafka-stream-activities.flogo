@@ -1,0 +1,340 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/milindpandav/flogo-extensions/kafkastream/activity/filter",
+    "github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate",
+    "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/trigger/consumer",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/connector/kafka"
+  ],
+  "name": "test-kafka-stream-activities",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#consumer",
+      "name": "tibco-kafka-consumer-trigger",
+      "description": "Kafka Consumer Trigger used to consume messages from Kafka topics",
+      "settings": {
+        "kafkaConnection": "conn://efbcb122-9bad-4e97-ac96-30036935337c"
+      },
+      "id": "KafkaConsumer",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "topic": "demo",
+            "customPartition": false,
+            "partitionId": 0,
+            "topicPattern": "",
+            "consumerGroup": "demo-customer-act",
+            "valueType": "JSON",
+            "subjects": "String",
+            "versions": 1,
+            "commitInterval": 5000,
+            "initialOffset": "Oldest",
+            "seekOffset": 0,
+            "timeStamp": "",
+            "fetchMinBytes": 1,
+            "fetchMaxWait": 500,
+            "heartbeatInterval": 3000,
+            "sessionTimeout": 30000
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:filter"
+            },
+            "input": {
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "jsonValue": "=$.jsonValue",
+              "headers": "=$.headers"
+            }
+          },
+          "schemas": {
+            "output": {
+              "jsonValue": "schema://kafka-msg-schema"
+            }
+          },
+          "name": "filter"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:filter",
+      "data": {
+        "name": "filter",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage1",
+            "type": "label",
+            "label": "StartActivity to LogMessage1"
+          },
+          {
+            "id": 2,
+            "from": "LogMessage1",
+            "to": "Filter",
+            "type": "label",
+            "label": "LogMessage1 to Filter"
+          },
+          {
+            "id": 3,
+            "from": "Filter",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "Filter1 to LogMessage"
+          },
+          {
+            "id": 4,
+            "from": "Filter",
+            "to": "Aggregate",
+            "type": "expression",
+            "label": "Filter to Aggregate (passed only)",
+            "value": "$activity[Filter].passed"
+          },
+          {
+            "id": 5,
+            "from": "Aggregate",
+            "to": "LogAggregateResult",
+            "type": "expression",
+            "label": "Aggregate to Log (window closed only)",
+            "value": "$activity[Aggregate].windowClosed"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage1",
+            "name": "LogMessage1",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=coerce.toString($flow.jsonValue)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Filter",
+            "name": "Filter",
+            "description": "Evaluates a predicate (or a multi-predicate AND/OR chain) against a Kafka message. Enterprise-ready: multi-predicate chains with configurable AND/OR logic, per-predicate regex, ErrorMessage DLQ output for evaluation failures.",
+            "activity": {
+              "ref": "#filter",
+              "settings": {
+                "operator": "gt",
+                "predicateMode": "and",
+                "passThroughOnMissing": false,
+                "enableDedup": true,
+                "dedupWindow": "10m",
+                "dedupMaxEntries": 100000,
+                "rateLimitRPS": 0,
+                "rateLimitBurst": 0,
+                "rateLimitMode": "drop",
+                "rateLimitMaxWaitMs": 500
+              },
+              "input": {
+                "field": "temperature",
+                "operator": "gt",
+                "value": "20",
+                "predicates": "",
+                "predicateMode": "and",
+                "dedupField": "=string.concat($flow.jsonValue.device_id, \"_\", coerce.toString($flow.jsonValue.temperature))",
+                "message": "=$flow.jsonValue"
+              }
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Kafka Filter Output\",coerce.toString($activity[Filter]))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Aggregate",
+            "name": "Aggregate",
+            "description": "Aggregates temperature per device over a 30-second tumbling window.",
+            "activity": {
+              "ref": "#aggregate",
+              "settings": {
+                "windowName": "temp-per-device-30s",
+                "windowType": "TumblingTime",
+                "windowSize": 15000,
+                "function": "avg",
+                "allowedLateness": 0,
+                "maxBufferSize": 0,
+                "overflowPolicy": "drop_oldest",
+                "idleTimeoutMs": 0,
+                "maxKeys": 0,
+                "persistPath": "/tmp/agg-state.gob",
+                "persistEveryN": 1
+              },
+              "input": {
+                "valueField": "temperature",
+                "keyField": "device_id",
+                "eventTimeField": "",
+                "messageIDField": "",
+                "persistPath": "",
+                "message": "=$activity[Filter].message"
+              }
+            }
+          },
+          {
+            "id": "LogAggregateResult",
+            "name": "LogAggregateResult",
+            "description": "Log the aggregate result when the window closes.",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Aggregate Result \u2014 key=\", $activity[Aggregate].key, \" avg_temp=\", coerce.toString($activity[Aggregate].result), \" count=\", coerce.toString($activity[Aggregate].count))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UxIjp7IngiOjI1MCwieSI6MTUwfSwiRmlsdGVyIjp7IngiOjQ1MCwieSI6MjUwfSwiTG9nTWVzc2FnZSI6eyJ4Ijo3NjAsInkiOjI1MH0sIkFnZ3JlZ2F0ZSI6eyJ4Ijo2NTIsInkiOjQ1Mn0sIkxvZ0FnZ3JlZ2F0ZVJlc3VsdCI6eyJ4Ijo4NTAsInkiOjU1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "jsonValue",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"temperature\":{\"type\":\"number\"},\"device_id\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"KafkaConsumer\",\"properties\":{\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"jsonValue\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"temperature\":{\"type\":\"number\"},\"device_id\":{\"type\":\"string\"}}},\"headers\":{\"type\":\"object\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "Kafka.kafka.Brokers",
+      "type": "string",
+      "value": "localhost:9092"
+    },
+    {
+      "name": "Kafka.kafka.Connection_Timeout",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "Kafka.kafka.Retry_Backoff",
+      "type": "float64",
+      "value": 250
+    },
+    {
+      "name": "Kafka.kafka.Max_Retry",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "Kafka.kafka.Refresh_Frequency",
+      "type": "float64",
+      "value": 40
+    }
+  ],
+  "schemas": {
+    "kafka-msg-schema": {
+      "type": "json",
+      "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"temperature\": {\n            \"type\": \"number\"\n        },\n        \"device_id\": {\n            \"type\": \"string\"\n        }\n    }\n}",
+      "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"temperature\": {\n            \"type\": \"number\"\n        },\n        \"device_id\": {\n            \"type\": \"string\"\n        }\n    }\n}"
+    }
+  },
+  "connections": {
+    "efbcb122-9bad-4e97-ac96-30036935337c": {
+      "id": "efbcb122-9bad-4e97-ac96-30036935337c",
+      "name": "kafka",
+      "ref": "#kafka",
+      "isGlobal": false,
+      "settings": {
+        "name": "kafka",
+        "description": "Apache Kafka client configuration",
+        "brokers": "=$property[\"Kafka.kafka.Brokers\"]",
+        "authMode": "None",
+        "userName": "",
+        "password": "",
+        "clientID": "",
+        "clientSecret": "",
+        "tokenURL": "",
+        "scope": "",
+        "securityProtocol": "SASL_SSL",
+        "clientCert": "",
+        "clientKey": "",
+        "caCert": "",
+        "connectionTimeout": "=$property[\"Kafka.kafka.Connection_Timeout\"]",
+        "retryBackoff": "=$property[\"Kafka.kafka.Retry_Backoff\"]",
+        "retryMax": "=$property[\"Kafka.kafka.Max_Retry\"]",
+        "refreshFrequency": "=$property[\"Kafka.kafka.Refresh_Frequency\"]",
+        "useSchmaRegistry": false,
+        "url": "",
+        "userName_schemaRegistry": "",
+        "password_schemaRegistry": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wbHVnaW5zL2NvbnRyaWJ1dGlvbnMva2Fma2Evc3JjL2FwcC9LYWZrYSIsImlkIjoiS2Fma2EiLCJ2ZXJzaW9uIjoiMS4zLjQiLCJ0YWciOiIxLjMuNC1iMDIiLCJuYW1lIjoiQXBhY2hlIEthZmthIiwiczNsb2NhdGlvbiI6IlRpYmNvL0thZmthIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xMSIsInRhZyI6IjEuNi4xMS1iMDIiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tLyIsImlkIjoiS2Fma2FTdHJlYW0iLCJ2ZXJzaW9uIjoiMi4wLjAiLCJ0YWciOiIyLjAuMCIsIm5hbWUiOiJLYWZrYSBTdHJlYW0gRXh0ZW5zaW9ucyIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9LYWZrYVN0cmVhbSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.0"
+  }
+}

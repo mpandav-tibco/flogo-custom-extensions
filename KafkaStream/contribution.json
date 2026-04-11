@@ -1,0 +1,7 @@
+{
+    "name": "Kafka Stream Extensions",
+    "version": "2.0.0",
+    "category": "KafkaStream",
+    "description": "Custom Flogo activities for Kafka stream processing — stateful windowed aggregation and predicate-based message filtering.",
+    "image": "icons/kafka-stream.png"
+}

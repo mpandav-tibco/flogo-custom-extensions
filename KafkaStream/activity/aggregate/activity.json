@@ -1,0 +1,224 @@
+{
+    "name": "kafka-stream-aggregate",
+    "title": "Aggregate",
+    "version": "2.0.0",
+    "type": "flogo:activity",
+    "description": "Aggregates a numeric field from Kafka messages over a streaming window. Emits sum/count/avg/min/max when the window closes. Supports event-time processing, watermarks, late-event routing, overflow policies, MessageID deduplication, idle-timeout auto-close, and keyed sub-windows.",
+    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate",
+    "display": {
+        "category": "KafkaStream",
+        "visible": true,
+        "description": "Aggregate Kafka stream messages over tumbling or sliding windows (sum/count/avg/min/max).",
+        "smallIcon": "icons/aggregate.png",
+        "largeIcon": "icons/aggregate.png"
+    },
+    "settings": [
+        {
+            "name": "windowName",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Window Name",
+                "description": "Unique name for this window instance. Shared across flow executions to maintain state (e.g. sensor-5s-sum)."
+            }
+        },
+        {
+            "name": "windowType",
+            "type": "string",
+            "required": true,
+            "value": "TumblingTime",
+            "display": {
+                "name": "Window Type",
+                "description": "TumblingTime: fixed time buckets. TumblingCount: fixed event batches. SlidingTime: rolling last-N-seconds. SlidingCount: rolling last-N-events."
+            },
+            "allowed": [
+                "TumblingTime",
+                "TumblingCount",
+                "SlidingTime",
+                "SlidingCount"
+            ]
+        },
+        {
+            "name": "windowSize",
+            "type": "integer",
+            "required": true,
+            "value": 5000,
+            "display": {
+                "name": "Window Size",
+                "description": "Time-based: milliseconds (e.g. 5000=5s). Count-based: number of events per window.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "function",
+            "type": "string",
+            "required": true,
+            "value": "sum",
+            "display": {
+                "name": "Aggregate Function",
+                "description": "Aggregation function applied to valueField over the window."
+            },
+            "allowed": [
+                "sum",
+                "count",
+                "avg",
+                "min",
+                "max"
+            ]
+        },
+        {
+            "name": "eventTimeField",
+            "type": "string",
+            "display": {
+                "name": "Event Time Field",
+                "description": "Message field containing the event timestamp. Accepts Unix-ms (int64/float64) or RFC-3339 string. Leave empty to use wall-clock time.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "allowedLateness",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Allowed Lateness (ms)",
+                "description": "How many ms past the watermark a late event is still accepted. Events older than this are routed to the lateEvent output. 0 = reject all late events.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxBufferSize",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Max Buffer Size",
+                "description": "Maximum events buffered per window. 0 = unlimited. Overflow is handled by overflowPolicy.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "overflowPolicy",
+            "type": "string",
+            "value": "drop_oldest",
+            "display": {
+                "name": "Overflow Policy",
+                "description": "Action when maxBufferSize is exceeded. drop_oldest (default): evict oldest event. drop_newest: discard incoming. error: return hard error.",
+                "appPropertySupport": true
+            },
+            "allowed": [
+                "drop_oldest",
+                "drop_newest",
+                "error"
+            ]
+        },
+        {
+            "name": "idleTimeoutMs",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Idle Timeout (ms)",
+                "description": "Auto-close a keyed sub-window that receives no event for this many ms and emit its partial result. 0 = disabled.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxKeys",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Max Keys",
+                "description": "Maximum distinct keyed sub-windows. 0 = unlimited.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "persistPath",
+            "type": "string",
+            "value": "",
+            "display": {
+                "name": "Persist Path",
+                "description": "File path for window state snapshots (gob format). State is restored on startup and saved periodically. Leave empty to disable (default). Example: /var/flogo/state/sensor-window.gob",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "persistEveryN",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Persist Every N Messages",
+                "description": "Trigger a background snapshot every N messages. 0 = flush only on graceful shutdown. Requires Persist Path to be set.",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "name": "message",
+            "type": "object",
+            "required": true
+        },
+        {
+            "name": "valueField",
+            "type": "string",
+            "required": true
+        },
+        {
+            "name": "keyField",
+            "type": "string"
+        },
+        {
+            "name": "eventTimeField",
+            "type": "string"
+        },
+        {
+            "name": "eventTimestamp",
+            "type": "integer",
+            "display": {
+                "name": "Event Timestamp (Unix ms)",
+                "description": "Pre-resolved Unix-ms timestamp (int64). When non-zero, takes priority over eventTimeField. Map from Kafka headers, a flow variable, or any computed int64 expression."
+            }
+        },
+        {
+            "name": "messageIDField",
+            "type": "string"
+        },
+        {
+            "name": "persistPath",
+            "type": "string"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "windowClosed",
+            "type": "boolean"
+        },
+        {
+            "name": "result",
+            "type": "number"
+        },
+        {
+            "name": "count",
+            "type": "integer"
+        },
+        {
+            "name": "windowName",
+            "type": "string"
+        },
+        {
+            "name": "key",
+            "type": "string"
+        },
+        {
+            "name": "lateEvent",
+            "type": "boolean"
+        },
+        {
+            "name": "lateReason",
+            "type": "string"
+        },
+        {
+            "name": "droppedCount",
+            "type": "integer"
+        }
+    ]
+}
