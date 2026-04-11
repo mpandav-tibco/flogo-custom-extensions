@@ -203,15 +203,15 @@ activity/
 
 ```bash
 # Window engine
-cd kafka-stream
+cd connectors/KafkaStream
 go test ./window/... -v
 
 # Aggregate activity
-cd kafka-stream/activity/aggregate
+cd connectors/KafkaStream/activity/aggregate
 go test ./... -v
 
 # Filter activity
-cd kafka-stream/activity/filter
+cd connectors/KafkaStream/activity/filter
 go test ./... -v
 ```
 
