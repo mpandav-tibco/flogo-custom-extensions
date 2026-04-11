@@ -53,7 +53,7 @@
                 }
             ],
             "return": {
-                "type": "integer"
+                "type": "int"
             }
         },
         {
@@ -63,7 +63,7 @@
             "args": [
                 {
                     "name": "epochMs",
-                    "type": "integer"
+                    "type": "int"
                 }
             ],
             "return": {
