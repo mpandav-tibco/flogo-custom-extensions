@@ -15,7 +15,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 
 | Component | Version | Category | Description |
 |-----------|---------|----------|-------------|
-| [Write Log](activity/write-log/) | 1.0.0 | Logging | Enterprise-grade logging with OpenTracing/OpenTelemetry integration and ECS compliance |
+| [Write Log](activity/write-log/) | 1.0.0 | Logging | Logging with OpenTracing/OpenTelemetry integration and ECS compliance |
 | [Template Engine](activity/templateengine/) | 1.0.0 | Content Generation | Dynamic content generation with Go templates, 29 built-in functions, and OOTB business templates |
 | [AWS Signature V4 Generator](activity/awssignaturev4/) | 1.0.0 | AWS Integration | Generate AWS Signature Version 4 authentication headers for secure REST API calls to AWS services |
 | [XML Filter](activity/xmlfilter/) | 0.1.0 | XML Processing | Filter XML content using XPath expressions with AND/OR logic support |
