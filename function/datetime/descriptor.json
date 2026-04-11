@@ -1,0 +1,66 @@
+{
+    "name": "datetime",
+    "type": "flogo:function",
+    "version": "1.0.0",
+    "title": "Extended Datetime Functions",
+    "description": "Additional datetime functions not available in the built-in set: isBefore, isAfter, toEpoch, fromEpoch, isWeekend, isWeekday",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/function/datetime",
+    "functions": [
+        {
+            "name": "isBefore",
+            "description": "Returns true if d1 is strictly before d2. Accepts any datetime string parseable by Flogo (RFC3339, ISO 8601, etc.).",
+            "example": "datetime.isBefore(\"2024-01-01\", \"2024-06-01\") => true",
+            "args": [
+                { "name": "d1", "type": "string" },
+                { "name": "d2", "type": "string" }
+            ],
+            "return": { "type": "boolean" }
+        },
+        {
+            "name": "isAfter",
+            "description": "Returns true if d1 is strictly after d2.",
+            "example": "datetime.isAfter(\"2024-06-01\", \"2024-01-01\") => true",
+            "args": [
+                { "name": "d1", "type": "string" },
+                { "name": "d2", "type": "string" }
+            ],
+            "return": { "type": "boolean" }
+        },
+        {
+            "name": "toEpoch",
+            "description": "Converts a datetime string to Unix epoch milliseconds (int64).",
+            "example": "datetime.toEpoch(\"2024-01-15T10:30:00Z\") => 1705314600000",
+            "args": [
+                { "name": "datetime", "type": "string" }
+            ],
+            "return": { "type": "integer" }
+        },
+        {
+            "name": "fromEpoch",
+            "description": "Converts Unix epoch milliseconds to an RFC3339 UTC datetime string.",
+            "example": "datetime.fromEpoch(1705314600000) => \"2024-01-15T10:30:00Z\"",
+            "args": [
+                { "name": "epochMs", "type": "integer" }
+            ],
+            "return": { "type": "string" }
+        },
+        {
+            "name": "isWeekend",
+            "description": "Returns true if the given datetime falls on Saturday or Sunday.",
+            "example": "datetime.isWeekend(\"2024-01-06\") => true",
+            "args": [
+                { "name": "datetime", "type": "string" }
+            ],
+            "return": { "type": "boolean" }
+        },
+        {
+            "name": "isWeekday",
+            "description": "Returns true if the given datetime falls on Monday through Friday.",
+            "example": "datetime.isWeekday(\"2024-01-08\") => true",
+            "args": [
+                { "name": "datetime", "type": "string" }
+            ],
+            "return": { "type": "boolean" }
+        }
+    ]
+}

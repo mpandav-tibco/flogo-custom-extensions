@@ -11,6 +11,17 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [SSE Connector](connectors/sse/) | 1.0.0 | Connector | Server-Sent Events real-time streaming with event buffering and topic filtering |
 | [Kafka Stream Connector](connectors/KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, and event-time processing |
 
+### 🧮 Functions
+
+| Package | Functions | Description |
+|---------|-----------|-------------|
+| [math](function/math/) | `abs`, `pow`, `sqrt`, `log`, `log2`, `log10`, `sign`, `clamp` | Absolute value, power, roots, logarithms, sign, range clamping |
+| [array](function/array/) | `min`, `max`, `avg`, `unique`, `indexOf`, `sort`, `sortDesc`, `first`, `last`, `sumBy` | Numeric aggregation, deduplication, search, sorting, field aggregation |
+| [string](function/string/) | `padLeft`, `padRight`, `mask`, `truncate`, `isBlank`, `isNumeric`, `camelCase`, `snakeCase` | Padding, PII masking, truncation, validation, case conversion |
+| [util](function/util/) | `coalesce`, `sha256` | Null-coalescing and SHA-256 hashing |
+| [datetime](function/datetime/) | `isBefore`, `isAfter`, `toEpoch`, `fromEpoch`, `isWeekend`, `isWeekday` | Datetime comparison, epoch conversion, business-day detection |
+
+
 ### ⚡ Activities
 
 | Component | Version | Category | Description |
@@ -57,6 +68,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
 | [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Filter, Kafka Stream Aggregate | Filter hot sensor readings by temperature threshold and compute per-device averages over a tumbling time window |
+| [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising all 11 custom functions — math, array, string masking, coalesce, SHA-256 |
 
 ## 🤝 Contributing
 
