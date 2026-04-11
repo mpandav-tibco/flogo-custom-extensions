@@ -34,6 +34,66 @@
             "return": {
                 "type": "string"
             }
+        },
+        {
+            "name": "hmacSha256",
+            "description": "Returns the lowercase hex-encoded HMAC-SHA256 of message signed with key. Used for webhook verification and API auth headers.",
+            "example": "util.hmacSha256(\"payload\", \"secret\") => \"<64-char hex>\"",
+            "args": [
+                {
+                    "name": "message",
+                    "type": "string"
+                },
+                {
+                    "name": "key",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "name": "md5",
+            "description": "Returns the lowercase hex-encoded MD5 hash of the input string. Used for ETags, content-MD5 headers, and legacy checksums.",
+            "example": "util.md5(\"hello\") => \"5d41402abc4b2a76b9719d911017c592\"",
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "name": "base64UrlEncode",
+            "description": "Returns the URL-safe Base64 encoding (RFC 4648 §5, no padding) of the input string. Uses '-' and '_' instead of '+' and '/'. Required for JWTs and OAuth tokens.",
+            "example": "util.base64UrlEncode(\"Hello\") => \"SGVsbG8\"",
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "name": "base64UrlDecode",
+            "description": "Decodes a URL-safe Base64 string (with or without padding) and returns the plain text result.",
+            "example": "util.base64UrlDecode(\"SGVsbG8\") => \"Hello\"",
+            "args": [
+                {
+                    "name": "base64url",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
         }
     ]
 }

@@ -71,45 +71,117 @@
             "return": {
                 "type": "string"
             }
-        }
-    ,
+        },
         {
             "name": "truncate",
             "description": "Truncates str to maxLen characters. If truncated, appends '...' (total length = maxLen).",
             "example": "string.truncate(\"Hello, World!\", 8) => \"Hello...\"",
             "args": [
-                { "name": "str", "type": "string" },
-                { "name": "maxLen", "type": "integer" }
+                {
+                    "name": "str",
+                    "type": "string"
+                },
+                {
+                    "name": "maxLen",
+                    "type": "integer"
+                }
             ],
-            "return": { "type": "string" }
+            "return": {
+                "type": "string"
+            }
         },
         {
             "name": "isBlank",
             "description": "Returns true if str is nil, empty, or contains only whitespace.",
             "example": "string.isBlank(\"  \") => true",
-            "args": [{ "name": "str", "type": "string" }],
-            "return": { "type": "boolean" }
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "boolean"
+            }
         },
         {
             "name": "isNumeric",
             "description": "Returns true if str represents a valid decimal integer or float value.",
             "example": "string.isNumeric(\"3.14\") => true",
-            "args": [{ "name": "str", "type": "string" }],
-            "return": { "type": "boolean" }
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "boolean"
+            }
         },
         {
             "name": "camelCase",
             "description": "Converts str to lowerCamelCase, splitting on spaces, hyphens, underscores, and case transitions.",
             "example": "string.camelCase(\"user_first_name\") => \"userFirstName\"",
-            "args": [{ "name": "str", "type": "string" }],
-            "return": { "type": "string" }
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
         },
         {
             "name": "snakeCase",
             "description": "Converts str to snake_case.",
             "example": "string.snakeCase(\"userFirstName\") => \"user_first_name\"",
-            "args": [{ "name": "str", "type": "string" }],
-            "return": { "type": "string" }
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "name": "regexExtract",
+            "description": "Extracts the first match of pattern from str. If the pattern has a capture group, returns the first capture group; otherwise returns the full match. Returns empty string if no match. Unlike OOTB string.matchRegEx which only returns bool.",
+            "example": "string.regexExtract(\"order-12345\", \"\\\\d+\") => \"12345\"",
+            "args": [
+                {
+                    "name": "str",
+                    "type": "string"
+                },
+                {
+                    "name": "pattern",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "name": "format",
+            "description": "Formats a template string using fmt.Sprintf-style verbs (%s, %d, %.2f, etc.) with the given arguments.",
+            "example": "string.format(\"Hello %s, you have %d messages\", \"Alice\", 3) => \"Hello Alice, you have 3 messages\"",
+            "args": [
+                {
+                    "name": "template",
+                    "type": "string"
+                },
+                {
+                    "name": "args",
+                    "type": "any"
+                }
+            ],
+            "varArgs": true,
+            "return": {
+                "type": "string"
+            }
         }
     ]
 }

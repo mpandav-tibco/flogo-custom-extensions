@@ -79,45 +79,120 @@
             "return": {
                 "type": "integer"
             }
-        }
-    ,
+        },
         {
             "name": "sort",
             "description": "Returns a new array sorted ascending. Numeric arrays are sorted numerically; others by string representation.",
             "example": "array.sort([3,1,2]) => [1,2,3]",
-            "args": [{ "name": "arr", "type": "array" }],
-            "return": { "type": "array" }
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "array"
+            }
         },
         {
             "name": "sortDesc",
             "description": "Returns a new array sorted descending.",
             "example": "array.sortDesc([1,3,2]) => [3,2,1]",
-            "args": [{ "name": "arr", "type": "array" }],
-            "return": { "type": "array" }
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "array"
+            }
         },
         {
             "name": "first",
             "description": "Returns the first element of the array, or null if empty.",
             "example": "array.first([10,20,30]) => 10",
-            "args": [{ "name": "arr", "type": "array" }],
-            "return": { "type": "any" }
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "any"
+            }
         },
         {
             "name": "last",
             "description": "Returns the last element of the array, or null if empty.",
             "example": "array.last([10,20,30]) => 30",
-            "args": [{ "name": "arr", "type": "array" }],
-            "return": { "type": "any" }
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                }
+            ],
+            "return": {
+                "type": "any"
+            }
         },
         {
             "name": "sumBy",
             "description": "Sums the value of a named field across an array of objects.",
             "example": "array.sumBy([{\"amount\":10},{\"amount\":20}], \"amount\") => 30",
             "args": [
-                { "name": "arr", "type": "array" },
-                { "name": "field", "type": "string" }
+                {
+                    "name": "arr",
+                    "type": "array"
+                },
+                {
+                    "name": "field",
+                    "type": "string"
+                }
             ],
-            "return": { "type": "number" }
+            "return": {
+                "type": "number"
+            }
+        },
+        {
+            "name": "filter",
+            "description": "Returns a new array containing only elements where element[field] == value. Elements that are not objects or lack the field are skipped.",
+            "example": "array.filter($flow.items, \"status\", \"active\") => [{...active items...}]",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                },
+                {
+                    "name": "field",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "any"
+                }
+            ],
+            "return": {
+                "type": "array"
+            }
+        },
+        {
+            "name": "pluck",
+            "description": "Extracts the value of field from each object in the array and returns them as a flat array. Non-object elements or missing fields contribute null.",
+            "example": "array.pluck($flow.users, \"email\") => [\"a@x.com\", \"b@x.com\"]",
+            "args": [
+                {
+                    "name": "arr",
+                    "type": "array"
+                },
+                {
+                    "name": "field",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "array"
+            }
         }
     ]
 }

@@ -290,3 +290,100 @@ func TestSumBy(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+// ─── filter ───────────────────────────────────────────────────────────────────
+
+func TestFilter(t *testing.T) {
+	fn := &fnFilter{}
+
+	users := []interface{}{
+		map[string]interface{}{"name": "Alice", "status": "active"},
+		map[string]interface{}{"name": "Bob", "status": "inactive"},
+		map[string]interface{}{"name": "Carol", "status": "active"},
+	}
+
+	t.Run("filters by string field", func(t *testing.T) {
+		out, err := fn.Eval(users, "status", "active")
+		require.NoError(t, err)
+		result := out.([]interface{})
+		assert.Len(t, result, 2)
+		assert.Equal(t, "Alice", result[0].(map[string]interface{})["name"])
+		assert.Equal(t, "Carol", result[1].(map[string]interface{})["name"])
+	})
+	t.Run("no match returns empty array", func(t *testing.T) {
+		out, err := fn.Eval(users, "status", "pending")
+		require.NoError(t, err)
+		assert.Empty(t, out.([]interface{}))
+	})
+	t.Run("field absent in element skips it", func(t *testing.T) {
+		mixed := []interface{}{
+			map[string]interface{}{"name": "Dave"},
+			map[string]interface{}{"name": "Eve", "status": "active"},
+		}
+		out, err := fn.Eval(mixed, "status", "active")
+		require.NoError(t, err)
+		result := out.([]interface{})
+		assert.Len(t, result, 1)
+	})
+	t.Run("non-object elements are skipped", func(t *testing.T) {
+		mixed := []interface{}{"string", 42, map[string]interface{}{"status": "active"}}
+		out, err := fn.Eval(mixed, "status", "active")
+		require.NoError(t, err)
+		assert.Len(t, out.([]interface{}), 1)
+	})
+	t.Run("empty array returns empty", func(t *testing.T) {
+		out, err := fn.Eval([]interface{}{}, "status", "active")
+		require.NoError(t, err)
+		assert.Empty(t, out.([]interface{}))
+	})
+	t.Run("numeric field match", func(t *testing.T) {
+		items := []interface{}{
+			map[string]interface{}{"code": 1},
+			map[string]interface{}{"code": 2},
+		}
+		out, err := fn.Eval(items, "code", 1)
+		require.NoError(t, err)
+		assert.Len(t, out.([]interface{}), 1)
+	})
+}
+
+// ─── pluck ────────────────────────────────────────────────────────────────────
+
+func TestPluck(t *testing.T) {
+	fn := &fnPluck{}
+
+	t.Run("extracts field from each object", func(t *testing.T) {
+		input := []interface{}{
+			map[string]interface{}{"email": "a@x.com", "name": "A"},
+			map[string]interface{}{"email": "b@x.com", "name": "B"},
+		}
+		out, err := fn.Eval(input, "email")
+		require.NoError(t, err)
+		result := out.([]interface{})
+		assert.Equal(t, []interface{}{"a@x.com", "b@x.com"}, result)
+	})
+	t.Run("missing field gives nil in position", func(t *testing.T) {
+		input := []interface{}{
+			map[string]interface{}{"a": 1},
+			map[string]interface{}{"b": 2},
+		}
+		out, err := fn.Eval(input, "a")
+		require.NoError(t, err)
+		result := out.([]interface{})
+		assert.Equal(t, 1, result[0])
+		assert.Nil(t, result[1])
+	})
+	t.Run("non-object element gives nil in position", func(t *testing.T) {
+		input := []interface{}{"not-an-object", map[string]interface{}{"x": "val"}}
+		out, err := fn.Eval(input, "x")
+		require.NoError(t, err)
+		result := out.([]interface{})
+		assert.Nil(t, result[0])
+		assert.Equal(t, "val", result[1])
+	})
+	t.Run("empty array returns empty", func(t *testing.T) {
+		out, err := fn.Eval([]interface{}{}, "field")
+		require.NoError(t, err)
+		assert.Empty(t, out.([]interface{}))
+	})
+}
