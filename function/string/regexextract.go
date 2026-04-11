@@ -18,7 +18,7 @@ type fnRegexExtract struct{}
 
 func (fnRegexExtract) Name() string { return "regexExtract" }
 
-func (fnRegexExtract) GetCategory() string { return "strutil" }
+func (fnRegexExtract) GetCategory() string { return "string" }
 
 func (fnRegexExtract) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString, data.TypeString}, false

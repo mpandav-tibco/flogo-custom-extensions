@@ -21,7 +21,7 @@ func init() {
 type fnIsBlank struct{}
 
 func (fnIsBlank) Name() string        { return "isBlank" }
-func (fnIsBlank) GetCategory() string { return "strutil" }
+func (fnIsBlank) GetCategory() string { return "string" }
 
 func (fnIsBlank) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString}, false
@@ -48,7 +48,7 @@ func (fnIsBlank) Eval(params ...interface{}) (interface{}, error) {
 type fnIsNumeric struct{}
 
 func (fnIsNumeric) Name() string        { return "isNumeric" }
-func (fnIsNumeric) GetCategory() string { return "strutil" }
+func (fnIsNumeric) GetCategory() string { return "string" }
 
 func (fnIsNumeric) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString}, false

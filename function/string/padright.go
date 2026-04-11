@@ -17,7 +17,7 @@ type fnPadRight struct{}
 
 func (fnPadRight) Name() string { return "padRight" }
 
-func (fnPadRight) GetCategory() string { return "strutil" }
+func (fnPadRight) GetCategory() string { return "string" }
 
 func (fnPadRight) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString, data.TypeInt, data.TypeString}, false

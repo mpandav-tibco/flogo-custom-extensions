@@ -17,7 +17,7 @@ type fnFormat struct{}
 
 func (fnFormat) Name() string { return "format" }
 
-func (fnFormat) GetCategory() string { return "strutil" }
+func (fnFormat) GetCategory() string { return "string" }
 
 func (fnFormat) Sig() (paramTypes []data.Type, isVariadic bool) {
 	// template + variadic args

@@ -47,7 +47,7 @@ func (fnFromEpoch) Name() string        { return "fromEpoch" }
 func (fnFromEpoch) GetCategory() string { return "datetime" }
 
 func (fnFromEpoch) Sig() (paramTypes []data.Type, isVariadic bool) {
-	return []data.Type{data.TypeInt64}, false
+	return []data.Type{data.TypeInt}, false
 }
 
 // Eval converts Unix epoch milliseconds to an RFC3339 UTC datetime string.

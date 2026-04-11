@@ -38,8 +38,8 @@ Custom Flogo expression functions extending the built-in set across 7 packages: 
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
-| `string.padLeft` | `padLeft(str, size int, padChar string) string` | Left-pad to `size` characters |
-| `string.padRight` | `padRight(str, size int, padChar string) string` | Right-pad to `size` characters |
+| `string.padLeft` | `padLeft(str string, size int, padChar string) string` | Left-pad to `size` characters |
+| `string.padRight` | `padRight(str string, size int, padChar string) string` | Right-pad to `size` characters |
 | `string.mask` | `mask(str string, keepFirst, keepLast int) string` | Replace middle chars with `*` |
 | `string.truncate` | `truncate(str string, maxLen int) string` | Truncate to `maxLen`, appending `...` if cut |
 | `string.isBlank` | `isBlank(str string) bool` | True if nil, empty, or whitespace-only |
