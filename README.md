@@ -9,6 +9,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | Component | Version | Type | Description |
 |-----------|---------|------|-------------|
 | [SSE Connector](sse/) | 1.0.0 | Connector | Server-Sent Events real-time streaming with event buffering and topic filtering |
+| [Kafka Stream Connector](KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, and event-time processing |
 
 ### ⚡ Activities
 
@@ -21,6 +22,8 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Avro Schema Transform](activity/schema-transform/avroschematransform/) | 1.0.0 | Schema Transform | Transform Avro schemas to JSON Schema and/or XSD formats |
 | [JSON Schema Transform](activity/schema-transform/jsonschematransform/) | 1.0.0 | Schema Transform | Transform JSON Schema to XSD and Avro formats |
 | [XSD Schema Transform](activity/schema-transform/xsdschematransform/) | 1.0.0 | Schema Transform | Transform XSD schemas to JSON Schema and Avro formats |
+| [Kafka Stream Filter](KafkaStream/activity/filter/) | 1.0.0 | Kafka Stream | Evaluate single or multi-predicate AND/OR chains against Kafka message fields; supports deduplication and rate limiting |
+| [Kafka Stream Aggregate](KafkaStream/activity/aggregate/) | 1.0.0 | Kafka Stream | Accumulate a numeric message field into tumbling or sliding windows and emit sum/count/avg/min/max on window close |
 
 ### 🎯 Triggers
 
@@ -53,6 +56,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [AWS SQS Delete Demo](examples/aws_signature4/) | AWS Signature V4 Generator, REST Invoke Activity | AWS SQS message deletion demo using Signature V4 authentication |
 | [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
+| [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Filter, Kafka Stream Aggregate | Filter hot sensor readings by temperature threshold and compute per-device averages over a tumbling time window |
 
 ## 🤝 Contributing
 
