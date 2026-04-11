@@ -22,7 +22,7 @@
         },
         {
             "name": "pow",
-            "description": "Returns base raised to the power of exp. math.pow(2, 10) => 1024",
+            "description": "Returns base raised to the power of exp.",
             "example": "math.pow(2, 10) => 1024",
             "args": [
                 {
