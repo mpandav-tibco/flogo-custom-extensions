@@ -68,8 +68,8 @@ All datetime functions accept any format supported by Flogo's `coerce.ToDateTime
 |----------|-----------|-------------|
 | `datetime.isBefore` | `isBefore(d1 string, d2 string) bool` | True if d1 is strictly before d2 |
 | `datetime.isAfter` | `isAfter(d1 string, d2 string) bool` | True if d1 is strictly after d2 |
-| `datetime.toEpoch` | `toEpoch(d string) int64` | Datetime string → Unix epoch milliseconds |
-| `datetime.fromEpoch` | `fromEpoch(ms int64) string` | Unix epoch milliseconds → RFC3339 UTC string |
+| `datetime.toEpoch` | `toEpoch(d string) int` | Datetime string → Unix epoch milliseconds |
+| `datetime.fromEpoch` | `fromEpoch(ms int) string` | Unix epoch milliseconds → RFC3339 UTC string |
 | `datetime.isWeekend` | `isWeekend(d string) bool` | True if date is Saturday or Sunday |
 | `datetime.isWeekday` | `isWeekday(d string) bool` | True if date is Monday through Friday |
 | `datetime.addBusinessDays` | `addBusinessDays(d string, n int) string` | Add `n` business days (Mon–Fri), skipping weekends. Negative `n` moves backward. Returns RFC3339. |

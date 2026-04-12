@@ -44,7 +44,7 @@
         },
         {
             "name": "toEpoch",
-            "description": "Converts a datetime string to Unix epoch milliseconds (int64).",
+            "description": "Converts a datetime string to Unix epoch milliseconds.",
             "example": "datetime.toEpoch(\"2024-01-15T10:30:00Z\") => 1705314600000",
             "args": [
                 {
@@ -100,7 +100,7 @@
         },
         {
             "name": "addBusinessDays",
-            "description": "Adds n business days (Mon–Fri) to the given date, skipping weekends. Negative n moves backward. Returns RFC3339.",
+            "description": "Adds n business days (Mon\u2013Fri) to the given date, skipping weekends. Negative n moves backward. Returns RFC3339.",
             "example": "datetime.addBusinessDays(\"2024-01-05T00:00:00Z\", 3) => \"2024-01-10T00:00:00Z\"",
             "args": [
                 {
@@ -132,7 +132,7 @@
         },
         {
             "name": "quarter",
-            "description": "Returns the calendar quarter (1–4) of the given datetime. Jan–Mar=1, Apr–Jun=2, Jul–Sep=3, Oct–Dec=4.",
+            "description": "Returns the calendar quarter (1\u20134) of the given datetime. Jan\u2013Mar=1, Apr\u2013Jun=2, Jul\u2013Sep=3, Oct\u2013Dec=4.",
             "example": "datetime.quarter(\"2024-07-15T00:00:00Z\") => 3",
             "args": [
                 {
