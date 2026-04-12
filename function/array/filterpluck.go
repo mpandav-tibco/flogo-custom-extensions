@@ -23,7 +23,7 @@ func (fnFilter) Name() string { return "filter" }
 func (fnFilter) GetCategory() string { return "array" }
 
 func (fnFilter) Sig() (paramTypes []data.Type, isVariadic bool) {
-	return []data.Type{data.TypeArray, data.TypeString, data.TypeAny}, false
+	return []data.Type{data.TypeAny, data.TypeString, data.TypeAny}, false
 }
 
 // Eval returns a new array containing only the elements (objects) where element[field] == value.
@@ -86,7 +86,7 @@ func (fnPluck) Name() string { return "pluck" }
 func (fnPluck) GetCategory() string { return "array" }
 
 func (fnPluck) Sig() (paramTypes []data.Type, isVariadic bool) {
-	return []data.Type{data.TypeArray, data.TypeString}, false
+	return []data.Type{data.TypeAny, data.TypeString}, false
 }
 
 // Eval extracts the value of field from each object element and returns them as a flat array.

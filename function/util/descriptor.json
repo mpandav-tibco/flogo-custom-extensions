@@ -8,8 +8,8 @@
     "functions": [
         {
             "name": "coalesce",
-            "description": "Returns the first non-nil, non-empty argument. Accepts any number of arguments. util.coalesce(nil, \"\", \"hello\") => \"hello\"",
-            "example": "util.coalesce($flow.optional, \"default\")",
+            "description": "Returns the first non-nil, non-empty argument. Accepts any number of arguments.",
+            "example": "util.coalesce(nil, \"\", \"hello\") => \"hello\"",
             "args": [
                 {
                     "name": "values",
@@ -23,7 +23,7 @@
         },
         {
             "name": "sha256",
-            "description": "Returns the lowercase hex-encoded SHA-256 hash of the input string. Useful for idempotency keys and checksums. util.sha256(\"hello\") => \"2cf24dba...\"",
+            "description": "Returns the lowercase hex-encoded SHA-256 hash of the input string. Useful for idempotency keys and checksums.",
             "example": "util.sha256(\"hello\") => \"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\"",
             "args": [
                 {
@@ -69,7 +69,7 @@
         },
         {
             "name": "base64UrlEncode",
-            "description": "Returns the URL-safe Base64 encoding (RFC 4648 §5, no padding) of the input string. Uses '-' and '_' instead of '+' and '/'. Required for JWTs and OAuth tokens.",
+            "description": "Returns the URL-safe Base64 encoding (RFC 4648 \u00a75, no padding) of the input string. Uses '-' and '_' instead of '+' and '/'. Required for JWTs and OAuth tokens.",
             "example": "util.base64UrlEncode(\"Hello\") => \"SGVsbG8\"",
             "args": [
                 {
