@@ -146,7 +146,7 @@
             "value": 0,
             "display": {
                 "name": "Persist Every N Messages",
-                "description": "Trigger a background snapshot every N messages. 0 = flush only on graceful shutdown. Requires Persist Path to be set.",
+                "description": "Trigger a state snapshot every N messages. 0 = disabled (no periodic writes). Requires Persist Path to be set.",
                 "appPropertySupport": true
             }
         }

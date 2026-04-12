@@ -19,7 +19,7 @@ Configured once per activity instance at design time. `operator` and `predicateM
 | `rateLimitRPS` | float | `0` | Maximum events per second to pass through. `0` = disabled. |
 | `rateLimitBurst` | integer | `0` | Token bucket burst capacity. Only relevant when `rateLimitRPS > 0`. |
 | `rateLimitMode` | string | `drop` | Action when the rate limit is exceeded: `drop` (return `passed=false` immediately) or `wait` (block up to `rateLimitMaxWaitMs` before dropping). |
-| `rateLimitMaxWaitMs` | integer | `0` | Maximum time to wait in `wait` mode before dropping the message. |
+| `rateLimitMaxWaitMs` | integer | `500` | Maximum time to wait in `wait` mode before dropping the message. |
 
 ## Inputs
 
@@ -42,7 +42,7 @@ All inputs are runtime-mappable. `operator` and `predicateMode` override their s
 | Output | Type | Description |
 |--------|------|-------------|
 | `passed` | boolean | `true` if the message satisfies the predicate(s). |
-| `message` | object | The original message. Populated when `passed=true`; `nil` when `passed=false`. |
+| `message` | object | The original message. Always set (even when `passed=false`) so the caller can log, route to DLQ, or inspect the payload in all branches. |
 | `reason` | string | Human-readable explanation when `passed=false`. Empty when `passed=true`. |
 | `errorMessage` | string | Set when evaluation encounters an error (e.g. invalid operator, malformed regex, unexpected type). Route `errorMessage != ""` to a dead-letter topic independently of normal filter-outs. |
 
@@ -92,7 +92,7 @@ This is separate from the Aggregate activity's per-window deduplication — Filt
 
 ## Rate Limiting
 
-When `rateLimitRPS > 0`, a token bucket is maintained per activity instance. Excess messages are either dropped immediately (`drop` mode) or held for up to `rateLimitMaxWaitMs` ms before being dropped (`wait` mode). Dropped messages return `passed=false` with `reason="rate_limit_exceeded"`.
+When `rateLimitRPS > 0`, a token bucket is maintained per activity instance. Excess messages are either dropped immediately (`drop` mode) or held for up to `rateLimitMaxWaitMs` ms before being dropped (`wait` mode). Dropped messages return `passed=false` with `reason="rate_limited"`.
 
 ## Configuration Examples
 
@@ -256,7 +256,7 @@ Only hot readings reach the aggregation window:
 | Malformed regex pattern | `false` | — | set |
 | Non-numeric field with numeric operator | `false` | — | set |
 | Malformed `predicates` JSON | `false` | — | set |
-| Rate limit exceeded | `false` | set | — |
+| Rate limit exceeded | `false` | `"rate_limited"` | — |
 | Duplicate message (dedup active) | `false` | `"duplicate"` | — |
 
 

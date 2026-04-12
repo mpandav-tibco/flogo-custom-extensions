@@ -116,9 +116,13 @@ func (e *WindowError) Error() string {
 
 // WindowSnapshot is a point-in-time observability view of a window store.
 type WindowSnapshot struct {
-	Name            string
-	BufferSize      int64
-	Watermark       time.Time
+	Name        string
+	BufferSize  int64
+	Watermark   time.Time
+	// WindowStart is the event-time timestamp when the current window period
+	// opened. Zero for count-based and sliding windows. Useful for observability
+	// (e.g. computing how far through its period a TumblingTimeWindow is).
+	WindowStart     time.Time
 	LastEventAt     time.Time
 	MessagesIn      int64
 	MessagesLate    int64
@@ -158,15 +162,20 @@ type WindowStore interface {
 // PersistedWindowState is the gob-encodable snapshot of a window's in-memory buffer.
 // Only the data needed to survive a restart is included (not config — that comes from settings).
 type PersistedWindowState struct {
-	Name        string
-	Type        string
-	Values      []float64
-	Timestamps  []time.Time
-	MessageIDs  map[string]struct{}
-	Watermark   time.Time
-	WindowStart time.Time
-	EventCount  int64
-	SavedAt     time.Time
+	Name       string
+	Type       string
+	Values     []float64
+	Timestamps []time.Time
+	MessageIDs map[string]struct{}
+	// EventMessageIDs holds per-event message IDs for sliding windows, aligned
+	// with Values/Timestamps. Used to reconstruct the seen dedup map on LoadState
+	// so that at-least-once delivery duplicates are correctly suppressed after a
+	// process restart. Nil/short slices are handled gracefully (backwards compat).
+	EventMessageIDs []string
+	Watermark       time.Time
+	WindowStart     time.Time
+	EventCount      int64
+	SavedAt         time.Time
 }
 
 // effectiveOverflow returns the configured overflow policy, defaulting to

@@ -80,7 +80,8 @@
             "value": 100000,
             "display": {
                 "name": "Dedup Max Entries",
-                "description": "Maximum number of event IDs to track in memory. 0 = 100 000 default."
+                "description": "Maximum number of event IDs to track in memory. 0 = 100 000 default.",
+                "appPropertySupport": true
             }
         },
         {
@@ -89,7 +90,8 @@
             "value": 0,
             "display": {
                 "name": "Rate Limit (msgs/sec)",
-                "description": "Maximum messages per second. 0 = disabled."
+                "description": "Maximum messages per second. 0 = disabled.",
+                "appPropertySupport": true
             }
         },
         {
@@ -98,7 +100,8 @@
             "value": 0,
             "display": {
                 "name": "Rate Limit Burst",
-                "description": "Maximum burst above the RPS limit. 0 defaults to rateLimitRPS value."
+                "description": "Maximum burst above the RPS limit. 0 defaults to rateLimitRPS value.",
+                "appPropertySupport": true
             }
         },
         {
@@ -120,7 +123,8 @@
             "value": 500,
             "display": {
                 "name": "Rate Limit Max Wait (ms)",
-                "description": "Maximum milliseconds to wait in 'wait' mode before dropping. Default: 500ms."
+                "description": "Maximum milliseconds to wait in 'wait' mode before dropping. Default: 500ms.",
+                "appPropertySupport": true
             }
         }
     ],

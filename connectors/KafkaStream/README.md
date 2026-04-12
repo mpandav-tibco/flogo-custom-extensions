@@ -130,28 +130,30 @@ Set `predicateMode` to `"and"` (all must pass, default) or `"or"` (at least one 
 
 ## Module Structure
 
+All components live in a single Go module (`github.com/milindpandav/flogo-extensions/kafkastream`). The `activity/aggregate` and `activity/filter` packages are sub-packages of that module, not separate modules.
+
 ```
-kafka-stream/                     ← root Go module (window engine + registry)
+connectors/KafkaStream/           ← single Go module root
 ├── go.mod
 ├── registry.go                   ← global WindowStore registry (process-scoped)
-└── window/
-    ├── types.go
-    ├── tumbling.go
-    └── sliding.go
-
-activity/
-├── aggregate/                    ← Flogo activity module
-│   ├── go.mod
-│   ├── activity.go
-│   ├── metadata.go
-│   ├── activity.json
-│   └── activity_test.go
-└── filter/                       ← Flogo activity module
-    ├── go.mod
-    ├── activity.go
-    ├── metadata.go
-    ├── activity.json
-    └── activity_test.go
+├── window/
+│   ├── types.go
+│   ├── tumbling.go
+│   ├── sliding.go
+│   └── window_test.go
+└── activity/
+    ├── aggregate/                ← sub-package: kafkastream/activity/aggregate
+    │   ├── activity.go
+    │   ├── metadata.go
+    │   ├── activity.json
+    │   └── activity_test.go
+    ├── filter/                   ← sub-package: kafkastream/activity/filter
+    │   ├── activity.go
+    │   ├── metadata.go
+    │   ├── activity.json
+    │   └── activity_test.go
+    └── test/integration/         ← separate module for integration tests only
+        └── go.mod
 ```
 
 ## Getting Started
@@ -164,6 +166,21 @@ activity/
 
 ### Add the Activities to Your Flogo Application
 
+Add the module as an extension in your TIBCO Flogo application. In the VS Code extension, open the **Extensions** panel, select **Add Custom Extension**, and point it at the `connectors/KafkaStream` folder (or the published module path `github.com/milindpandav/flogo-extensions/kafkastream`).
+
+For Flogo CLI-based projects, add the module to the `extensions` array in your `.flogo` descriptor:
+
+```json
+{
+  "extensions": [
+    {
+      "ref": "github.com/milindpandav/flogo-extensions/kafkastream"
+    }
+  ]
+}
+```
+
+Once imported, the **Kafka Stream Filter** and **Kafka Stream Aggregate** activities appear in the activity palette under the **KafkaStream** category.
 
 ### Typical Flow Pattern
 
