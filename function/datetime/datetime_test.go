@@ -82,13 +82,13 @@ func TestToEpoch(t *testing.T) {
 		out, err := fn.Eval("2024-01-15T10:30:00Z")
 		require.NoError(t, err)
 		// 2024-01-15T10:30:00Z = 1705314600 seconds = 1705314600000 ms
-		assert.Equal(t, int64(1705314600000), out)
+		assert.Equal(t, int(1705314600000), out)
 	})
-	t.Run("returns int64", func(t *testing.T) {
+	t.Run("returns int", func(t *testing.T) {
 		out, err := fn.Eval("2020-01-01T00:00:00Z")
 		require.NoError(t, err)
-		_, ok := out.(int64)
-		assert.True(t, ok, "expected int64, got %T", out)
+		_, ok := out.(int)
+		assert.True(t, ok, "expected int, got %T", out)
 	})
 	t.Run("invalid datetime errors", func(t *testing.T) {
 		_, err := fn.Eval("not-a-date")
@@ -102,12 +102,12 @@ func TestFromEpoch(t *testing.T) {
 	fn := &fnFromEpoch{}
 
 	t.Run("known epoch to RFC3339", func(t *testing.T) {
-		out, err := fn.Eval(int64(1705314600000))
+		out, err := fn.Eval(int(1705314600000))
 		require.NoError(t, err)
 		assert.Equal(t, "2024-01-15T10:30:00Z", out)
 	})
 	t.Run("zero epoch = Unix epoch", func(t *testing.T) {
-		out, err := fn.Eval(int64(0))
+		out, err := fn.Eval(int(0))
 		require.NoError(t, err)
 		assert.Equal(t, "1970-01-01T00:00:00Z", out)
 	})
