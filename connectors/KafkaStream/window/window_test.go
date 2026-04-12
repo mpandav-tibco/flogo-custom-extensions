@@ -861,3 +861,156 @@ func TestSlidingCount_SaveLoad_PreservesSeenMap(t *testing.T) {
 	require.NotNil(t, r2)
 	assert.Equal(t, 10.0, r2.Value, "restored event(7) + new-id(3) = 10")
 }
+
+// ─── Regression: TumblingTimeWindow correctness fixes (enterprise review) ────
+
+// TestTumblingTime_KeyPreserved_InResult verifies that when a TumblingTimeWindow
+// closes via Add() (time-boundary crossed), result.Key is set from the triggering
+// event. Previously, closeWindow() had no Key parameter so result.Key was always
+// the empty string — making WindowResult.Key unreliable for keyed sub-windows.
+func TestTumblingTime_KeyPreserved_InResult(t *testing.T) {
+	w := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type: window.WindowTumblingTime, Size: 3000, Function: window.FuncSum,
+	})
+	base := time.Now()
+	w.Add(window.WindowEvent{Value: 10, Timestamp: base, Key: "device-A"})
+	r, closed, _, err := w.Add(window.WindowEvent{Value: 20, Timestamp: base.Add(4 * time.Second), Key: "device-A"})
+	require.NoError(t, err)
+	require.True(t, closed, "window must close when time boundary is crossed")
+	require.NotNil(t, r)
+	assert.Equal(t, "device-A", r.Key, "result.Key must equal the triggering event's Key")
+}
+
+// TestTumblingTime_CheckIdle_KeyPreserved verifies that when a TumblingTimeWindow
+// is closed via idle-timeout (CheckIdle), result.Key is set from the last event
+// that was added — not the empty string.
+func TestTumblingTime_CheckIdle_KeyPreserved(t *testing.T) {
+	w := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type:          window.WindowTumblingTime,
+		Size:          60000, // 60 s — won't close by time
+		Function:      window.FuncSum,
+		IdleTimeoutMs: 1,
+	})
+	w.Add(window.WindowEvent{Value: 5, Timestamp: time.Now(), Key: "sensor-B"})
+	time.Sleep(10 * time.Millisecond)
+	r, ok := w.CheckIdle()
+	require.True(t, ok, "idle timeout must fire")
+	require.NotNil(t, r)
+	assert.Equal(t, "sensor-B", r.Key, "idle-close result.Key must equal the last event's Key")
+}
+
+// TestTumblingTime_Overflow_DropOldest_MessageIDCleanup verifies that when an
+// event is evicted from TumblingTimeWindow by the drop_oldest overflow policy,
+// its MessageID is removed from the dedup set. Without this fix, a re-delivery
+// of the same ID would be silently dropped, causing permanent data loss for that
+// event (value evicted AND re-delivery blocked → never aggregated).
+func TestTumblingTime_Overflow_DropOldest_MessageIDCleanup(t *testing.T) {
+	// MaxBufferSize=3, window = 60 s (won't close by time here).
+	w := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type:           window.WindowTumblingTime,
+		Size:           60000,
+		Function:       window.FuncSum,
+		MaxBufferSize:  3,
+		OverflowPolicy: window.OverflowDropOldest,
+	})
+	base := time.Now()
+
+	// Fill buffer: [A(10), B(20), C(30)]
+	w.Add(window.WindowEvent{Value: 10, Timestamp: base, MessageID: "A"})
+	w.Add(window.WindowEvent{Value: 20, Timestamp: base.Add(time.Second), MessageID: "B"})
+	w.Add(window.WindowEvent{Value: 30, Timestamp: base.Add(2 * time.Second), MessageID: "C"})
+
+	// D triggers overflow: evict A(10) → buffer = [B, C, D], seen loses "A".
+	w.Add(window.WindowEvent{Value: 40, Timestamp: base.Add(3 * time.Second), MessageID: "D"})
+
+	// Re-deliver A: must be accepted (ID cleared by eviction).
+	// Overflow fires again: evict B → buffer = [C, D, A(re-delivered)]
+	_, _, _, err := w.Add(window.WindowEvent{Value: 10, Timestamp: base.Add(4 * time.Second), MessageID: "A"})
+	require.NoError(t, err, "re-delivered A must not be blocked as a duplicate after eviction")
+
+	snap := w.Snapshot()
+	assert.Equal(t, int64(3), snap.BufferSize, "buffer must stay at MaxBufferSize after overflow + re-accept")
+
+	// Close the window: event E at T+61s crosses 60 s boundary.
+	// Overflow fires: evict C(30) → buffer = [D(40), A(10)], then append E(5).
+	// elapsed = 61s >= 60s → closeWindow.  result = sum(D=40, A=10, E=5) = 55.
+	r, closed, _, err := w.Add(window.WindowEvent{Value: 5, Timestamp: base.Add(61 * time.Second), MessageID: "E"})
+	require.NoError(t, err)
+	require.True(t, closed, "window must close when time boundary is crossed")
+	require.NotNil(t, r)
+	assert.Equal(t, 55.0, r.Value, "D(40)+A(10)+E(5)=55 — re-delivered A must contribute to the aggregate")
+}
+
+// TestTumblingTime_SaveLoad_PreservesSeenMap verifies that after SaveState /
+// LoadState, the dedup set is fully restored from the per-event EventMessageIDs
+// field so that at-least-once re-deliveries are still suppressed on the
+// recovered window.
+func TestTumblingTime_SaveLoad_PreservesSeenMap(t *testing.T) {
+	w1 := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type: window.WindowTumblingTime, Size: 60000, Function: window.FuncSum,
+	})
+	base := time.Now()
+	w1.Add(window.WindowEvent{Value: 5, Timestamp: base, MessageID: "seen-id"})
+
+	state := w1.SaveState()
+	w2 := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type: window.WindowTumblingTime, Size: 60000, Function: window.FuncSum,
+	})
+	w2.LoadState(state)
+
+	// "seen-id" must still be blocked after restore.
+	r, closed, _, err := w2.Add(window.WindowEvent{Value: 99, Timestamp: base.Add(time.Second), MessageID: "seen-id"})
+	require.NoError(t, err)
+	assert.False(t, closed, "duplicate must be suppressed after state restore")
+	assert.Nil(t, r, "no result for a suppressed duplicate")
+
+	// A fresh ID must be accepted and contribute to the buffer.
+	_, _, _, err2 := w2.Add(window.WindowEvent{Value: 20, Timestamp: base.Add(2 * time.Second), MessageID: "new-id"})
+	require.NoError(t, err2)
+	snap := w2.Snapshot()
+	assert.Equal(t, int64(2), snap.BufferSize, "buffer: restored event(5) + new-id event(20)")
+}
+
+// TestTumblingCount_CheckIdle_KeyPreserved verifies that when a
+// TumblingCountWindow is closed via idle-timeout, result.Key equals the Key
+// of the last accepted event. Previously, the CheckIdle result was constructed
+// inline without a Key field, so Key was always the empty string.
+func TestTumblingCount_CheckIdle_KeyPreserved(t *testing.T) {
+	w := window.NewTumblingCountWindow(window.WindowConfig{
+		Type:          window.WindowTumblingCount,
+		Size:          100, // large — will not close by count
+		Function:      window.FuncSum,
+		IdleTimeoutMs: 1,
+	})
+	w.Add(window.WindowEvent{Value: 7, Timestamp: time.Now(), Key: "zone-3"})
+	time.Sleep(10 * time.Millisecond)
+	r, ok := w.CheckIdle()
+	require.True(t, ok, "idle timeout must fire")
+	require.NotNil(t, r)
+	assert.Equal(t, "zone-3", r.Key, "idle-close result.Key must equal the last event's Key")
+}
+
+// TestTumblingTime_Snapshot_WindowStart verifies that WindowSnapshot.WindowStart
+// is populated after the first event is accepted. Before this fix, the field was
+// absent from WindowSnapshot, making it impossible for operators to compute
+// window fill-percentage for observability dashboards.
+func TestTumblingTime_Snapshot_WindowStart(t *testing.T) {
+	w := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type: window.WindowTumblingTime, Size: 60000, Function: window.FuncSum,
+	})
+	epoch := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
+
+	// Before any event, WindowStart must be the zero value.
+	snap0 := w.Snapshot()
+	assert.True(t, snap0.WindowStart.IsZero(), "WindowStart must be zero before first event")
+
+	// After the first event, WindowStart must be that event's timestamp.
+	w.Add(window.WindowEvent{Value: 1, Timestamp: epoch})
+	snap1 := w.Snapshot()
+	assert.Equal(t, epoch, snap1.WindowStart, "WindowStart must equal the first event's timestamp")
+
+	// Subsequent events in the same window must not change WindowStart.
+	w.Add(window.WindowEvent{Value: 2, Timestamp: epoch.Add(time.Second)})
+	snap2 := w.Snapshot()
+	assert.Equal(t, epoch, snap2.WindowStart, "WindowStart must not advance within a window period")
+}
