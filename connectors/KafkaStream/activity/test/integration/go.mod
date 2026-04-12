@@ -6,8 +6,8 @@ toolchain go1.24.3
 
 replace (
 	github.com/milindpandav/flogo-extensions/kafkastream => ../../../
-	github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate => ../../aggregate
-	github.com/milindpandav/flogo-extensions/kafkastream/activity/filter => ../../filter
+	github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate => ../../../
+	github.com/milindpandav/flogo-extensions/kafkastream/activity/filter => ../../../
 )
 
 require (

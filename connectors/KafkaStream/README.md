@@ -130,28 +130,30 @@ Set `predicateMode` to `"and"` (all must pass, default) or `"or"` (at least one 
 
 ## Module Structure
 
+All components live in a single Go module (`github.com/milindpandav/flogo-extensions/kafkastream`). The `activity/aggregate` and `activity/filter` packages are sub-packages of that module, not separate modules.
+
 ```
-kafka-stream/                     ← root Go module (window engine + registry)
+connectors/KafkaStream/           ← single Go module root
 ├── go.mod
 ├── registry.go                   ← global WindowStore registry (process-scoped)
-└── window/
-    ├── types.go
-    ├── tumbling.go
-    └── sliding.go
-
-activity/
-├── aggregate/                    ← Flogo activity module
-│   ├── go.mod
-│   ├── activity.go
-│   ├── metadata.go
-│   ├── activity.json
-│   └── activity_test.go
-└── filter/                       ← Flogo activity module
-    ├── go.mod
-    ├── activity.go
-    ├── metadata.go
-    ├── activity.json
-    └── activity_test.go
+├── window/
+│   ├── types.go
+│   ├── tumbling.go
+│   ├── sliding.go
+│   └── window_test.go
+└── activity/
+    ├── aggregate/                ← sub-package: kafkastream/activity/aggregate
+    │   ├── activity.go
+    │   ├── metadata.go
+    │   ├── activity.json
+    │   └── activity_test.go
+    ├── filter/                   ← sub-package: kafkastream/activity/filter
+    │   ├── activity.go
+    │   ├── metadata.go
+    │   ├── activity.json
+    │   └── activity_test.go
+    └── test/integration/         ← separate module for integration tests only
+        └── go.mod
 ```
 
 ## Getting Started
