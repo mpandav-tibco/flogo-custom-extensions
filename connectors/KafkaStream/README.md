@@ -166,6 +166,21 @@ connectors/KafkaStream/           ← single Go module root
 
 ### Add the Activities to Your Flogo Application
 
+Add the module as an extension in your TIBCO Flogo application. In the VS Code extension, open the **Extensions** panel, select **Add Custom Extension**, and point it at the `connectors/KafkaStream` folder (or the published module path `github.com/milindpandav/flogo-extensions/kafkastream`).
+
+For Flogo CLI-based projects, add the module to the `extensions` array in your `.flogo` descriptor:
+
+```json
+{
+  "extensions": [
+    {
+      "ref": "github.com/milindpandav/flogo-extensions/kafkastream"
+    }
+  ]
+}
+```
+
+Once imported, the **Kafka Stream Filter** and **Kafka Stream Aggregate** activities appear in the activity palette under the **KafkaStream** category.
 
 ### Typical Flow Pattern
 
