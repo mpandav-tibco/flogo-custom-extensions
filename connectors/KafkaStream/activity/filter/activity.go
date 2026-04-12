@@ -189,8 +189,11 @@ func (a *Activity) setTracingTags(ctx activity.Context, mode string, input *Inpu
 		tc.SetTag("filter.field", input.Field)
 		tc.SetTag("filter.operator", input.Operator)
 		tc.SetTag("filter.value", input.Value)
+		tc.SetTag("filter.predicate_mode", input.PredicateMode)
 		tc.SetTag("filter.result", result)
 		tc.SetTag("filter.eval_duration_ms", elapsedMs)
+		tc.SetTag("filter.deduplicated", result == "duplicate")
+		tc.SetTag("filter.rate_limited", result == "rate_limited")
 	}
 }
 

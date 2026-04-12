@@ -219,6 +219,14 @@
         {
             "name": "droppedCount",
             "type": "integer"
+        },
+        {
+            "name": "lateEventCount",
+            "type": "integer",
+            "display": {
+                "name": "Late Event Count",
+                "description": "Number of late-but-accepted events (within AllowedLateness) aggregated in the last closed window."
+            }
         }
     ]
 }
