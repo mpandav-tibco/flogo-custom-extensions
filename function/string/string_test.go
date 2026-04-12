@@ -301,3 +301,75 @@ func TestSnakeCase(t *testing.T) {
 		assert.Equal(t, "", out)
 	})
 }
+
+// ─── regexExtract ─────────────────────────────────────────────────────────────
+
+func TestRegexExtract(t *testing.T) {
+	fn := &fnRegexExtract{}
+
+	t.Run("extract digits (no capture group)", func(t *testing.T) {
+		out, err := fn.Eval("order-12345-done", `\d+`)
+		require.NoError(t, err)
+		assert.Equal(t, "12345", out)
+	})
+	t.Run("extract with capture group returns group 1", func(t *testing.T) {
+		out, err := fn.Eval("foo@example.com", `(\w+)@`)
+		require.NoError(t, err)
+		assert.Equal(t, "foo", out)
+	})
+	t.Run("no match returns empty string", func(t *testing.T) {
+		out, err := fn.Eval("hello world", `\d+`)
+		require.NoError(t, err)
+		assert.Equal(t, "", out)
+	})
+	t.Run("invalid pattern returns error", func(t *testing.T) {
+		_, err := fn.Eval("test", `[invalid`)
+		assert.Error(t, err)
+	})
+	t.Run("first match only", func(t *testing.T) {
+		out, err := fn.Eval("abc 123 def 456", `\d+`)
+		require.NoError(t, err)
+		assert.Equal(t, "123", out)
+	})
+	t.Run("email domain capture", func(t *testing.T) {
+		out, err := fn.Eval("user@tibco.com", `@(.+)$`)
+		require.NoError(t, err)
+		assert.Equal(t, "tibco.com", out)
+	})
+}
+
+// ─── format ───────────────────────────────────────────────────────────────────
+
+func TestFormat(t *testing.T) {
+	fn := &fnFormat{}
+
+	t.Run("string substitution", func(t *testing.T) {
+		out, err := fn.Eval("Hello %s!", "World")
+		require.NoError(t, err)
+		assert.Equal(t, "Hello World!", out)
+	})
+	t.Run("integer substitution", func(t *testing.T) {
+		out, err := fn.Eval("You have %d messages", 5)
+		require.NoError(t, err)
+		assert.Equal(t, "You have 5 messages", out)
+	})
+	t.Run("float with precision", func(t *testing.T) {
+		out, err := fn.Eval("Price: %.2f", 9.5)
+		require.NoError(t, err)
+		assert.Equal(t, "Price: 9.50", out)
+	})
+	t.Run("multiple args", func(t *testing.T) {
+		out, err := fn.Eval("%s is %d years old", "Alice", 30)
+		require.NoError(t, err)
+		assert.Equal(t, "Alice is 30 years old", out)
+	})
+	t.Run("no args returns template unchanged", func(t *testing.T) {
+		out, err := fn.Eval("static text")
+		require.NoError(t, err)
+		assert.Equal(t, "static text", out)
+	})
+	t.Run("no template returns error", func(t *testing.T) {
+		_, err := fn.Eval()
+		assert.Error(t, err)
+	})
+}

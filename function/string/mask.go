@@ -16,7 +16,7 @@ type fnMask struct{}
 
 func (fnMask) Name() string { return "mask" }
 
-func (fnMask) GetCategory() string { return "strutil" }
+func (fnMask) GetCategory() string { return "string" }
 
 func (fnMask) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString, data.TypeInt, data.TypeInt}, false

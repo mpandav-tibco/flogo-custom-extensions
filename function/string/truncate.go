@@ -17,7 +17,7 @@ func init() {
 type fnTruncate struct{}
 
 func (fnTruncate) Name() string        { return "truncate" }
-func (fnTruncate) GetCategory() string { return "strutil" }
+func (fnTruncate) GetCategory() string { return "string" }
 
 func (fnTruncate) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString, data.TypeInt}, false

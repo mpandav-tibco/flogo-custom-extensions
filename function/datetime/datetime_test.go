@@ -82,13 +82,13 @@ func TestToEpoch(t *testing.T) {
 		out, err := fn.Eval("2024-01-15T10:30:00Z")
 		require.NoError(t, err)
 		// 2024-01-15T10:30:00Z = 1705314600 seconds = 1705314600000 ms
-		assert.Equal(t, int64(1705314600000), out)
+		assert.Equal(t, int(1705314600000), out)
 	})
-	t.Run("returns int64", func(t *testing.T) {
+	t.Run("returns int", func(t *testing.T) {
 		out, err := fn.Eval("2020-01-01T00:00:00Z")
 		require.NoError(t, err)
-		_, ok := out.(int64)
-		assert.True(t, ok, "expected int64, got %T", out)
+		_, ok := out.(int)
+		assert.True(t, ok, "expected int, got %T", out)
 	})
 	t.Run("invalid datetime errors", func(t *testing.T) {
 		_, err := fn.Eval("not-a-date")
@@ -102,12 +102,12 @@ func TestFromEpoch(t *testing.T) {
 	fn := &fnFromEpoch{}
 
 	t.Run("known epoch to RFC3339", func(t *testing.T) {
-		out, err := fn.Eval(int64(1705314600000))
+		out, err := fn.Eval(int(1705314600000))
 		require.NoError(t, err)
 		assert.Equal(t, "2024-01-15T10:30:00Z", out)
 	})
 	t.Run("zero epoch = Unix epoch", func(t *testing.T) {
-		out, err := fn.Eval(int64(0))
+		out, err := fn.Eval(int(0))
 		require.NoError(t, err)
 		assert.Equal(t, "1970-01-01T00:00:00Z", out)
 	})
@@ -184,6 +184,113 @@ func TestIsWeekday(t *testing.T) {
 		assert.Equal(t, false, out)
 	})
 	t.Run("invalid arg errors", func(t *testing.T) {
+		_, err := fn.Eval("not-a-date")
+		assert.Error(t, err)
+	})
+}
+
+// ─── addBusinessDays ──────────────────────────────────────────────────────────
+
+func TestAddBusinessDays(t *testing.T) {
+	fn := &fnAddBusinessDays{}
+
+	t.Run("add 3 days mid-week lands on Thursday", func(t *testing.T) {
+		// 2024-01-08 is Monday, +3 = Thursday 2024-01-11
+		out, err := fn.Eval("2024-01-08T00:00:00Z", 3)
+		require.NoError(t, err)
+		assert.Equal(t, "2024-01-11T00:00:00Z", out)
+	})
+	t.Run("skips weekend", func(t *testing.T) {
+		// 2024-01-05 is Friday, +1 business day = Monday 2024-01-08
+		out, err := fn.Eval("2024-01-05T00:00:00Z", 1)
+		require.NoError(t, err)
+		assert.Equal(t, "2024-01-08T00:00:00Z", out)
+	})
+	t.Run("add 5 days skips a full weekend", func(t *testing.T) {
+		// 2024-01-08 Monday +5 = 2024-01-15 Monday (skips Sat-Sun)
+		out, err := fn.Eval("2024-01-08T00:00:00Z", 5)
+		require.NoError(t, err)
+		assert.Equal(t, "2024-01-15T00:00:00Z", out)
+	})
+	t.Run("negative days moves backward", func(t *testing.T) {
+		// 2024-01-08 Monday -1 = 2024-01-05 Friday
+		out, err := fn.Eval("2024-01-08T00:00:00Z", -1)
+		require.NoError(t, err)
+		assert.Equal(t, "2024-01-05T00:00:00Z", out)
+	})
+	t.Run("zero days returns same day", func(t *testing.T) {
+		out, err := fn.Eval("2024-01-08T00:00:00Z", 0)
+		require.NoError(t, err)
+		assert.Equal(t, "2024-01-08T00:00:00Z", out)
+	})
+	t.Run("invalid date errors", func(t *testing.T) {
+		_, err := fn.Eval("not-a-date", 1)
+		assert.Error(t, err)
+	})
+}
+
+// ─── startOfDay ───────────────────────────────────────────────────────────────
+
+func TestStartOfDay(t *testing.T) {
+	fn := &fnStartOfDay{}
+
+	t.Run("strips time component", func(t *testing.T) {
+		out, err := fn.Eval("2024-03-15T14:30:45Z")
+		require.NoError(t, err)
+		assert.Equal(t, "2024-03-15T00:00:00Z", out)
+	})
+	t.Run("already midnight unchanged", func(t *testing.T) {
+		out, err := fn.Eval("2024-03-15T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, "2024-03-15T00:00:00Z", out)
+	})
+	t.Run("end of day normalised to midnight", func(t *testing.T) {
+		out, err := fn.Eval("2024-03-15T23:59:59Z")
+		require.NoError(t, err)
+		assert.Equal(t, "2024-03-15T00:00:00Z", out)
+	})
+	t.Run("invalid date errors", func(t *testing.T) {
+		_, err := fn.Eval("not-a-date")
+		assert.Error(t, err)
+	})
+}
+
+// ─── quarter ──────────────────────────────────────────────────────────────────
+
+func TestQuarter(t *testing.T) {
+	fn := &fnQuarter{}
+
+	t.Run("January => Q1", func(t *testing.T) {
+		out, err := fn.Eval("2024-01-15T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 1, out)
+	})
+	t.Run("March => Q1", func(t *testing.T) {
+		out, err := fn.Eval("2024-03-31T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 1, out)
+	})
+	t.Run("April => Q2", func(t *testing.T) {
+		out, err := fn.Eval("2024-04-01T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 2, out)
+	})
+	t.Run("July => Q3", func(t *testing.T) {
+		out, err := fn.Eval("2024-07-15T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 3, out)
+	})
+	t.Run("October => Q4", func(t *testing.T) {
+		out, err := fn.Eval("2024-10-01T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 4, out)
+	})
+	t.Run("December => Q4", func(t *testing.T) {
+		out, err := fn.Eval("2024-12-31T00:00:00Z")
+		require.NoError(t, err)
+		assert.Equal(t, 4, out)
+	})
+	t.Run("invalid date errors", func(t *testing.T) {
 		_, err := fn.Eval("not-a-date")
 		assert.Error(t, err)
 	})

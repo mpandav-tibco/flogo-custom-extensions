@@ -21,7 +21,7 @@ func init() {
 type fnCamelCase struct{}
 
 func (fnCamelCase) Name() string        { return "camelCase" }
-func (fnCamelCase) GetCategory() string { return "strutil" }
+func (fnCamelCase) GetCategory() string { return "string" }
 
 func (fnCamelCase) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString}, false
@@ -70,7 +70,7 @@ func (fnCamelCase) Eval(params ...interface{}) (interface{}, error) {
 type fnSnakeCase struct{}
 
 func (fnSnakeCase) Name() string        { return "snakeCase" }
-func (fnSnakeCase) GetCategory() string { return "strutil" }
+func (fnSnakeCase) GetCategory() string { return "string" }
 
 func (fnSnakeCase) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{data.TypeString}, false
