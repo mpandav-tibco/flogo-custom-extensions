@@ -715,3 +715,149 @@ func TestSlidingTime_Dedup_ReleasedAfterEviction(t *testing.T) {
 	// Buffer: B(1000) + C(3500) + A(4000) → values 20+5+99 = 124
 	assert.Equal(t, 124.0, r.Value, "A must be re-accepted after time-based eviction")
 }
+
+// ─── Bug regression: idle timer must not be reset by duplicates ───────────────
+
+// TestTumblingCount_IdleTimeout_DuplicatesDoNotResetTimer verifies that a window
+// which receives only re-delivered duplicate events (same MessageID) still fires
+// its idle timeout. Previously, lastEventAt was updated before the dedup check,
+// so duplicates silently prevented the window from ever being idle-closed.
+func TestTumblingCount_IdleTimeout_DuplicatesDoNotResetTimer(t *testing.T) {
+	w := window.NewTumblingCountWindow(window.WindowConfig{
+		Type:          window.WindowTumblingCount,
+		Size:          100, // large — will not close by count
+		Function:      window.FuncSum,
+		IdleTimeoutMs: 30,
+	})
+	// Seed one real event to start the idle clock.
+	w.Add(window.WindowEvent{Value: 42, Timestamp: time.Now(), MessageID: "seed"})
+
+	// Flood with duplicates — must NOT reset the idle timer.
+	time.Sleep(10 * time.Millisecond)
+	for i := 0; i < 10; i++ {
+		w.Add(window.WindowEvent{Value: 42, Timestamp: time.Now(), MessageID: "seed"})
+	}
+
+	// After the idle timeout the window must close and emit the partial result.
+	time.Sleep(40 * time.Millisecond)
+	r, ok := w.CheckIdle()
+	assert.True(t, ok, "idle-close must fire even when only duplicates were received after the seed event")
+	require.NotNil(t, r)
+	assert.Equal(t, 42.0, r.Value)
+}
+
+// TestTumblingTime_IdleTimeout_DuplicatesDoNotResetTimer is the same check for
+// the time-based tumbling window.
+func TestTumblingTime_IdleTimeout_DuplicatesDoNotResetTimer(t *testing.T) {
+	w := window.NewTumblingTimeWindow(window.WindowConfig{
+		Type:          window.WindowTumblingTime,
+		Size:          60000, // 60 s — will not close by time in this test
+		Function:      window.FuncSum,
+		IdleTimeoutMs: 30,
+	})
+	base := time.Now()
+	w.Add(window.WindowEvent{Value: 10, Timestamp: base, MessageID: "seed"})
+
+	time.Sleep(10 * time.Millisecond)
+	for i := 0; i < 10; i++ {
+		w.Add(window.WindowEvent{Value: 10, Timestamp: base, MessageID: "seed"})
+	}
+
+	time.Sleep(40 * time.Millisecond)
+	r, ok := w.CheckIdle()
+	assert.True(t, ok, "idle-close must fire even when only duplicates were received after the seed event")
+	require.NotNil(t, r)
+	assert.Equal(t, 10.0, r.Value)
+}
+
+// ─── Bug regression: SlidingTimeWindow OverflowDropOldest must clean up seen ─
+
+// TestSlidingTime_Overflow_DropOldest_MessageIDCleanup verifies that when the
+// overflow policy is drop_oldest, the evicted event's MessageID is removed from
+// the dedup set so it can be re-used. Previously, the evicted event was removed
+// from events but its ID stayed in seen permanently.
+func TestSlidingTime_Overflow_DropOldest_MessageIDCleanup(t *testing.T) {
+	w := window.NewSlidingTimeWindow(window.WindowConfig{
+		Type:           window.WindowSlidingTime,
+		Size:           60000, // large — no time-based eviction in this test
+		Function:       window.FuncSum,
+		MaxBufferSize:  2,
+		OverflowPolicy: window.OverflowDropOldest,
+	})
+	base := time.Now()
+	// Fill buffer: [msg-1, msg-2]
+	w.Add(window.WindowEvent{Value: 1, Timestamp: base, MessageID: "msg-1"})
+	w.Add(window.WindowEvent{Value: 2, Timestamp: base.Add(time.Second), MessageID: "msg-2"})
+
+	// msg-3 overflows: evicts msg-1 → buffer=[msg-2, msg-3]. msg-1 must leave seen.
+	w.Add(window.WindowEvent{Value: 3, Timestamp: base.Add(2 * time.Second), MessageID: "msg-3"})
+
+	// msg-1 must now be accepted (not blocked as a duplicate).
+	// It overflows msg-2 → buffer=[msg-3, msg-1(10)].
+	r, _, _, err := w.Add(window.WindowEvent{Value: 10, Timestamp: base.Add(3 * time.Second), MessageID: "msg-1"})
+	require.NoError(t, err)
+	require.NotNil(t, r, "msg-1 must be accepted after being evicted by overflow")
+	assert.Equal(t, 13.0, r.Value, "sum(msg-3=3, msg-1=10) = 13")
+}
+
+// ─── Bug regression: sliding window persist must preserve seen map ────────────
+
+// TestSlidingTime_SaveLoad_PreservesSeenMap verifies that after state is saved
+// and restored into a new SlidingTimeWindow, previously-seen MessageIDs are
+// remembered so at-least-once re-deliveries are still suppressed.
+func TestSlidingTime_SaveLoad_PreservesSeenMap(t *testing.T) {
+	w1 := window.NewSlidingTimeWindow(window.WindowConfig{
+		Type: window.WindowSlidingTime, Size: 60000, Function: window.FuncSum,
+	})
+	base := time.Now()
+	w1.Add(window.WindowEvent{Value: 5, Timestamp: base, MessageID: "seen-id"})
+
+	// Save and restore into a fresh window instance.
+	state := w1.SaveState()
+	w2 := window.NewSlidingTimeWindow(window.WindowConfig{
+		Type: window.WindowSlidingTime, Size: 60000, Function: window.FuncSum,
+	})
+	w2.LoadState(state)
+
+	// "seen-id" must still be blocked — dedup state survived the round-trip.
+	r, closed, _, err := w2.Add(window.WindowEvent{Value: 99, Timestamp: base.Add(time.Second), MessageID: "seen-id"})
+	require.NoError(t, err)
+	assert.False(t, closed, "duplicate should be suppressed after state restore")
+	assert.Nil(t, r, "no result for a suppressed duplicate")
+
+	// A fresh ID must pass through normally.
+	r2, closed2, _, err2 := w2.Add(window.WindowEvent{Value: 20, Timestamp: base.Add(2 * time.Second), MessageID: "new-id"})
+	require.NoError(t, err2)
+	assert.True(t, closed2)
+	require.NotNil(t, r2)
+	assert.Equal(t, 25.0, r2.Value, "restored event(5) + new-id(20) = 25")
+}
+
+// TestSlidingCount_SaveLoad_PreservesSeenMap is the same round-trip check for
+// the count-based sliding window.
+func TestSlidingCount_SaveLoad_PreservesSeenMap(t *testing.T) {
+	w1 := window.NewSlidingCountWindow(window.WindowConfig{
+		Type: window.WindowSlidingCount, Size: 5, Function: window.FuncSum,
+	})
+	base := time.Now()
+	w1.Add(window.WindowEvent{Value: 7, Timestamp: base, MessageID: "seen-id"})
+
+	state := w1.SaveState()
+	w2 := window.NewSlidingCountWindow(window.WindowConfig{
+		Type: window.WindowSlidingCount, Size: 5, Function: window.FuncSum,
+	})
+	w2.LoadState(state)
+
+	// Duplicate must be blocked.
+	r, closed, _, err := w2.Add(window.WindowEvent{Value: 99, Timestamp: base.Add(time.Second), MessageID: "seen-id"})
+	require.NoError(t, err)
+	assert.False(t, closed, "duplicate should be suppressed after state restore")
+	assert.Nil(t, r)
+
+	// Fresh ID must be accepted.
+	r2, closed2, _, err2 := w2.Add(window.WindowEvent{Value: 3, Timestamp: base.Add(2 * time.Second), MessageID: "new-id"})
+	require.NoError(t, err2)
+	assert.True(t, closed2)
+	require.NotNil(t, r2)
+	assert.Equal(t, 10.0, r2.Value, "restored event(7) + new-id(3) = 10")
+}

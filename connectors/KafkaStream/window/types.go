@@ -163,6 +163,11 @@ type PersistedWindowState struct {
 	Values      []float64
 	Timestamps  []time.Time
 	MessageIDs  map[string]struct{}
+	// EventMessageIDs holds per-event message IDs for sliding windows, aligned
+	// with Values/Timestamps. Used to reconstruct the seen dedup map on LoadState
+	// so that at-least-once delivery duplicates are correctly suppressed after a
+	// process restart. Nil/short slices are handled gracefully (backwards compat).
+	EventMessageIDs []string
 	Watermark   time.Time
 	WindowStart time.Time
 	EventCount  int64

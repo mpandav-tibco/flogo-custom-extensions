@@ -119,12 +119,16 @@ func (w *TumblingTimeWindow) Add(event WindowEvent) (*WindowResult, bool, *LateE
 	defer w.mu.Unlock()
 
 	w.messagesIn++
-	w.lastEventAt = time.Now()
 
 	// --- 1. Deduplication ---
+	// lastEventAt is updated after this check so that duplicate events do NOT
+	// reset the idle timer. A window receiving only re-delivered duplicates
+	// must still be closed by CheckIdle once the timeout elapses.
 	if event.MessageID != "" && w.seen[event.MessageID] {
 		return nil, false, nil, nil
 	}
+
+	w.lastEventAt = time.Now()
 
 	// --- 2. Watermark advancement ---
 	if event.Timestamp.After(w.watermark) {
@@ -316,12 +320,14 @@ func (w *TumblingCountWindow) Add(event WindowEvent) (*WindowResult, bool, *Late
 	defer w.mu.Unlock()
 
 	w.messagesIn++
-	w.lastEventAt = time.Now()
 
-	// Deduplication
+	// Deduplication — lastEventAt is updated after this check so that
+	// duplicate events do not prevent idle-timeout from firing.
 	if event.MessageID != "" && w.seen[event.MessageID] {
 		return nil, false, nil, nil
 	}
+
+	w.lastEventAt = time.Now()
 
 	// Overflow check
 	if w.cfg.MaxBufferSize > 0 && int64(len(w.events)) >= w.cfg.MaxBufferSize {

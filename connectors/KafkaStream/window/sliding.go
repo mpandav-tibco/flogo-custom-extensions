@@ -54,17 +54,20 @@ func (w *SlidingTimeWindow) SaveState() PersistedWindowState {
 	defer w.mu.Unlock()
 	ts := make([]time.Time, len(w.events))
 	vs := make([]float64, len(w.events))
+	ids := make([]string, len(w.events))
 	for i, e := range w.events {
 		vs[i] = e.Value
 		ts[i] = e.Timestamp
+		ids[i] = e.MessageID
 	}
 	return PersistedWindowState{
-		Name:       w.cfg.Name,
-		Type:       string(w.cfg.Type),
-		Values:     vs,
-		Timestamps: ts,
-		EventCount: w.messagesIn,
-		SavedAt:    time.Now(),
+		Name:            w.cfg.Name,
+		Type:            string(w.cfg.Type),
+		Values:          vs,
+		Timestamps:      ts,
+		EventMessageIDs: ids,
+		EventCount:      w.messagesIn,
+		SavedAt:         time.Now(),
 	}
 }
 
@@ -72,12 +75,20 @@ func (w *SlidingTimeWindow) LoadState(s PersistedWindowState) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.events = make([]WindowEvent, len(s.Values))
+	w.seen = make(map[string]bool)
 	for i := range s.Values {
 		ts := time.Time{}
 		if i < len(s.Timestamps) {
 			ts = s.Timestamps[i]
 		}
-		w.events[i] = WindowEvent{Value: s.Values[i], Timestamp: ts}
+		msgID := ""
+		if i < len(s.EventMessageIDs) {
+			msgID = s.EventMessageIDs[i]
+		}
+		w.events[i] = WindowEvent{Value: s.Values[i], Timestamp: ts, MessageID: msgID}
+		if msgID != "" {
+			w.seen[msgID] = true
+		}
 	}
 	w.messagesIn = s.EventCount
 }
@@ -92,12 +103,13 @@ func (w *SlidingTimeWindow) Add(event WindowEvent) (*WindowResult, bool, *LateEv
 	defer w.mu.Unlock()
 
 	w.messagesIn++
-	w.lastEventAt = time.Now()
 
-	// Deduplication
+	// Deduplication — lastEventAt is updated after this check.
 	if event.MessageID != "" && w.seen[event.MessageID] {
 		return nil, false, nil, nil
 	}
+
+	w.lastEventAt = time.Now()
 
 	// Overflow check (before appending)
 	if w.cfg.MaxBufferSize > 0 && int64(len(w.events)) >= w.cfg.MaxBufferSize {
@@ -112,6 +124,12 @@ func (w *SlidingTimeWindow) Add(event WindowEvent) (*WindowResult, bool, *LateEv
 		case OverflowDropOldest:
 			w.messagesDropped++
 			if len(w.events) > 0 {
+				// Remove the evicted event's MessageID from seen so it is not
+				// permanently blocked from re-entry. Without this the seen map
+				// grows unboundedly and the evicted ID can never be reused.
+				if w.events[0].MessageID != "" {
+					delete(w.seen, w.events[0].MessageID)
+				}
 				w.events = w.events[1:]
 			}
 		}
@@ -208,17 +226,20 @@ func (w *SlidingCountWindow) SaveState() PersistedWindowState {
 	defer w.mu.Unlock()
 	vs := make([]float64, len(w.events))
 	ts := make([]time.Time, len(w.events))
+	ids := make([]string, len(w.events))
 	for i, e := range w.events {
 		vs[i] = e.Value
 		ts[i] = e.Timestamp
+		ids[i] = e.MessageID
 	}
 	return PersistedWindowState{
-		Name:       w.cfg.Name,
-		Type:       string(w.cfg.Type),
-		Values:     vs,
-		Timestamps: ts,
-		EventCount: w.messagesIn,
-		SavedAt:    time.Now(),
+		Name:            w.cfg.Name,
+		Type:            string(w.cfg.Type),
+		Values:          vs,
+		Timestamps:      ts,
+		EventMessageIDs: ids,
+		EventCount:      w.messagesIn,
+		SavedAt:         time.Now(),
 	}
 }
 
@@ -226,12 +247,20 @@ func (w *SlidingCountWindow) LoadState(s PersistedWindowState) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.events = make([]WindowEvent, len(s.Values))
+	w.seen = make(map[string]bool)
 	for i := range s.Values {
 		ts := time.Time{}
 		if i < len(s.Timestamps) {
 			ts = s.Timestamps[i]
 		}
-		w.events[i] = WindowEvent{Value: s.Values[i], Timestamp: ts}
+		msgID := ""
+		if i < len(s.EventMessageIDs) {
+			msgID = s.EventMessageIDs[i]
+		}
+		w.events[i] = WindowEvent{Value: s.Values[i], Timestamp: ts, MessageID: msgID}
+		if msgID != "" {
+			w.seen[msgID] = true
+		}
 	}
 	w.messagesIn = s.EventCount
 }
@@ -246,12 +275,13 @@ func (w *SlidingCountWindow) Add(event WindowEvent) (*WindowResult, bool, *LateE
 	defer w.mu.Unlock()
 
 	w.messagesIn++
-	w.lastEventAt = time.Now()
 
-	// Deduplication
+	// Deduplication — lastEventAt is updated after this check.
 	if event.MessageID != "" && w.seen[event.MessageID] {
 		return nil, false, nil, nil
 	}
+
+	w.lastEventAt = time.Now()
 
 	// Overflow check
 	if w.cfg.MaxBufferSize > 0 && int64(len(w.events)) >= w.cfg.MaxBufferSize {
