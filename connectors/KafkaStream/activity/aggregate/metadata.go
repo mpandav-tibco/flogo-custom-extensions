@@ -132,14 +132,14 @@ type Output struct {
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"windowClosed": o.WindowClosed,
-		"result":       o.Result,
-		"count":        o.Count,
-		"windowName":   o.WindowName,
-		"key":          o.Key,
-		"lateEvent":    o.LateEvent,
-		"lateReason":    o.LateReason,
-		"droppedCount":  o.DroppedCount,
+		"windowClosed":   o.WindowClosed,
+		"result":         o.Result,
+		"count":          o.Count,
+		"windowName":     o.WindowName,
+		"key":            o.Key,
+		"lateEvent":      o.LateEvent,
+		"lateReason":     o.LateReason,
+		"droppedCount":   o.DroppedCount,
 		"lateEventCount": o.LateEventCount,
 	}
 }

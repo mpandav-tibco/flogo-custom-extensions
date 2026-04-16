@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -94,6 +95,27 @@ func SweepIdle() []*window.WindowResult {
 	defer registryMutex.Unlock()
 	var results []*window.WindowResult
 	for name, store := range windowRegistry {
+		if result, closed := store.CheckIdle(); closed {
+			results = append(results, result)
+			delete(windowRegistry, name)
+		}
+	}
+	return results
+}
+
+// SweepIdleFor is the scoped variant of SweepIdle — it only considers windows
+// whose name exactly matches prefix (unkeyed window) or starts with prefix+":"
+// (keyed sub-windows). This prevents a trigger's idle sweep goroutine from
+// consuming idle results that belong to a different aggregate trigger instance
+// running in the same process.
+func SweepIdleFor(prefix string) []*window.WindowResult {
+	registryMutex.Lock()
+	defer registryMutex.Unlock()
+	var results []*window.WindowResult
+	for name, store := range windowRegistry {
+		if name != prefix && !strings.HasPrefix(name, prefix+":") {
+			continue
+		}
 		if result, closed := store.CheckIdle(); closed {
 			results = append(results, result)
 			delete(windowRegistry, name)

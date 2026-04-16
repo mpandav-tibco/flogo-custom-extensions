@@ -1,0 +1,177 @@
+{
+    "name": "kafka-stream-join-trigger",
+    "title": "Join Kafka Streams",
+    "version": "1.0.0",
+    "type": "flogo:trigger",
+    "description": "Subscribes to two or more Kafka topics and fires the flow when messages carrying the same joinKeyField value have been received from every configured topic within joinWindowMs milliseconds — a classic stream-join / stream-enrichment pattern. Each topic uses its own consumer group. When the window expires before all topics contribute, an optional timeout handler fires with the partial data.",
+    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join",
+    "display": {
+        "category": "KafkaStream",
+        "visible": true,
+        "description": "Fire a flow when matching messages arrive from all configured Kafka topics within a time window.",
+        "smallIcon": "icons/consumer_trigger.png",
+        "largeIcon": "icons/consumer_trigger@2x.png",
+        "connector": [
+            "Kafka/tibco-kafka"
+        ],
+        "wizard": [
+            "Choose Connection"
+        ]
+    },
+    "settings": [
+        {
+            "name": "kafkaConnection",
+            "type": "connection",
+            "required": true,
+            "display": {
+                "name": "Kafka Connection",
+                "description": "TIBCO Kafka shared connection providing broker addresses, authentication, and TLS settings.",
+                "type": "connection"
+            },
+            "wizard": {
+                "type": "dropdown",
+                "selection": "single",
+                "step": "Choose Connection"
+            },
+            "allowed": []
+        },
+        {
+            "name": "topics",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Topics",
+                "description": "Comma-separated list of Kafka topics to join (minimum 2). Example: orders,payments — messages from both topics with the same joinKeyField value will be merged into a single flow invocation.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "consumerGroup",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Consumer Group (Base)",
+                "description": "Base Kafka consumer group ID. The trigger creates one consumer group per topic named '<base>-<topicName>' (e.g. my-join-cg-orders, my-join-cg-payments). Must be unique per trigger instance.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "joinKeyField",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Join Key Field",
+                "description": "Message field whose value is used to correlate messages across topics (e.g. order_id, device_id). A message from each topic must have the same value for this field within joinWindowMs for the join to fire."
+            }
+        },
+        {
+            "name": "joinWindowMs",
+            "type": "integer",
+            "required": true,
+            "value": 30000,
+            "display": {
+                "name": "Join Window (ms)",
+                "description": "Maximum time in milliseconds to wait for all topics to contribute a message with the same joinKeyField value. When the window expires before all topics contribute, a timeout event is emitted (if a timeout handler is configured).",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "initialOffset",
+            "type": "string",
+            "value": "newest",
+            "display": {
+                "name": "Initial Offset",
+                "description": "Where to start consuming when no committed offset exists for a consumer group.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "newest",
+                "oldest"
+            ]
+        },
+        {
+            "name": "balanceStrategy",
+            "type": "string",
+            "value": "roundrobin",
+            "display": {
+                "name": "Balance Strategy",
+                "description": "Kafka consumer group rebalance strategy applied to all per-topic consumer groups. 'roundrobin' (default) | 'sticky' (minimises reassignments) | 'range'.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "roundrobin",
+                "sticky",
+                "range"
+            ]
+        },
+        {
+            "name": "commitOnSuccess",
+            "type": "boolean",
+            "value": true,
+            "display": {
+                "name": "Commit Completing Offset on Success Only",
+                "description": "When true (default), the completing (last-arriving) message's offset is marked only when all joined handlers complete without error — at-least-once for the completing topic. When false, the offset is always committed. Note: offsets for non-completing topics are always committed immediately when their contribution is recorded, as Sarama sessions cannot be held open across topic boundaries."
+            }
+        },
+        {
+            "name": "handlerTimeoutMs",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Handler Timeout (ms)",
+                "description": "Maximum time in milliseconds allowed for all handlers to complete. 0 (default) means no timeout. When exceeded the handler is treated as failed and, if Commit Completing Offset on Success Only is true, the offset is not marked.",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "eventType",
+                "type": "string",
+                "value": "joined",
+                "display": {
+                    "name": "Event Type",
+                    "description": "'joined' (default): fires when all topics contribute a matching message within the window. 'timeout': fires when the window expires before all topics contribute (for DLQ / partial-result handling). 'all': fires for both joined and timeout events.",
+                    "type": "dropdown"
+                },
+                "allowed": [
+                    "joined",
+                    "timeout",
+                    "all"
+                ]
+            }
+        ]
+    },
+    "outputs": [
+        {
+            "name": "joinResult",
+            "type": "object",
+            "value": {
+                "metadata": "",
+                "value": "{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}}"
+            }
+        },
+        {
+            "name": "timeoutResult",
+            "type": "object",
+            "value": {
+                "metadata": "",
+                "value": "{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}}"
+            }
+        },
+        {
+            "name": "eventType",
+            "type": "string",
+            "value": {
+                "metadata": "",
+                "value": "\"joined\""
+            }
+        }
+    ],
+    "actions": [
+        {
+            "name": "Finish"
+        }
+    ]
+}

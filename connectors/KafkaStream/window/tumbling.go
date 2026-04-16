@@ -212,14 +212,7 @@ func (w *TumblingTimeWindow) Add(event WindowEvent) (*WindowResult, bool, *LateE
 		}
 	}
 
-	// --- 5. Accept event ---
-	if event.MessageID != "" {
-		w.seen[event.MessageID] = true
-	}
-	w.events = append(w.events, event)
-	w.lastKey = event.Key
-
-	// --- 6. Window boundary check ---
+	// --- 5. Window boundary check (before accepting the event) ---
 	// Lazy initialisation: set windowStart to the first accepted event's
 	// timestamp. This is correct for both real-time and historical replay.
 	if w.windowStart.IsZero() {
@@ -227,9 +220,25 @@ func (w *TumblingTimeWindow) Add(event WindowEvent) (*WindowResult, bool, *LateE
 	}
 	elapsed := event.Timestamp.Sub(w.windowStart).Milliseconds()
 	if elapsed >= w.cfg.Size {
+		// Close the current window WITHOUT the triggering event.
+		// The boundary-crossing event is the first event of the NEW window,
+		// not the last event of the expired one.
 		result := w.closeWindow(event.Timestamp, event.Key)
+		// Seed the new window with the triggering event.
+		if event.MessageID != "" {
+			w.seen[event.MessageID] = true
+		}
+		w.events = append(w.events, event)
+		w.lastKey = event.Key
 		return result, true, nil, nil
 	}
+
+	// --- 6. Accept event into the current window ---
+	if event.MessageID != "" {
+		w.seen[event.MessageID] = true
+	}
+	w.events = append(w.events, event)
+	w.lastKey = event.Key
 	return nil, false, nil, nil
 }
 
@@ -266,8 +275,8 @@ func (w *TumblingTimeWindow) closeWindow(closedAt time.Time, key string) *Window
 // aggregate result and resets. Supports overflow back-pressure and
 // deduplication.
 type TumblingCountWindow struct {
-	mu      sync.Mutex
-	cfg     WindowConfig
+	mu  sync.Mutex
+	cfg WindowConfig
 	// events stores the full WindowEvent (not just float64) so that per-event
 	// MessageIDs can be tracked during overflow eviction. OverflowDropOldest
 	// removes the evicted event's ID from seen, preventing a data-loss path

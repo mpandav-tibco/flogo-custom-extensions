@@ -1,0 +1,327 @@
+{
+    "name": "kafka-stream-aggregate-trigger",
+    "title": "Aggregate Kafka Stream",
+    "version": "1.0.0",
+    "type": "flogo:trigger",
+    "description": "Consumes messages from a Kafka topic, accumulates a numeric field into a stateful window, and fires the flow when the window closes (tumbling) or on every message (sliding). Supports keyed windows, event-time watermarks, late-event DLQ routing, overflow policies, MessageID deduplication, idle-timeout auto-close, and state persistence.",
+    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate",
+    "display": {
+        "category": "KafkaStream",
+        "visible": true,
+        "description": "Fire a flow with an aggregate result when a Kafka stream window closes.",
+        "smallIcon": "icons/consumer_trigger.png",
+        "largeIcon": "icons/consumer_trigger@2x.png",
+        "connector": [
+            "Kafka/tibco-kafka"
+        ],
+        "wizard": [
+            "Choose Connection"
+        ]
+    },
+    "settings": [
+        {
+            "name": "kafkaConnection",
+            "type": "connection",
+            "required": true,
+            "display": {
+                "name": "Kafka Connection",
+                "description": "TIBCO Kafka shared connection providing broker addresses, authentication, and TLS settings.",
+                "type": "connection"
+            },
+            "wizard": {
+                "type": "dropdown",
+                "selection": "single",
+                "step": "Choose Connection"
+            },
+            "allowed": []
+        },
+        {
+            "name": "topic",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Topic",
+                "description": "Kafka topic to consume messages from.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "consumerGroup",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Consumer Group",
+                "description": "Kafka consumer group ID.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "initialOffset",
+            "type": "string",
+            "value": "newest",
+            "display": {
+                "name": "Initial Offset",
+                "description": "Where to start when no committed offset exists.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "newest",
+                "oldest"
+            ]
+        },
+        {
+            "name": "balanceStrategy",
+            "type": "string",
+            "value": "roundrobin",
+            "display": {
+                "name": "Balance Strategy",
+                "description": "Kafka consumer group rebalance strategy. 'roundrobin' (default) — simple round-robin partition assignment. 'sticky' — minimises partition reassignments on rebalance, recommended when using keyed windows to reduce in-flight state loss. 'range' — assigns contiguous partition ranges per consumer.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "roundrobin",
+                "sticky",
+                "range"
+            ]
+        },
+        {
+            "name": "windowName",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Window Name",
+                "description": "Unique name for this window instance across flow executions (e.g. sensor-5s-sum).",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "windowType",
+            "type": "string",
+            "required": true,
+            "value": "TumblingTime",
+            "display": {
+                "name": "Window Type",
+                "description": "TumblingTime: fixed time buckets. TumblingCount: fixed event batches. SlidingTime: rolling last-N-seconds. SlidingCount: rolling last-N-events.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "TumblingTime",
+                "TumblingCount",
+                "SlidingTime",
+                "SlidingCount"
+            ]
+        },
+        {
+            "name": "windowSize",
+            "type": "integer",
+            "required": true,
+            "value": 5000,
+            "display": {
+                "name": "Window Size",
+                "description": "Time-based: milliseconds (e.g. 5000=5s). Count-based: number of events.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "function",
+            "type": "string",
+            "required": true,
+            "value": "sum",
+            "display": {
+                "name": "Aggregate Function",
+                "description": "Aggregation function applied to valueField over the window.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "sum",
+                "count",
+                "avg",
+                "min",
+                "max"
+            ]
+        },
+        {
+            "name": "valueField",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Value Field",
+                "description": "The message field whose numeric value is aggregated."
+            }
+        },
+        {
+            "name": "keyField",
+            "type": "string",
+            "display": {
+                "name": "Key Field",
+                "description": "When set, independent sub-windows are maintained per unique value of this field (e.g. device_id)."
+            }
+        },
+        {
+            "name": "eventTimeField",
+            "type": "string",
+            "display": {
+                "name": "Event Time Field",
+                "description": "Message field containing the event timestamp (Unix-ms int64 or RFC-3339 string). Leave empty to use wall-clock time."
+            }
+        },
+        {
+            "name": "messageIDField",
+            "type": "string",
+            "display": {
+                "name": "Message ID Field",
+                "description": "Field used as a unique event ID for per-window deduplication. Leave empty to disable."
+            }
+        },
+        {
+            "name": "allowedLateness",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Allowed Lateness (ms)",
+                "description": "Maximum age in ms beyond the watermark that a late event is still accepted. 0 = reject all late events.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxBufferSize",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Max Buffer Size",
+                "description": "Cap on the number of values buffered per window. 0 = unlimited.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "overflowPolicy",
+            "type": "string",
+            "value": "drop_oldest",
+            "display": {
+                "name": "Overflow Policy",
+                "description": "What to do when maxBufferSize is exceeded.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "drop_oldest",
+                "drop_newest",
+                "error"
+            ]
+        },
+        {
+            "name": "idleTimeoutMs",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Idle Timeout (ms)",
+                "description": "Auto-close a sub-window that receives no event for this many ms and emit its partial result. 0 = disabled.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxKeys",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Max Keys",
+                "description": "Cap on the number of concurrent keyed sub-windows. 0 = unlimited.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "persistPath",
+            "type": "string",
+            "display": {
+                "name": "Persist Path",
+                "description": "File path for gob-encoded window state snapshots. Leave empty to disable persistence.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "persistEveryN",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Persist Every N Messages",
+                "description": "Snapshot state every N messages. 0 = persist only on graceful shutdown.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "commitOnSuccess",
+            "type": "boolean",
+            "value": true,
+            "display": {
+                "name": "Commit Offset on Success Only",
+                "description": "When true (default), the Kafka offset is marked processed only when all handlers complete without error — the message is redelivered on flow failure (at-least-once). When false, the offset is always committed regardless of handler result (at-most-once). Note: for windowed aggregation, redelivery re-adds the value to the window and may cause double-counting if state is not persisted."
+            }
+        },
+        {
+            "name": "handlerTimeoutMs",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Handler Timeout (ms)",
+                "description": "Maximum time in milliseconds allowed for all handlers to complete for a single message. 0 (default) means no timeout. When exceeded the handler is treated as failed and, if Commit Offset on Success Only is true, the offset is not marked.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "onSchemaError",
+            "type": "string",
+            "value": "skip",
+            "display": {
+                "name": "On Schema Error",
+                "description": "Behaviour when a message passes JSON decode but fails schema validation (missing valueField, non-numeric value, window.Add error). 'skip' (default): mark the offset and discard — prevents stalls. 'retry': do not mark the offset; message redelivered after restart/rebalance. Use 'retry' only when the schema error is transient and the consumer is idempotent.",
+                "type": "dropdown",
+                "appPropertySupport": true
+            },
+            "allowed": [
+                "skip",
+                "retry"
+            ]
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "eventType",
+                "type": "string",
+                "value": "windowClose",
+                "display": {
+                    "name": "Event Type",
+                    "description": "'windowClose': fires when the window closes with aggregate result (default). 'lateEvent': fires when a message is rejected as late (for DLQ routing). 'all': fires for both.",
+                    "type": "dropdown"
+                },
+                "allowed": [
+                    "windowClose",
+                    "lateEvent",
+                    "all"
+                ]
+            }
+        ]
+    },
+    "outputs": [
+        {
+            "name": "windowResult",
+            "type": "object",
+            "value": {
+                "metadata": "",
+                "value": "{\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"number\"},\"count\":{\"type\":\"integer\"},\"windowName\":{\"type\":\"string\"},\"key\":{\"type\":\"string\"},\"windowClosed\":{\"type\":\"boolean\"},\"droppedCount\":{\"type\":\"integer\"},\"lateEventCount\":{\"type\":\"integer\"}}}"
+            }
+        },
+        {
+            "name": "source",
+            "type": "object",
+            "value": {
+                "metadata": "",
+                "value": "{\"type\":\"object\",\"properties\":{\"topic\":{\"type\":\"string\"},\"partition\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"lateEvent\":{\"type\":\"boolean\"},\"lateReason\":{\"type\":\"string\"}}}"
+            }
+        }
+    ],
+    "actions": [
+        {
+            "name": "Finish"
+        }
+    ]
+}

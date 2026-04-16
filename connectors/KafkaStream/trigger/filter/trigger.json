@@ -1,0 +1,362 @@
+{
+    "name": "kafka-stream-filter-trigger",
+    "title": "Filter Kafka Stream ",
+    "version": "1.0.0",
+    "type": "flogo:trigger",
+    "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) — no separate Kafka trigger is needed.",
+    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter",
+    "display": {
+        "category": "KafkaStream",
+        "visible": true,
+        "description": "Fire a flow when a Kafka message matches a field predicate.",
+        "smallIcon": "icons/consumer_trigger.png",
+        "largeIcon": "icons/consumer_trigger@2x.png",
+        "connector": [
+            "Kafka/tibco-kafka"
+        ],
+        "wizard": [
+            "Choose Connection"
+        ]
+    },
+    "settings": [
+        {
+            "name": "kafkaConnection",
+            "type": "connection",
+            "required": true,
+            "display": {
+                "name": "Kafka Connection",
+                "description": "TIBCO Kafka shared connection providing broker addresses, authentication, and TLS settings.",
+                "type": "connection"
+            },
+            "wizard": {
+                "type": "dropdown",
+                "selection": "single",
+                "step": "Choose Connection"
+            },
+            "allowed": []
+        },
+        {
+            "name": "topic",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Topic",
+                "description": "Kafka topic to consume messages from.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "consumerGroup",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Consumer Group",
+                "description": "Kafka consumer group ID. Each trigger instance in the same group shares partition load.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "initialOffset",
+            "type": "string",
+            "value": "newest",
+            "display": {
+                "name": "Initial Offset",
+                "description": "Where to start consuming when no committed offset exists for this consumer group.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "newest",
+                "oldest"
+            ]
+        },
+        {
+            "name": "operator",
+            "type": "string",
+            "value": "eq",
+            "display": {
+                "name": "Default Operator",
+                "description": "Default comparison operator used when handler 'operator' is not set."
+            },
+            "allowed": [
+                "eq",
+                "neq",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "contains",
+                "startsWith",
+                "endsWith",
+                "regex"
+            ]
+        },
+        {
+            "name": "predicateMode",
+            "type": "string",
+            "value": "and",
+            "display": {
+                "name": "Default Predicate Mode",
+                "description": "'and': all predicates must pass. 'or': at least one must pass."
+            },
+            "allowed": [
+                "and",
+                "or"
+            ]
+        },
+        {
+            "name": "passThroughOnMissing",
+            "type": "boolean",
+            "value": false,
+            "display": {
+                "name": "Pass Through on Missing Field",
+                "description": "When true, messages where the filter field is absent are treated as passing."
+            }
+        },
+        {
+            "name": "enableDedup",
+            "type": "boolean",
+            "value": false,
+            "display": {
+                "name": "Enable Deduplication",
+                "description": "When true, duplicate messages are suppressed using the handler-level 'dedupField' as the unique event ID."
+            }
+        },
+        {
+            "name": "dedupWindow",
+            "type": "string",
+            "value": "10m",
+            "display": {
+                "name": "Dedup Window",
+                "description": "How long to remember seen event IDs. Go duration string e.g. '10m', '1h'.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "dedupMaxEntries",
+            "type": "integer",
+            "value": 100000,
+            "display": {
+                "name": "Dedup Max Entries",
+                "description": "Maximum number of event IDs to track in memory. 0 = 100 000.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "rateLimitRPS",
+            "type": "number",
+            "value": 0,
+            "display": {
+                "name": "Rate Limit (msgs/sec)",
+                "description": "Maximum messages per second accepted. 0 = disabled.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "rateLimitBurst",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Rate Limit Burst",
+                "description": "Token bucket burst size. 0 = same value as rateLimitRPS.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "rateLimitMode",
+            "type": "string",
+            "value": "drop",
+            "display": {
+                "name": "Rate Limit Mode",
+                "description": "'drop': exceeded messages are dropped immediately and the Kafka offset is permanently advanced — dropped messages are NOT redelivered even when commitOnSuccess=true (at-most-once semantics for rate-limited messages). 'wait': block up to rateLimitMaxWaitMs for a token before processing.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "drop",
+                "wait"
+            ]
+        },
+        {
+            "name": "rateLimitMaxWaitMs",
+            "type": "integer",
+            "value": 500,
+            "display": {
+                "name": "Rate Limit Max Wait (ms)",
+                "description": "Maximum wait time in milliseconds when rateLimitMode=wait.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "balanceStrategy",
+            "type": "string",
+            "value": "roundrobin",
+            "display": {
+                "name": "Balance Strategy",
+                "description": "Kafka consumer group rebalance strategy. 'roundrobin' (default) — simple round-robin partition assignment. 'sticky' — minimises partition reassignments on rebalance. 'range' — assigns contiguous partition ranges per consumer.",
+                "type": "dropdown"
+            },
+            "allowed": [
+                "roundrobin",
+                "sticky",
+                "range"
+            ]
+        },
+        {
+            "name": "commitOnSuccess",
+            "type": "boolean",
+            "value": true,
+            "display": {
+                "name": "Commit Offset on Success Only",
+                "description": "When true (default), the Kafka offset is committed only when all pass-handlers complete without error — the message is redelivered on flow failure (at-least-once). When false, the offset is always committed regardless of handler result (at-most-once)."
+            }
+        },
+        {
+            "name": "handlerTimeoutMs",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Handler Timeout (ms)",
+                "description": "Maximum time in milliseconds allowed for all handlers to complete for a single message. 0 (default) means no timeout. When exceeded the handler is treated as failed and, if Commit Offset on Success Only is true, the offset is not marked.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "dedupPersistPath",
+            "type": "string",
+            "display": {
+                "name": "Dedup Persist Path",
+                "description": "File path for gob-encoded dedup state snapshots. Persists seen event IDs across restarts so duplicates are still suppressed after a restart. Leave empty to disable. Only active when enableDedup is true.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "dedupPersistEveryN",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Dedup Persist Every N Messages",
+                "description": "Save dedup state every N messages. 0 = persist only on graceful shutdown.",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "eventType",
+                "type": "string",
+                "value": "pass",
+                "display": {
+                    "name": "Event Type",
+                    "description": "'pass' (default): fires when the predicate evaluates to true. 'evalError': fires when predicate evaluation fails — use for dead-letter routing. 'all': fires for both.",
+                    "type": "dropdown"
+                },
+                "allowed": [
+                    "pass",
+                    "evalError",
+                    "all"
+                ]
+            },
+            {
+                "name": "field",
+                "type": "string",
+                "display": {
+                    "name": "Field",
+                    "description": "Message field to evaluate in single-predicate mode. Leave empty to use multi-predicate mode via 'predicates'."
+                }
+            },
+            {
+                "name": "operator",
+                "type": "string",
+                "display": {
+                    "name": "Operator",
+                    "description": "Comparison operator for single-predicate mode. Overrides the trigger-level 'operator' default."
+                },
+                "allowed": [
+                    "eq",
+                    "neq",
+                    "gt",
+                    "gte",
+                    "lt",
+                    "lte",
+                    "contains",
+                    "startsWith",
+                    "endsWith",
+                    "regex"
+                ]
+            },
+            {
+                "name": "value",
+                "type": "string",
+                "display": {
+                    "name": "Value",
+                    "description": "Comparison value for single-predicate mode.",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "predicates",
+                "type": "string",
+                "display": {
+                    "name": "Predicates (JSON)",
+                    "description": "Multi-predicate definition as a JSON array. E.g. [{\"field\":\"status\",\"operator\":\"eq\",\"value\":\"200\"},{\"field\":\"region\",\"operator\":\"eq\",\"value\":\"us-east\"}]",
+                    "type": "textbox"
+                }
+            },
+            {
+                "name": "predicateMode",
+                "type": "string",
+                "display": {
+                    "name": "Predicate Mode",
+                    "description": "Overrides the trigger-level predicateMode for this handler. 'and' | 'or'."
+                },
+                "allowed": [
+                    "and",
+                    "or"
+                ]
+            },
+            {
+                "name": "dedupField",
+                "type": "string",
+                "display": {
+                    "name": "Dedup Field",
+                    "description": "The message field whose value is used as the unique event ID for deduplication. Only active when trigger-level 'enableDedup' is true."
+                }
+            }
+        ]
+    },
+    "outputs": [
+        {
+            "name": "message",
+            "type": "object"
+        },
+        {
+            "name": "topic",
+            "type": "string"
+        },
+        {
+            "name": "partition",
+            "type": "integer"
+        },
+        {
+            "name": "offset",
+            "type": "integer"
+        },
+        {
+            "name": "key",
+            "type": "string"
+        },
+        {
+            "name": "evalError",
+            "type": "boolean"
+        },
+        {
+            "name": "evalErrorReason",
+            "type": "string"
+        }
+    ],
+    "actions": [
+        {
+            "name": "Finish"
+        }
+    ]
+}

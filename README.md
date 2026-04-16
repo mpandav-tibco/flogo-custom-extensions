@@ -45,6 +45,9 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [PostgreSQL Listener](trigger/postgreslistener/) | 0.1.0 | Database | Listen for PostgreSQL NOTIFY messages on specified channels |
 | [MySQL Binlog Listener](trigger/mysql-binlog-listener/) | 1.1.0 | Database | Real-time MySQL/MariaDB binlog streaming for change data capture with SSL/TLS support |
 | [SSE Trigger](connectors/sse/trigger/) | 1.0.0 | Real-time | Server-Sent Events trigger for streaming data to web clients |
+| [Kafka Stream Aggregate Trigger](connectors/KafkaStream/trigger/aggregate/) | 1.0.0 | Kafka Stream | Stateful windowed aggregation over a Kafka topic — fires on window close with sum/avg/count/min/max result |
+| [Kafka Stream Filter Trigger](connectors/KafkaStream/trigger/filter/) | 1.0.0 | Kafka Stream | Fire a flow only for messages satisfying single or multi-predicate AND/OR conditions; supports deduplication and rate limiting |
+| [Kafka Stream Join Trigger](connectors/KafkaStream/trigger/join/) | 1.0.0 | Kafka Stream | Stream-join across two or more Kafka topics — fires when messages with the same join key arrive from all topics within a configurable window |
 
 ## 🚀 Quick Start
 
@@ -69,7 +72,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [AWS SQS Delete Demo](examples/aws_signature4/) | AWS Signature V4 Generator, REST Invoke Activity | AWS SQS message deletion demo using Signature V4 authentication |
 | [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
-| [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Filter, Kafka Stream Aggregate | Filter hot sensor readings by temperature threshold and compute per-device averages over a tumbling time window |
+| [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, and join readings with alert thresholds across two topics |
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 
 ## 🤝 Contributing
