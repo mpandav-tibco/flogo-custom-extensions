@@ -13,14 +13,18 @@ import (
 
 // SSEConnection represents an individual SSE connection
 type SSEConnection struct {
-	ID            string
-	ClientIP      string
-	UserAgent     string
-	Headers       map[string]interface{}
-	QueryParams   map[string]interface{}
-	Topic         string
-	LastEventID   string
-	ConnectedAt   time.Time
+	ID          string
+	ClientIP    string
+	UserAgent   string
+	Headers     map[string]interface{}
+	QueryParams map[string]interface{}
+	Topic       string
+	LastEventID string
+	ConnectedAt time.Time
+	// Ctx carries the OTel tracing context extracted from the HTTP request at
+	// connection time (via trace.HTTPHeaders). Handlers should call h.Handle with
+	// this context so the downstream span is correlated to the upstream trace.
+	Ctx           context.Context
 	writer        http.ResponseWriter
 	flusher       http.Flusher
 	logger        log.Logger

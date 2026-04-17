@@ -58,7 +58,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return false, fmt.Errorf("failed to get input: %v", err)
 	}
 
-	a.logger.Debugf("SSE Send Activity received input: data=%v, eventType=%s, target=%s, format=%s", 
+	a.logger.Debugf("SSE Send Activity received input: data=%v, eventType=%s, target=%s, format=%s",
 		input.Data, input.EventType, input.Target, input.Format)
 
 	// Auto-build target if not explicitly provided
@@ -93,7 +93,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	if err != nil {
 		return a.setErrorOutput(ctx, fmt.Sprintf("Failed to create SSE event: %v", err))
 	}
-	a.logger.Debugf("Created SSE event: id=%s, type=%s, dataLength=%d", 
+	a.logger.Debugf("Created SSE event: id=%s, type=%s, dataLength=%d",
 		event.ID, event.Event, len(event.Data))
 
 	// Send event based on target type
@@ -101,7 +101,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	if err != nil {
 		return a.setErrorOutput(ctx, fmt.Sprintf("Failed to send event: %v", err))
 	}
-	a.logger.Infof("Successfully sent SSE event (id=%s) to %d clients via %s target", 
+	a.logger.Infof("Successfully sent SSE event (id=%s) to %d clients via %s target",
 		event.ID, sentCount, target.Type)
 
 	// Set success output
@@ -119,6 +119,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	}
 
 	a.logger.Debugf("Successfully sent SSE event to %d clients", sentCount)
+	a.setTracingTags(ctx, input, output)
 	return true, nil
 }
 
@@ -425,4 +426,22 @@ func (a *Activity) setErrorOutput(ctx activity.Context, errorMsg string) (bool, 
 	}
 
 	return true, nil
+}
+
+// setTracingTags attaches SSE-specific tags to the engine-managed span.
+// Follows the same pattern as the OOTB Kafka producer and the aggregate/filter activities.
+func (a *Activity) setTracingTags(ctx activity.Context, in *Input, out *Output) {
+	if tc := ctx.GetTracingContext(); tc != nil {
+		tc.SetTag("sse.event_id", out.EventID)
+		tc.SetTag("sse.event_type", in.EventType)
+		tc.SetTag("sse.target", in.Target)
+		tc.SetTag("sse.sent_count", out.SentCount)
+		tc.SetTag("sse.success", out.Success)
+		if in.Topic != "" {
+			tc.SetTag("sse.topic", in.Topic)
+		}
+		if !out.Success && out.Error != "" {
+			tc.SetTag("sse.error", out.Error)
+		}
+	}
 }

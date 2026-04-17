@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/project-flogo/core/support/log"
+	"github.com/project-flogo/core/support/trace"
 )
 
 // SSEServerConfig represents the SSE server configuration
@@ -161,7 +162,7 @@ func (s *SSEServer) handleSSEConnection(w http.ResponseWriter, r *http.Request) 
 	// Check connection limit
 	currentConnections := s.getConnectionCount()
 	if currentConnections >= int64(s.config.MaxConnections) {
-		s.logger.Warnf("Connection limit exceeded: %d/%d connections, rejecting new connection from %s", 
+		s.logger.Warnf("Connection limit exceeded: %d/%d connections, rejecting new connection from %s",
 			currentConnections, s.config.MaxConnections, r.RemoteAddr)
 		http.Error(w, "Connection limit exceeded", http.StatusServiceUnavailable)
 		return
@@ -187,9 +188,18 @@ func (s *SSEServer) handleSSEConnection(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Extract OTel trace propagation headers from the incoming HTTP request.
+	// This follows the OOTB HTTP/REST trigger pattern (trace.HTTPHeaders carrier).
+	gContext := context.Background()
+	if trace.Enabled() {
+		tracingContext, _ := trace.GetTracer().Extract(trace.HTTPHeaders, r)
+		gContext = trace.AppendTracingContext(gContext, tracingContext)
+	}
+
 	// Create SSE connection
 	conn := NewSSEConnection(w, r, flusher, s.logger)
-	s.logger.Infof("New SSE connection established: id=%s, ip=%s, lastEventID=%s", 
+	conn.Ctx = gContext
+	s.logger.Infof("New SSE connection established: id=%s, ip=%s, lastEventID=%s",
 		conn.ID, conn.ClientIP, conn.LastEventID)
 
 	// Store connection
@@ -246,7 +256,7 @@ func (s *SSEServer) handleMetrics(w http.ResponseWriter, r *http.Request) {
 func (s *SSEServer) setCORSHeaders(w http.ResponseWriter, r *http.Request) {
 	origins := s.config.CORSOrigins
 	requestOrigin := r.Header.Get("Origin")
-	
+
 	if origins == "*" {
 		s.logger.Debugf("CORS: allowing all origins (*) for request from %s", requestOrigin)
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -308,7 +318,7 @@ func (s *SSEServer) sendKeepAlive() {
 		}
 		return true
 	})
-	
+
 	if sentCount < int(activeConnections) {
 		s.logger.Debugf("Keep-alive sent to %d/%d connections (some may have disconnected)", sentCount, activeConnections)
 	}
@@ -317,7 +327,7 @@ func (s *SSEServer) sendKeepAlive() {
 // BroadcastEvent broadcasts an event to all connections
 func (s *SSEServer) BroadcastEvent(event *SSEEvent) error {
 	activeConnections := s.getConnectionCount()
-	s.logger.Debugf("Broadcasting event (id=%s, type=%s) to %d connections", 
+	s.logger.Debugf("Broadcasting event (id=%s, type=%s) to %d connections",
 		event.ID, event.Event, activeConnections)
 
 	// Store event if event store is enabled
@@ -345,7 +355,7 @@ func (s *SSEServer) BroadcastEvent(event *SSEEvent) error {
 
 // BroadcastEventToTopic broadcasts an event to connections subscribed to a topic
 func (s *SSEServer) BroadcastEventToTopic(topic string, event *SSEEvent) error {
-	s.logger.Debugf("Broadcasting event (id=%s, type=%s) to topic: %s", 
+	s.logger.Debugf("Broadcasting event (id=%s, type=%s) to topic: %s",
 		event.ID, event.Event, topic)
 
 	if s.eventStore != nil {
@@ -368,7 +378,7 @@ func (s *SSEServer) BroadcastEventToTopic(topic string, event *SSEEvent) error {
 		return true
 	})
 
-	s.logger.Debugf("Topic broadcast complete: sent to %d matching connections out of %d total", 
+	s.logger.Debugf("Topic broadcast complete: sent to %d matching connections out of %d total",
 		sentCount, totalConnections)
 	s.incrementEventCount()
 	return nil
@@ -376,7 +386,7 @@ func (s *SSEServer) BroadcastEventToTopic(topic string, event *SSEEvent) error {
 
 // SendEventToConnection sends an event to a specific connection
 func (s *SSEServer) SendEventToConnection(connectionID string, event *SSEEvent) error {
-	s.logger.Debugf("Sending event (id=%s, type=%s) to specific connection: %s", 
+	s.logger.Debugf("Sending event (id=%s, type=%s) to specific connection: %s",
 		event.ID, event.Event, connectionID)
 
 	if conn, ok := s.connections.Load(connectionID); ok {
@@ -389,7 +399,7 @@ func (s *SSEServer) SendEventToConnection(connectionID string, event *SSEEvent) 
 			return nil
 		}
 	}
-	
+
 	// List available connections for debugging
 	availableConnections := make([]string, 0)
 	s.connections.Range(func(key, value interface{}) bool {
@@ -398,7 +408,7 @@ func (s *SSEServer) SendEventToConnection(connectionID string, event *SSEEvent) 
 		}
 		return true
 	})
-	
+
 	s.logger.Warnf("Connection %s not found. Available connections: %v", connectionID, availableConnections)
 	return fmt.Errorf("connection not found: %s", connectionID)
 }
@@ -445,7 +455,7 @@ func (s *SSEServer) replayEvents(conn *SSEConnection) {
 
 	events := s.eventStore.GetEventsSince(conn.LastEventID)
 	s.logger.Debugf("Replaying %d events to connection %s", len(events), conn.ID)
-	
+
 	replayedCount := 0
 	for _, event := range events {
 		if err := conn.SendEvent(event); err != nil {
@@ -454,7 +464,7 @@ func (s *SSEServer) replayEvents(conn *SSEConnection) {
 		}
 		replayedCount++
 	}
-	
+
 	if replayedCount > 0 {
 		s.logger.Infof("Successfully replayed %d events to connection %s", replayedCount, conn.ID)
 	}
