@@ -1,10 +1,7 @@
 # Filter Kafka Stream Trigger
 
-**Name:** `kafka-stream-filter-trigger`  
-**Category:** KafkaStream  
-**Ref:** `github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter`
 
-Consumes messages from a Kafka topic and fires the Flogo flow **only** for messages that satisfy the configured predicate(s). Messages that do not pass are silently acknowledged and dropped — the flow is never invoked for them. The trigger owns its own Kafka consumer transport — no separate Kafka trigger is needed.
+Consumes messages from a Kafka topic and fires the Flogo flow **only** for messages that satisfy the configured predicate(s). Messages that do not pass are silently acknowledged and dropped — the flow is never invoked for them. The trigger owns its own Kafka consumer transport.
 
 Supports:
 - Single-predicate mode — evaluate one field with one operator and value

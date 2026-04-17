@@ -1,10 +1,7 @@
 # Aggregate Kafka Stream Trigger
 
-**Name:** `kafka-stream-aggregate-trigger`  
-**Category:** KafkaStream  
-**Ref:** `github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate`
 
-Consumes messages from a Kafka topic, accumulates a numeric field into a stateful in-memory window, and fires the Flogo flow when the window closes. The trigger owns its own Kafka consumer transport — no separate Kafka trigger is needed.
+Consumes messages from a Kafka topic, accumulates a numeric field into a stateful in-memory window, and fires the Flogo flow when the window closes. The trigger owns its own Kafka consumer transport.
 
 Supports:
 - Tumbling and sliding windows (time-based or count-based)

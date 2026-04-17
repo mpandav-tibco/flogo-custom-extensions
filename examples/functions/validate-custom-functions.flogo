@@ -3,15 +3,10 @@
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
     "github.com/tibco/flogo-general/src/app/General/activity/mapper",
-    "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/tibco/flogo-general/src/app/General/trigger/timer",
-    "github.com/project-flogo/contrib/function/coerce",
-    "github.com/project-flogo/contrib/function/array",
-    "github.com/project-flogo/contrib/function/string",
-    "github.com/milindpandav/flogo-extensions/function"
+    "github.com/tibco/flogo-general/src/app/General/trigger/timer"
   ],
   "name": "validate-custom-functions",
-  "description": "Validates all custom Flogo functions (math, array, string, util) with real-world test data",
+  "description": "",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -58,20 +53,6 @@
             "to": "Mapper",
             "type": "label",
             "label": "StartActivity to Mapper"
-          },
-          {
-            "id": 2,
-            "from": "Mapper",
-            "to": "Mapper1",
-            "type": "label",
-            "label": "Mapper to Mapper1"
-          },
-          {
-            "id": 3,
-            "from": "Mapper1",
-            "to": "LogMessage",
-            "type": "label",
-            "label": "Mapper1 to LogMessage"
           }
         ],
         "tasks": [
@@ -88,139 +69,15 @@
             "name": "Mapper",
             "description": "Mapper Activity",
             "activity": {
-              "ref": "#mapper",
-              "input": {
-                "input": {
-                  "mapping": {
-                    "negativeTemp": -273.15,
-                    "positiveNum": 42.5,
-                    "powBase": 2,
-                    "powExp": 10,
-                    "compoundBase": 1.025,
-                    "compoundExp": 4,
-                    "tempReadings": [
-                      22.5,
-                      19.8,
-                      25.1,
-                      18.3,
-                      23.7,
-                      21
-                    ],
-                    "deviceIds": [
-                      "sensor-1",
-                      "sensor-2",
-                      "sensor-1",
-                      "sensor-3",
-                      "sensor-2"
-                    ],
-                    "orderStatuses": [
-                      "pending",
-                      "processing",
-                      "shipped",
-                      "delivered"
-                    ],
-                    "searchValue": "shipped",
-                    "orderId": "42",
-                    "currencyCode": "USD",
-                    "cardNumber": "4532015112830366",
-                    "emailAddress": "alice.wonder@acme.com",
-                    "regionOverride": "",
-                    "regionDefault": "us-east-1",
-                    "invoiceId": "order-2024-INV-0042"
-                  }
-                }
-              },
-              "schemas": {
-                "input": {
-                  "input": {
-                    "type": "json",
-                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"negativeTemp\":   { \"type\": \"number\",  \"default\": -273.15 },\n    \"positiveNum\":    { \"type\": \"number\",  \"default\": 42.5 },\n    \"powBase\":        { \"type\": \"number\",  \"default\": 2 },\n    \"powExp\":         { \"type\": \"number\",  \"default\": 10 },\n    \"compoundBase\":   { \"type\": \"number\",  \"default\": 1.025 },\n    \"compoundExp\":    { \"type\": \"number\",  \"default\": 4 },\n\n    \"tempReadings\":   { \"type\": \"array\", \"items\": { \"type\": \"number\" },  \"default\": [22.5, 19.8, 25.1, 18.3, 23.7, 21.0] },\n    \"deviceIds\":      { \"type\": \"array\", \"items\": { \"type\": \"string\" },  \"default\": [\"sensor-1\",\"sensor-2\",\"sensor-1\",\"sensor-3\",\"sensor-2\"] },\n    \"orderStatuses\":  { \"type\": \"array\", \"items\": { \"type\": \"string\" },  \"default\": [\"pending\",\"processing\",\"shipped\",\"delivered\"] },\n\n    \"searchValue\":    { \"type\": \"string\", \"default\": \"shipped\" },\n    \"orderId\":        { \"type\": \"string\", \"default\": \"42\" },\n    \"currencyCode\":   { \"type\": \"string\", \"default\": \"USD\" },\n    \"cardNumber\":     { \"type\": \"string\", \"default\": \"4532015112830366\" },\n    \"emailAddress\":   { \"type\": \"string\", \"default\": \"alice.wonder@acme.com\" },\n    \"regionOverride\": { \"type\": \"string\", \"default\": \"\" },\n    \"regionDefault\":  { \"type\": \"string\", \"default\": \"us-east-1\" },\n    \"invoiceId\":      { \"type\": \"string\", \"default\": \"order-2024-INV-0042\" }\n  }\n}",
-                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"negativeTemp\":   { \"type\": \"number\",  \"default\": -273.15 },\n    \"positiveNum\":    { \"type\": \"number\",  \"default\": 42.5 },\n    \"powBase\":        { \"type\": \"number\",  \"default\": 2 },\n    \"powExp\":         { \"type\": \"number\",  \"default\": 10 },\n    \"compoundBase\":   { \"type\": \"number\",  \"default\": 1.025 },\n    \"compoundExp\":    { \"type\": \"number\",  \"default\": 4 },\n\n    \"tempReadings\":   { \"type\": \"array\", \"items\": { \"type\": \"number\" },  \"default\": [22.5, 19.8, 25.1, 18.3, 23.7, 21.0] },\n    \"deviceIds\":      { \"type\": \"array\", \"items\": { \"type\": \"string\" },  \"default\": [\"sensor-1\",\"sensor-2\",\"sensor-1\",\"sensor-3\",\"sensor-2\"] },\n    \"orderStatuses\":  { \"type\": \"array\", \"items\": { \"type\": \"string\" },  \"default\": [\"pending\",\"processing\",\"shipped\",\"delivered\"] },\n\n    \"searchValue\":    { \"type\": \"string\", \"default\": \"shipped\" },\n    \"orderId\":        { \"type\": \"string\", \"default\": \"42\" },\n    \"currencyCode\":   { \"type\": \"string\", \"default\": \"USD\" },\n    \"cardNumber\":     { \"type\": \"string\", \"default\": \"4532015112830366\" },\n    \"emailAddress\":   { \"type\": \"string\", \"default\": \"alice.wonder@acme.com\" },\n    \"regionOverride\": { \"type\": \"string\", \"default\": \"\" },\n    \"regionDefault\":  { \"type\": \"string\", \"default\": \"us-east-1\" },\n    \"invoiceId\":      { \"type\": \"string\", \"default\": \"order-2024-INV-0042\" }\n  }\n}"
-                  }
-                },
-                "output": {
-                  "output": {
-                    "type": "json",
-                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"negativeTemp\": {\n      \"type\": \"number\",\n      \"default\": -273.15\n    },\n    \"positiveNum\": {\n      \"type\": \"number\",\n      \"default\": 42.5\n    },\n    \"powBase\": {\n      \"type\": \"number\",\n      \"default\": 2\n    },\n    \"powExp\": {\n      \"type\": \"number\",\n      \"default\": 10\n    },\n    \"compoundBase\": {\n      \"type\": \"number\",\n      \"default\": 1.025\n    },\n    \"compoundExp\": {\n      \"type\": \"number\",\n      \"default\": 4\n    },\n    \"tempReadings\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"number\"\n      },\n      \"default\": [\n        22.5,\n        19.8,\n        25.1,\n        18.3,\n        23.7,\n        21\n      ]\n    },\n    \"deviceIds\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"default\": [\n        \"sensor-1\",\n        \"sensor-2\",\n        \"sensor-1\",\n        \"sensor-3\",\n        \"sensor-2\"\n      ]\n    },\n    \"orderStatuses\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"default\": [\n        \"pending\",\n        \"processing\",\n        \"shipped\",\n        \"delivered\"\n      ]\n    },\n    \"searchValue\": {\n      \"type\": \"string\",\n      \"default\": \"shipped\"\n    },\n    \"orderId\": {\n      \"type\": \"string\",\n      \"default\": \"42\"\n    },\n    \"currencyCode\": {\n      \"type\": \"string\",\n      \"default\": \"USD\"\n    },\n    \"cardNumber\": {\n      \"type\": \"string\",\n      \"default\": \"4532015112830366\"\n    },\n    \"emailAddress\": {\n      \"type\": \"string\",\n      \"default\": \"alice.wonder@acme.com\"\n    },\n    \"regionOverride\": {\n      \"type\": \"string\",\n      \"default\": \"\"\n    },\n    \"regionDefault\": {\n      \"type\": \"string\",\n      \"default\": \"us-east-1\"\n    },\n    \"invoiceId\": {\n      \"type\": \"string\",\n      \"default\": \"order-2024-INV-0042\"\n    }\n  }\n}",
-                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"negativeTemp\": {\n      \"type\": \"number\",\n      \"default\": -273.15\n    },\n    \"positiveNum\": {\n      \"type\": \"number\",\n      \"default\": 42.5\n    },\n    \"powBase\": {\n      \"type\": \"number\",\n      \"default\": 2\n    },\n    \"powExp\": {\n      \"type\": \"number\",\n      \"default\": 10\n    },\n    \"compoundBase\": {\n      \"type\": \"number\",\n      \"default\": 1.025\n    },\n    \"compoundExp\": {\n      \"type\": \"number\",\n      \"default\": 4\n    },\n    \"tempReadings\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"number\"\n      },\n      \"default\": [\n        22.5,\n        19.8,\n        25.1,\n        18.3,\n        23.7,\n        21\n      ]\n    },\n    \"deviceIds\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"default\": [\n        \"sensor-1\",\n        \"sensor-2\",\n        \"sensor-1\",\n        \"sensor-3\",\n        \"sensor-2\"\n      ]\n    },\n    \"orderStatuses\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"default\": [\n        \"pending\",\n        \"processing\",\n        \"shipped\",\n        \"delivered\"\n      ]\n    },\n    \"searchValue\": {\n      \"type\": \"string\",\n      \"default\": \"shipped\"\n    },\n    \"orderId\": {\n      \"type\": \"string\",\n      \"default\": \"42\"\n    },\n    \"currencyCode\": {\n      \"type\": \"string\",\n      \"default\": \"USD\"\n    },\n    \"cardNumber\": {\n      \"type\": \"string\",\n      \"default\": \"4532015112830366\"\n    },\n    \"emailAddress\": {\n      \"type\": \"string\",\n      \"default\": \"alice.wonder@acme.com\"\n    },\n    \"regionOverride\": {\n      \"type\": \"string\",\n      \"default\": \"\"\n    },\n    \"regionDefault\": {\n      \"type\": \"string\",\n      \"default\": \"us-east-1\"\n    },\n    \"invoiceId\": {\n      \"type\": \"string\",\n      \"default\": \"order-2024-INV-0042\"\n    }\n  }\n}"
-                  }
-                }
-              },
-              "feSchemaMap": {}
-            }
-          },
-          {
-            "id": "Mapper1",
-            "name": "Mapper1",
-            "description": "Mapper Activity",
-            "activity": {
-              "ref": "#mapper",
-              "input": {
-                "input": {
-                  "mapping": {
-                    "absTemp": "=math.abs($activity[Mapper].output.negativeTemp)",
-                    "absPos": "=math.abs($activity[Mapper].output.positiveNum)",
-                    "powResult": "=math.pow($activity[Mapper].output.powBase,$activity[Mapper].output.powExp)",
-                    "compoundResult": "=math.pow($activity[Mapper].output.compoundBase,$activity[Mapper].output.compoundExp)",
-                    "minTemp": "=array.min(coerce.toArray($activity[Mapper].output.tempReadings))",
-                    "maxTemp": "=array.max(coerce.toArray($activity[Mapper].output.tempReadings))",
-                    "avgTemp": "=array.avg(coerce.toArray($activity[Mapper].output.tempReadings))",
-                    "uniqueDevices": {
-                      "@foreach($activity[Mapper].output.deviceIds,index)": {
-                        "=": "$loop"
-                      }
-                    },
-                    "statusIndex": "=array.indexOf(coerce.toArray($activity[Mapper].output.orderStatuses),$activity[Mapper].output.searchValue)",
-                    "paddedOrderId": "=string.padLeft($activity[Mapper].output.orderId,8,\"0\")",
-                    "paddedCurrency": "=string.padRight($activity[Mapper].output.currencyCode,10,\" \")",
-                    "maskedCard": "=string.mask($activity[Mapper].output.cardNumber,0,4)",
-                    "maskedEmail": "=string.mask($activity[Mapper].output.emailAddress,2,9)",
-                    "resolvedRegion": "=util.coalesce($activity[Mapper].output.regionOverride, $activity[Mapper].output.regionDefault)",
-                    "invoiceHash": "=util.sha256($activity[Mapper].output.invoiceId)"
-                  }
-                }
-              },
-              "schemas": {
-                "input": {
-                  "input": {
-                    "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"absTemp\":{\"type\":\"number\"},\"absPos\":{\"type\":\"number\"},\"powResult\":{\"type\":\"number\"},\"compoundResult\":{\"type\":\"number\"},\"minTemp\":{\"type\":\"number\"},\"maxTemp\":{\"type\":\"number\"},\"avgTemp\":{\"type\":\"number\"},\"uniqueDevices\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"statusIndex\":{\"type\":\"number\"},\"paddedOrderId\":{\"type\":\"string\"},\"paddedCurrency\":{\"type\":\"string\"},\"maskedCard\":{\"type\":\"string\"},\"maskedEmail\":{\"type\":\"string\"},\"resolvedRegion\":{\"type\":\"string\"},\"invoiceHash\":{\"type\":\"string\"}}}",
-                    "fe_metadata": "{\n  \"absTemp\":        273.15,\n  \"absPos\":         42.5,\n  \"powResult\":      1024,\n  \"compoundResult\": 1.10381289062500,\n  \"minTemp\":        18.3,\n  \"maxTemp\":        25.1,\n  \"avgTemp\":        21.733333333333334,\n  \"uniqueDevices\":  [\"sensor-1\", \"sensor-2\", \"sensor-3\"],\n  \"statusIndex\":    2,\n  \"paddedOrderId\":  \"00000042\",\n  \"paddedCurrency\": \"USD       \",\n  \"maskedCard\":     \"************0366\",\n  \"maskedEmail\":    \"al**********@acme.com\",\n  \"resolvedRegion\": \"us-east-1\",\n  \"invoiceHash\":    \"3b6a198e6f182f279a452a2cf80e14c679680a658f53da4fae81572fac84b579\"\n}"
-                  }
-                },
-                "output": {
-                  "output": {
-                    "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"absTemp\":{\"type\":\"number\"},\"absPos\":{\"type\":\"number\"},\"powResult\":{\"type\":\"number\"},\"compoundResult\":{\"type\":\"number\"},\"minTemp\":{\"type\":\"number\"},\"maxTemp\":{\"type\":\"number\"},\"avgTemp\":{\"type\":\"number\"},\"uniqueDevices\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"statusIndex\":{\"type\":\"number\"},\"paddedOrderId\":{\"type\":\"string\"},\"paddedCurrency\":{\"type\":\"string\"},\"maskedCard\":{\"type\":\"string\"},\"maskedEmail\":{\"type\":\"string\"},\"resolvedRegion\":{\"type\":\"string\"},\"invoiceHash\":{\"type\":\"string\"}}}",
-                    "fe_metadata": "{\n  \"absTemp\": 273.15,\n  \"absPos\": 42.5,\n  \"powResult\": 1024,\n  \"compoundResult\": 1.103812890625,\n  \"minTemp\": 18.3,\n  \"maxTemp\": 25.1,\n  \"avgTemp\": 21.733333333333334,\n  \"uniqueDevices\": [\n    \"sensor-1\",\n    \"sensor-2\",\n    \"sensor-3\"\n  ],\n  \"statusIndex\": 2,\n  \"paddedOrderId\": \"00000042\",\n  \"paddedCurrency\": \"USD       \",\n  \"maskedCard\": \"************0366\",\n  \"maskedEmail\": \"al**********@acme.com\",\n  \"resolvedRegion\": \"us-east-1\",\n  \"invoiceHash\": \"3b6a198e6f182f279a452a2cf80e14c679680a658f53da4fae81572fac84b579\"\n}"
-                  }
-                }
-              },
-              "feSchemaMap": {}
-            }
-          },
-          {
-            "id": "LogMessage",
-            "name": "LogMessage",
-            "description": "Simple Log Message Activity",
-            "activity": {
-              "ref": "#log",
-              "input": {
-                "Log Level": "INFO",
-                "flowInfo": false,
-                "message": "=string.concat(\"#### TEST Functions : \",coerce.toString($activity[Mapper1]) )",
-                "logLevel": ""
-              }
+              "ref": "#mapper"
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTWFwcGVyIjp7IngiOjIzMCwieSI6MTAwfSwiTWFwcGVyMSI6eyJ4Ijo1MTEsInkiOjEwMH0sIkxvZ01lc3NhZ2UiOnsieCI6ODExLCJ5Ijo5N319",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTWFwcGVyIjp7IngiOjI5MSwieSI6OTl9fQ==",
         "metadata": {
           "input": [],
           "output": [],
-          "fe_metadata": {
-            "input": "[\n  { \"name\": \"negativeTemp\",    \"type\": \"number\",  \"value\": -273.15 },\n  { \"name\": \"positiveNum\",     \"type\": \"number\",  \"value\": 42.5 },\n  { \"name\": \"powBase\",         \"type\": \"number\",  \"value\": 2 },\n  { \"name\": \"powExp\",          \"type\": \"number\",  \"value\": 10 },\n  { \"name\": \"compoundBase\",    \"type\": \"number\",  \"value\": 1.025 },\n  { \"name\": \"compoundExp\",     \"type\": \"number\",  \"value\": 4 },\n\n  { \"name\": \"tempReadings\",    \"type\": \"array\",   \"value\": [22.5, 19.8, 25.1, 18.3, 23.7, 21.0] },\n  { \"name\": \"deviceIds\",       \"type\": \"array\",   \"value\": [\"sensor-1\",\"sensor-2\",\"sensor-1\",\"sensor-3\",\"sensor-2\"] },\n  { \"name\": \"orderStatuses\",   \"type\": \"array\",   \"value\": [\"pending\",\"processing\",\"shipped\",\"delivered\"] },\n  { \"name\": \"searchValue\",     \"type\": \"string\",  \"value\": \"shipped\" },\n\n  { \"name\": \"orderId\",         \"type\": \"string\",  \"value\": \"42\" },\n  { \"name\": \"currencyCode\",    \"type\": \"string\",  \"value\": \"USD\" },\n  { \"name\": \"cardNumber\",      \"type\": \"string\",  \"value\": \"4532015112830366\" },\n  { \"name\": \"emailAddress\",    \"type\": \"string\",  \"value\": \"alice.wonder@acme.com\" },\n\n  { \"name\": \"regionOverride\",  \"type\": \"string\",  \"value\": \"\" },\n  { \"name\": \"regionDefault\",   \"type\": \"string\",  \"value\": \"us-east-1\" },\n  { \"name\": \"invoiceId\",       \"type\": \"string\",  \"value\": \"order-2024-INV-0042\" }\n]"
-          }
+          "fe_metadata": {}
         }
       }
     }
