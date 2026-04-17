@@ -6,6 +6,14 @@ Subscribes to two or more Kafka topics and fires the Flogo flow when messages ca
 
 The trigger owns its own Kafka transport.
 
+Supports:
+- Two-way, three-way, or N-way stream joins (minimum 2 topics)
+- Configurable join window with timeout handler for partial contributions
+- Memory and file-backed join state stores
+- File store: state survives graceful restarts and consumer rebalances
+- At-least-once delivery via `commitOnSuccess` (completing message only)
+- OTel trace propagation (trace context extracted from Kafka message headers)
+
 ```
 demo-readings  ──►┐
                   │  joinKeyField="device_id"      ┌──► [joined handler]  → both messages arrived
@@ -21,13 +29,15 @@ demo-alerts    ──►┘                                └──► [timeout
 |---------|------|----------|---------|-------------|
 | `kafkaConnection` | connection | ✓ | — | TIBCO Kafka shared connection (broker addresses, auth, TLS). |
 | `topics` | string | ✓ | — | Comma-separated list of Kafka topics to join (minimum 2). Example: `orders,payments`. |
-| `consumerGroup` | string | ✓ | — | Base consumer group ID. The trigger creates one group per topic: `<base>-<topicName>`. E.g. `my-join-cg-orders`, `my-join-cg-payments`. Must be unique per trigger instance. |
+| `consumerGroup` | string | ✓ | — | Base consumer group ID. The trigger creates one group per topic: `<base>-<sanitisedTopicName>`. E.g. `my-join-cg-orders`, `my-join-cg-payments`. Characters in the topic name that are not alphanumeric, `.`, `_`, or `-` are replaced with `-` in the group suffix. Must be unique per trigger instance. |
 | `joinKeyField` | string | ✓ | — | Message field whose value is used to correlate messages across topics. E.g. `order_id`, `device_id`. |
-| `joinWindowMs` | integer | ✓ | `30000` | Maximum time in milliseconds to wait for all topics to contribute a matching message. When expired, a timeout event is emitted. |
+| `joinWindowMs` | integer | ✓ | `30000` | Maximum time in milliseconds to wait for all topics to contribute a matching message. When expired, a timeout event is emitted. **Timeout detection latency:** the sweep fires every `joinWindowMs / 4` ms (minimum 100 ms), so a timed-out entry may not be detected until up to `joinWindowMs * 1.25` ms after the first contribution arrived. |
 | `initialOffset` | string | | `newest` | `newest` or `oldest` — where to start when no committed offset exists for this consumer group. |
 | `balanceStrategy` | string | | `roundrobin` | Kafka consumer group rebalance strategy: `roundrobin` · `sticky` · `range`. Applied to all per-topic consumer groups. |
 | `commitOnSuccess` | boolean | | `true` | When `true`, the completing (last-arriving) message's offset is marked only after all handlers complete without error (at-least-once). When `false`, the offset is always committed. |
 | `handlerTimeoutMs` | integer | | `0` | Maximum time in milliseconds for all handlers to complete. `0` = no timeout. |
+| `storeType` | string | | `memory` | Backing store for in-flight join state. `memory` — process-local, no persistence across restarts. `file` — JSON snapshot on disk; restores on startup and after rebalance. Requires `persistPath`. |
+| `persistPath` | string | | — | **Required when `storeType=file`.** Absolute path for the JSON snapshot file. Example: `/var/data/flogo/join-state.json`. For multi-instance deployments this must point to a shared filesystem. |
 
 ---
 
@@ -158,6 +168,8 @@ In-flight join windows are written to a JSON snapshot file on graceful shutdown 
 ---
 
 ## Limitations
+
+- **`joinKeyField` missing from a message.** When a message does not contain the configured `joinKeyField`, an error is logged, the Kafka offset is committed immediately, and the message is discarded. It is not retried and does not fire a timeout handler. Ensure upstream producers always include the join key field.
 
 - **Non-completing topic offsets are committed eagerly (all store types).** When a message arrives but does not yet complete the join, its offset is committed immediately so the Sarama consumer session is not stalled waiting for the other topics. This means if the join subsequently times out, that message will not be re-delivered. This trade-off is inherent to multi-topic joins over independent consumer groups.
 

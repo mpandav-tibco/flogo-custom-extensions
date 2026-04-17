@@ -10,8 +10,9 @@ Supports:
 - Late-event routing to a dead-letter flow handler
 - Overflow policies when the in-memory buffer is capped
 - Per-window message deduplication
-- Idle-timeout auto-close for keyed sub-windows
+- Idle-timeout auto-close for any window (keyed or unkeyed)
 - Gob-encoded state persistence across restarts
+- OTel trace propagation (trace context extracted from Kafka message headers)
 
 ---
 
@@ -32,12 +33,16 @@ Supports:
 | `eventTimeField` | string | | — | Message field containing the event timestamp (Unix-ms int64 or RFC-3339 string). Leave empty to use wall-clock time. |
 | `messageIDField` | string | | — | Field used as a unique event ID for per-window deduplication. Leave empty to disable. |
 | `allowedLateness` | integer | | `0` | Maximum age in ms beyond the watermark that a late event is still accepted. `0` = reject all late events immediately. |
-| `maxBufferSize` | integer | | `0` | Cap on the number of values buffered per window. `0` = unlimited. |
-| `overflowPolicy` | string | | `drop_oldest` | What to do when `maxBufferSize` is exceeded: `drop_oldest` · `drop_newest` · `error` |
-| `idleTimeoutMs` | integer | | `0` | Auto-close a keyed sub-window that receives no event for this many ms and emit its partial result. `0` = disabled. |
+| `maxBufferSize` | integer | | `0` | Cap on the number of values buffered per window. `0` = unlimited (overflow policy is never triggered). |
+| `overflowPolicy` | string | | `drop_oldest` | What to do when `maxBufferSize` is exceeded. Has no effect when `maxBufferSize` is `0`. `drop_oldest` · `drop_newest` · `error` |
+| `idleTimeoutMs` | integer | | `0` | Auto-close a window (keyed or unkeyed) that receives no new event for this many ms and emit its partial result. Applies to both base and per-key sub-windows. `0` = disabled. |
 | `maxKeys` | integer | | `0` | Cap on the number of concurrent keyed sub-windows. `0` = unlimited. |
 | `persistPath` | string | | — | File path for gob-encoded window state snapshots. Leave empty to disable persistence. |
 | `persistEveryN` | integer | | `0` | Snapshot state every N messages. `0` = persist only on graceful shutdown. |
+| `balanceStrategy` | string | | `roundrobin` | Kafka consumer group rebalance strategy: `roundrobin` · `sticky` (recommended when keyed windows are used — minimises partition reassignments and reduces in-flight state loss) · `range`. |
+| `commitOnSuccess` | boolean | | `true` | When `true`, the Kafka offset is marked only after all handlers complete without error (at-least-once). When `false`, the offset is always committed regardless of handler result (at-most-once). |
+| `handlerTimeoutMs` | integer | | `0` | Maximum time in ms for all handlers to complete for a single event. `0` = no timeout. When the deadline is exceeded the handler is treated as failed; with `commitOnSuccess=true` the offset is not marked. |
+| `onSchemaError` | string | | `skip` | Controls behaviour when a message passes JSON decode but fails schema validation (missing `valueField`, non-numeric value, etc.). `skip` — mark the offset and discard (at-most-once for schema errors). `retry` — do not mark the offset; the message will be redelivered after a restart or rebalance (safe only when the error is transient). |
 
 ---
 
