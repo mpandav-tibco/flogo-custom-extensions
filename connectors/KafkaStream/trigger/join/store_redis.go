@@ -2,25 +2,27 @@
 // redisStore uses Redis as the single authoritative backing store.
 //
 // Why Redis fixes all three limitations:
-//   1. Cross-instance sharing: every Flogo instance hits the same Redis keys.
-//      A contribution from instance A is immediately visible to instance B.
-//   2. Restart recovery: Redis keys survive process restarts (within their TTL).
-//      Contributions already in Redis are available to the new process without
-//      any explicit Save/Load — state is always there.
-//   3. Rebalance handoff: contributions stored in Redis are automatically
-//      available to whichever instance takes over a partition after a rebalance.
-//      No Setup/Cleanup action is needed — Redis is always the truth.
+//  1. Cross-instance sharing: every Flogo instance hits the same Redis keys.
+//     A contribution from instance A is immediately visible to instance B.
+//  2. Restart recovery: Redis keys survive process restarts (within their TTL).
+//     Contributions already in Redis are available to the new process without
+//     any explicit Save/Load — state is always there.
+//  3. Rebalance handoff: contributions stored in Redis are automatically
+//     available to whichever instance takes over a partition after a rebalance.
+//     No Setup/Cleanup action is needed — Redis is always the truth.
 //
 // Atomicity:
-//   Contribute uses a Lua script that atomically reads the current entry,
-//   appends the new contribution, checks for completeness, and writes back —
-//   all in a single Redis round-trip.  This prevents split-brain between
-//   concurrent instances.
+//
+//	Contribute uses a Lua script that atomically reads the current entry,
+//	appends the new contribution, checks for completeness, and writes back —
+//	all in a single Redis round-trip.  This prevents split-brain between
+//	concurrent instances.
 //
 // Timeout sweep:
-//   SweepExpired uses SCAN to find matching keys and a second Lua script to
-//   atomically mark-and-return expired entries.  Only the instance that wins
-//   the atomic expire fires the timeout handler — no duplicate timeout events.
+//
+//	SweepExpired uses SCAN to find matching keys and a second Lua script to
+//	atomically mark-and-return expired entries.  Only the instance that wins
+//	the atomic expire fires the timeout handler — no duplicate timeout events.
 //
 // Key format:  join:<consumerGroup>:<joinKey>
 // TTL:         joinWindowMs × 3  (Redis auto-deletes long-stale entries)
@@ -30,7 +32,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/project-flogo/core/support/log"
@@ -41,9 +42,10 @@ import (
 // and returns all contributions when the join is complete.
 //
 // Returns:
-//   nil / redis.Nil  → contribution recorded, join still incomplete
-//   "CLOSED"         → entry was already completed/timed-out; caller starts fresh
-//   JSON string      → all contributions merged; join is now complete
+//
+//	nil / redis.Nil  → contribution recorded, join still incomplete
+//	"CLOSED"         → entry was already completed/timed-out; caller starts fresh
+//	JSON string      → all contributions merged; join is now complete
 var contributeScript = redis.NewScript(`
 local raw = redis.call('GET', KEYS[1])
 if raw == false then
@@ -71,9 +73,10 @@ return false
 // timeout handler.
 //
 // Returns:
-//   false        → not expired yet (or already gone)
-//   "CLOSED"     → already completed/timed-out by another instance
-//   JSON string  → partial contributions; entry is now marked closed
+//
+//	false        → not expired yet (or already gone)
+//	"CLOSED"     → already completed/timed-out by another instance
+//	JSON string  → partial contributions; entry is now marked closed
 var expireScript = redis.NewScript(`
 local raw = redis.call('GET', KEYS[1])
 if raw == false then return false end
@@ -124,6 +127,10 @@ func (s *redisStore) key(joinKey string) string {
 }
 
 // Contribute implements JoinStore using a Lua script for atomic read-modify-write.
+// If the existing entry is already CLOSED (completed or timed out by another
+// instance), the stale entry is deleted and the script is retried up to
+// maxContributeRetries times — avoiding the unbounded recursion that a naive
+// recursive retry would introduce under heavy contention.
 func (s *redisStore) Contribute(joinKey, topic string, payload map[string]interface{}, now time.Time) (map[string]map[string]interface{}, bool, error) {
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -131,37 +138,47 @@ func (s *redisStore) Contribute(joinKey, topic string, payload map[string]interf
 	}
 
 	key := s.key(joinKey)
-	result, err := contributeScript.Run(
-		context.Background(), s.client, []string{key},
-		topic,
-		string(payloadJSON),
-		now.UnixMilli(),
-		s.ttlMs,
-		s.totalTopics,
-	).Text()
+	const maxContributeRetries = 3
+	ctx := context.Background()
 
-	if err == redis.Nil || result == "false" || result == "" {
-		// Incomplete — contribution recorded.
-		return nil, false, nil
-	}
-	if err != nil {
-		return nil, false, fmt.Errorf("kafka-stream/join-trigger[redis-store]: contribute script: %w", err)
-	}
-	if result == "CLOSED" {
-		// Already completed/timed-out by another instance — open a fresh window
-		// by deleting the closed entry and re-running Contribute.
-		_ = s.client.Del(context.Background(), key).Err()
-		return s.Contribute(joinKey, topic, payload, now)
+	for attempt := 0; attempt < maxContributeRetries; attempt++ {
+		result, scriptErr := contributeScript.Run(
+			ctx, s.client, []string{key},
+			topic,
+			string(payloadJSON),
+			now.UnixMilli(),
+			s.ttlMs,
+			s.totalTopics,
+		).Text()
+
+		if scriptErr == redis.Nil || result == "" {
+			// Incomplete — contribution recorded; join still waiting for other topics.
+			return nil, false, nil
+		}
+		if scriptErr != nil {
+			return nil, false, fmt.Errorf("kafka-stream/join-trigger[redis-store]: contribute script: %w", scriptErr)
+		}
+		if result == "CLOSED" {
+			// Entry already completed/timed-out by another instance.
+			// Delete the stale closed key and retry so this contribution opens a
+			// fresh window (same semantics as memoryStore's closed-entry handling).
+			_ = s.client.Del(ctx, key).Err()
+			continue
+		}
+
+		// Complete — result is JSON of all contributions.
+		var allContribs map[string]map[string]interface{}
+		if err := json.Unmarshal([]byte(result), &allContribs); err != nil {
+			return nil, false, fmt.Errorf("kafka-stream/join-trigger[redis-store]: decode join result: %w", err)
+		}
+		// Remove the completed entry from Redis immediately.
+		_ = s.client.Del(ctx, key).Err()
+		return allContribs, true, nil
 	}
 
-	// Complete — result is JSON of all contributions.
-	var allContribs map[string]map[string]interface{}
-	if err := json.Unmarshal([]byte(result), &allContribs); err != nil {
-		return nil, false, fmt.Errorf("kafka-stream/join-trigger[redis-store]: decode join result: %w", err)
-	}
-	// Remove the completed entry from Redis immediately.
-	_ = s.client.Del(context.Background(), key).Err()
-	return allContribs, true, nil
+	// Exhausted retries under extreme contention — treat as incomplete so the
+	// offset is committed and the message is not redelivered indefinitely.
+	return nil, false, nil
 }
 
 // SweepExpired scans Redis for expired join entries and fires onExpired for each.
@@ -330,8 +347,3 @@ func (s *redisStore) rawLoad(key string) (*joinEntry, bool) {
 	return e, true
 }
 
-// redisKeyJoinKey extracts the joinKey from a full Redis key.
-func redisKeyJoinKey(redisKey, consumerGroup string) string {
-	prefix := fmt.Sprintf("join:%s:", consumerGroup)
-	return strings.TrimPrefix(redisKey, prefix)
-}

@@ -133,7 +133,11 @@
                 "type": "dropdown",
                 "appPropertySupport": true
             },
-            "allowed": ["memory", "file", "redis"]
+            "allowed": [
+                "memory",
+                "file",
+                "redis"
+            ]
         },
         {
             "name": "persistPath",

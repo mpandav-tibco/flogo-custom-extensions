@@ -23,11 +23,6 @@ func newJoinTrigger(s *Settings) *Trigger {
 	return t
 }
 
-// clearJoinEntry removes an in-flight join entry so tests start clean.
-func clearJoinEntry(trig *Trigger, key string) {
-	trig.store.rawDelete(key)
-}
-
 // ─── validateSettings ────────────────────────────────────────────────────────
 
 func TestValidateSettings_Valid(t *testing.T) {

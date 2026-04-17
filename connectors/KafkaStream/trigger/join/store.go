@@ -115,26 +115,40 @@ func newMemoryStore(totalTopics int) *memoryStore {
 
 // Contribute implements JoinStore.
 func (s *memoryStore) Contribute(joinKey, topic string, payload map[string]interface{}, now time.Time) (map[string]map[string]interface{}, bool, error) {
-	actual, _ := s.m.LoadOrStore(joinKey, &joinEntry{
-		contributions: make(map[string]map[string]interface{}),
-		createdAt:     now,
-	})
-	entry := actual.(*joinEntry)
-
-	entry.mu.Lock()
-	if entry.closed {
-		// Entry was already completed or timed out — open a fresh window.
-		// Two goroutines may race here; both Store identical fresh entries and
-		// only one contribution proceeds (last-write-wins for the Store call is
-		// acceptable — no messages are lost, at most one is re-processed).
+	// Obtain a non-closed entry for joinKey, creating a fresh one if needed.
+	// We use a CAS loop to correctly handle the race where two goroutines both
+	// observe a closed entry and race to install a replacement:
+	//
+	//   Goroutine A: sees closed → CAS(old, freshA) succeeds → owns freshA
+	//   Goroutine B: sees closed → CAS(old, freshB) fails    → loops, loads freshA
+	//
+	// Without CAS, both goroutines could call sync.Map.Store concurrently —
+	// the loser's fresh entry would be orphaned and its contribution silently
+	// dropped.
+	var entry *joinEntry
+	for {
+		actual, _ := s.m.LoadOrStore(joinKey, &joinEntry{
+			contributions: make(map[string]map[string]interface{}),
+			createdAt:     now,
+		})
+		entry = actual.(*joinEntry)
+		entry.mu.Lock()
+		if !entry.closed {
+			break // valid open entry — proceed with contribution
+		}
 		entry.mu.Unlock()
+		// Entry is closed (completed or timed out). Atomically replace it.
 		fresh := &joinEntry{
 			contributions: make(map[string]map[string]interface{}),
 			createdAt:     now,
 		}
-		s.m.Store(joinKey, fresh)
-		entry = fresh
-		entry.mu.Lock()
+		if s.m.CompareAndSwap(joinKey, actual, fresh) {
+			// We won the CAS — we exclusively own fresh.
+			entry = fresh
+			entry.mu.Lock()
+			break
+		}
+		// Another goroutine replaced it first. Loop to load/create again.
 	}
 
 	entry.contributions[topic] = payload
@@ -207,9 +221,13 @@ func (s *memoryStore) Snapshot() map[string]*persistedEntry {
 }
 
 // Restore implements JoinStore.
+// Uses LoadOrStore to preserve any in-progress contributions that have already
+// been recorded since the last snapshot.  This prevents a second Setup() call
+// (triggered when a multi-topic trigger gets N rebalance callbacks) from
+// overwriting contributions accumulated between the first and second callbacks.
 func (s *memoryStore) Restore(entries map[string]*persistedEntry) {
 	for key, pe := range entries {
-		s.m.Store(key, pe.toJoinEntry())
+		s.m.LoadOrStore(key, pe.toJoinEntry())
 	}
 }
 

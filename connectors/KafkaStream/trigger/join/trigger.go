@@ -6,10 +6,10 @@
 // State backing stores (Settings.StoreType):
 //   - "memory" (default) — process-local sync.Map; state lost on restart.
 //   - "file"             — memory + JSON snapshot on shutdown/rebalance;
-//                          graceful-restart recovery; requires PersistPath.
+//     graceful-restart recovery; requires PersistPath.
 //   - "redis"            — Redis-backed; cross-instance sharing, restart
-//                          recovery, and rebalance handoff all automatic;
-//                          requires RedisAddr.
+//     recovery, and rebalance handoff all automatic;
+//     requires RedisAddr.
 package join
 
 import (
@@ -206,19 +206,22 @@ func (t *Trigger) Start() error {
 	return nil
 }
 
-// Stop signals all goroutines to stop, persists in-flight state, then closes
-// the Kafka consumer group clients and the join store.
+// Stop signals all goroutines to stop, waits for them to finish, persists
+// in-flight state, then closes the Kafka consumer group clients and the store.
+// Save() is called AFTER wg.Wait() so the snapshot is captured from a stable,
+// quiescent store — no concurrent Contribute calls can modify state after the
+// goroutines have exited.
 func (t *Trigger) Stop() error {
-	t.logger.Debugf("kafka-stream/join-trigger: stopping — persisting in-flight state")
-
-	// Persist before cancelling so consumers have a chance to flush in-flight
-	// state before we tear down the goroutines.
-	if err := t.store.Save(t.logger); err != nil {
-		t.logger.Warnf("kafka-stream/join-trigger: store.Save error on shutdown: %v", err)
-	}
+	t.logger.Debugf("kafka-stream/join-trigger: stopping — waiting for goroutines")
 
 	t.cancel()
 	t.wg.Wait()
+
+	// State is now stable. Persist before closing.
+	t.logger.Debugf("kafka-stream/join-trigger: goroutines stopped — persisting in-flight state")
+	if err := t.store.Save(t.logger); err != nil {
+		t.logger.Warnf("kafka-stream/join-trigger: store.Save error on shutdown: %v", err)
+	}
 
 	for i, client := range t.clients {
 		if err := client.Close(); err != nil {
