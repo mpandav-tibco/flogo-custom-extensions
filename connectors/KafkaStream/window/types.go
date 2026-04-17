@@ -86,7 +86,12 @@ type WindowResult struct {
 	Count      int64
 	WindowName string
 	Key        string
-	ClosedAt   time.Time
+	// WindowStart is the event-time of the first event accepted into this window
+	// period. For TumblingTime/Count: set when the window opened. For sliding
+	// windows: set to the oldest event currently in the buffer. Zero if the
+	// buffer is empty. Useful for downstream branching on window boundaries.
+	WindowStart time.Time
+	ClosedAt    time.Time
 
 	// LateEventCount is the number of events accepted within AllowedLateness.
 	LateEventCount int64
@@ -116,9 +121,9 @@ func (e *WindowError) Error() string {
 
 // WindowSnapshot is a point-in-time observability view of a window store.
 type WindowSnapshot struct {
-	Name        string
-	BufferSize  int64
-	Watermark   time.Time
+	Name       string
+	BufferSize int64
+	Watermark  time.Time
 	// WindowStart is the event-time timestamp when the current window period
 	// opened. Zero for count-based and sliding windows. Useful for observability
 	// (e.g. computing how far through its period a TumblingTimeWindow is).

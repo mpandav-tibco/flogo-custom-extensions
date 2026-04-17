@@ -123,18 +123,24 @@ type Output struct {
 	// DroppedCount is the number of events dropped (overflow) in the
 	// last closed window.
 	DroppedCount int64 `md:"droppedCount"`
+
+	// LateEventCount is the number of late-but-accepted events (within
+	// AllowedLateness) aggregated in the last closed window. Useful for
+	// downstream SLA monitoring without enabling a full DLQ pipeline.
+	LateEventCount int64 `md:"lateEventCount"`
 }
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"windowClosed": o.WindowClosed,
-		"result":       o.Result,
-		"count":        o.Count,
-		"windowName":   o.WindowName,
-		"key":          o.Key,
-		"lateEvent":    o.LateEvent,
-		"lateReason":   o.LateReason,
-		"droppedCount": o.DroppedCount,
+		"windowClosed":   o.WindowClosed,
+		"result":         o.Result,
+		"count":          o.Count,
+		"windowName":     o.WindowName,
+		"key":            o.Key,
+		"lateEvent":      o.LateEvent,
+		"lateReason":     o.LateReason,
+		"droppedCount":   o.DroppedCount,
+		"lateEventCount": o.LateEventCount,
 	}
 }
 
@@ -169,5 +175,9 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 		return err
 	}
 	o.DroppedCount, err = coerce.ToInt64(values["droppedCount"])
+	if err != nil {
+		return err
+	}
+	o.LateEventCount, err = coerce.ToInt64(values["lateEventCount"])
 	return err
 }

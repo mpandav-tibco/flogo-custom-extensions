@@ -1,7 +1,21 @@
 {
     "name": "Kafka Stream Extensions",
-    "version": "2.0.0",
+    "version": "1.0.0",
     "category": "KafkaStream",
-    "description": "Custom Flogo activities for Kafka stream processing — stateful windowed aggregation and predicate-based message filtering.",
-    "image": "icons/kafka-stream.png"
+    "description": "Custom Flogo triggers for Kafka stream processing. The Aggregate trigger consumes messages from a Kafka topic, accumulates a numeric field into a stateful window (tumbling or sliding, time- or count-based), and fires the flow when the window closes — with support for keyed sub-windows, event-time watermarks, late-event routing, overflow policies, deduplication, and state persistence. The Filter trigger consumes messages from a Kafka topic and fires the flow only for messages that satisfy configurable predicate(s), supporting single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The Join trigger subscribes to two or more Kafka topics and fires the flow when messages sharing the same joinKeyField value arrive from all configured topics within a configurable time window — a classic stream-join / stream-enrichment pattern.",
+    "image": "icons/kafka-stream.png",
+    "contributions": [
+        {
+            "type": "flogo:trigger",
+            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter"
+        },
+        {
+            "type": "flogo:trigger",
+            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate"
+        },
+        {
+            "type": "flogo:trigger",
+            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join"
+        }
+    ]
 }

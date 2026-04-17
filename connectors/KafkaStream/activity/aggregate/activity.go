@@ -84,6 +84,10 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	}
 
 	logger := ctx.Logger()
+	if s.EventTimeField == "" {
+		logger.Warnf("kafka-stream/aggregate: window=%q — eventTimeField is not configured. Events will use wall-clock time which causes incorrect window boundaries on message replay or out-of-order delivery. Set eventTimeField to the message field holding the event timestamp.",
+			s.WindowName)
+	}
 	logger.Infof("Kafka Stream Aggregate initialised: window=%q type=%s size=%d fn=%s eventTimeField=%q overflow=%s persistPath=%q",
 		s.WindowName, s.WindowType, s.WindowSize, s.Function, s.EventTimeField, s.OverflowPolicy, s.PersistPath)
 
@@ -157,6 +161,9 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		if err != nil {
 			return false, fmt.Errorf("kafka-stream/aggregate: failed to create keyed window %q: %w", windowName, err)
 		}
+		if a.logger.DebugEnabled() {
+			a.logger.Debugf("kafka-stream/aggregate: lazily created keyed window %q (total keys: via registry)", windowName)
+		}
 	}
 
 	// --- Idle-timeout check (emit partial result before processing new event) ---
@@ -192,7 +199,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		if err := ctx.SetOutputObject(idleOutput); err != nil {
 			return false, fmt.Errorf("kafka-stream/aggregate: failed to set idle-timeout output: %w", err)
 		}
-		a.setTracingTags(ctx, idleOutput)
+		a.setTracingTags(ctx, idleOutput, eventTime)
 		return true, nil
 	}
 
@@ -219,7 +226,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		if err := ctx.SetOutputObject(output); err != nil {
 			return false, fmt.Errorf("kafka-stream/aggregate: failed to set output for late event: %w", err)
 		}
-		a.setTracingTags(ctx, output)
+		a.setTracingTags(ctx, output, eventTime)
 		return true, nil
 	}
 
@@ -232,17 +239,22 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		output.Result = result.Value
 		output.Count = result.Count
 		output.DroppedCount = result.DroppedCount
+		output.LateEventCount = result.LateEventCount
 		if closed {
 			a.logger.Infof("Window %q closed: %s=%.4f count=%d droppedCount=%d lateCount=%d key=%q",
 				windowName, a.settings.Function, result.Value, result.Count,
 				result.DroppedCount, result.LateEventCount, key)
+		} else if a.logger.DebugEnabled() {
+			snap := store.Snapshot()
+			a.logger.Debugf("kafka-stream/aggregate: event added to window=%q key=%q value=%.4f buffer=%d eventTime=%s",
+				windowName, key, value, snap.BufferSize, eventTime.Format(time.RFC3339))
 		}
 	}
 
 	if err := ctx.SetOutputObject(output); err != nil {
 		return false, fmt.Errorf("kafka-stream/aggregate: failed to set output: %w", err)
 	}
-	a.setTracingTags(ctx, output)
+	a.setTracingTags(ctx, output, eventTime)
 
 	// Periodic state persistence (opt-in, only when PersistPath is configured).
 	// Input path overrides settings path if provided.
@@ -269,17 +281,22 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 // ---------------------------------------------------------------------------
 
 // setTracingTags attaches aggregate-specific tags to the engine-managed span.
-func (a *Activity) setTracingTags(ctx activity.Context, out *Output) {
+// eventTime is the resolved event-time used for window boundary evaluation.
+func (a *Activity) setTracingTags(ctx activity.Context, out *Output, eventTime time.Time) {
 	if tc := ctx.GetTracingContext(); tc != nil {
 		tc.SetTag("aggregate.window", out.WindowName)
+		tc.SetTag("aggregate.window_type", a.settings.WindowType)
 		tc.SetTag("aggregate.function", a.settings.Function)
 		tc.SetTag("aggregate.window_closed", out.WindowClosed)
+		tc.SetTag("aggregate.event_time_ms", eventTime.UnixMilli())
 		if out.Key != "" {
 			tc.SetTag("aggregate.key", out.Key)
 		}
 		if out.WindowClosed {
 			tc.SetTag("aggregate.result", out.Result)
 			tc.SetTag("aggregate.count", out.Count)
+			tc.SetTag("aggregate.late_event_count", out.LateEventCount)
+			tc.SetTag("aggregate.dropped_count", out.DroppedCount)
 		}
 		if out.LateEvent {
 			tc.SetTag("aggregate.late_event", true)

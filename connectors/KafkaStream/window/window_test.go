@@ -127,13 +127,15 @@ func TestTumblingCountWindow_KeyPreserved(t *testing.T) {
 
 // ─── TumblingTimeWindow ───────────────────────────────────────────────────────
 //
-// Implementation note: the event that crosses the window boundary IS included in
-// the closed window's aggregate. After close, the buffer resets to empty and
-// windowStart is set to the trigger event's timestamp.
+// Implementation note: the event that crosses the window boundary is the FIRST
+// event of the NEW window, not the last event of the closed one. After close,
+// the buffer is seeded with the triggering event and windowStart is set to its
+// timestamp.
 
-func TestTumblingTimeWindow_Sum_IncludesTriggerEvent(t *testing.T) {
+func TestTumblingTimeWindow_Sum_TriggerStartsNewWindow(t *testing.T) {
 	// Window size = 5000ms. Events at t0, t+1s, t+2s, t+6s.
-	// t+6s crosses the 5s boundary; all 4 events are in the buffer → sum=100.
+	// t+6s crosses the 5s boundary; the triggering event (40) is NOT in the
+	// closing window — it seeds the next one.
 	w := window.NewTumblingTimeWindow(window.WindowConfig{
 		Type: window.WindowTumblingTime, Size: 5000, Function: window.FuncSum,
 	})
@@ -146,14 +148,14 @@ func TestTumblingTimeWindow_Sum_IncludesTriggerEvent(t *testing.T) {
 	r, closed, _, err := w.Add(event(40, base.Add(6*time.Second)))
 	require.NoError(t, err)
 	assert.True(t, closed)
-	// All 4 events (including the triggering one) are aggregated
-	assert.Equal(t, 100.0, r.Value) // 10+20+30+40
-	assert.Equal(t, int64(4), r.Count)
+	// Triggering event (40) is NOT included — it opens the next window
+	assert.Equal(t, 60.0, r.Value) // 10+20+30
+	assert.Equal(t, int64(3), r.Count)
 }
 
 func TestTumblingTimeWindow_Avg(t *testing.T) {
 	// Window size = 3000ms. Events: [10@t0, 30@t+1s], trigger at t+4s.
-	// Buffer at close = [10, 30, 99] → avg = 46.33...
+	// Trigger (99) is NOT included in the closing window — it seeds the next one.
 	w := window.NewTumblingTimeWindow(window.WindowConfig{
 		Type: window.WindowTumblingTime, Size: 3000, Function: window.FuncAvg,
 	})
@@ -163,9 +165,9 @@ func TestTumblingTimeWindow_Avg(t *testing.T) {
 	r, closed, _, err := w.Add(event(99, base.Add(4*time.Second)))
 	require.NoError(t, err)
 	assert.True(t, closed)
-	expected := (10.0 + 30.0 + 99.0) / 3.0
+	expected := (10.0 + 30.0) / 2.0 // avg of the closed window only
 	assert.InDelta(t, expected, r.Value, 0.001)
-	assert.Equal(t, int64(3), r.Count)
+	assert.Equal(t, int64(2), r.Count)
 }
 
 func TestTumblingTimeWindow_Min_Max(t *testing.T) {
@@ -189,23 +191,22 @@ func TestTumblingTimeWindow_Min_Max(t *testing.T) {
 }
 
 func TestTumblingTimeWindow_ResetsAfterClose(t *testing.T) {
-	// Implementation: trigger event included in closing window; buffer fully reset after.
+	// Trigger event starts the NEW window; it is NOT counted in the closed one.
 	// Window size = 1000ms.
 	w := window.NewTumblingTimeWindow(window.WindowConfig{
 		Type: window.WindowTumblingTime, Size: 1000, Function: window.FuncSum,
 	})
 	base := time.Now()
 	w.Add(event(100, base))
-	// t+2s crosses boundary; buffer=[100, 999] → sum=1099
+	// t+2s crosses boundary; buffer=[100] only → sum=100; 999 seeds window 2.
 	r1, c1, _, _ := w.Add(event(999, base.Add(2*time.Second)))
 	assert.True(t, c1)
-	assert.Equal(t, 1099.0, r1.Value)
-	// New window: buffer reset, windowStart=t+2s.
-	// Next event at t+4s: elapsed=2s >= 1s → closes immediately.
-	// Buffer = [1] → sum=1
+	assert.Equal(t, 100.0, r1.Value)
+	// Window 2 started with 999 at t+2s. Event at t+4s: elapsed=2s >= 1s → closes.
+	// buffer=[999] → sum=999; 1 seeds window 3.
 	r2, c2, _, _ := w.Add(event(1, base.Add(4*time.Second)))
 	assert.True(t, c2)
-	assert.Equal(t, 1.0, r2.Value)
+	assert.Equal(t, 999.0, r2.Value)
 }
 
 // TestTumblingTimeWindow_HistoricalReplay verifies that event-time windows work
@@ -224,12 +225,13 @@ func TestTumblingTimeWindow_HistoricalReplay(t *testing.T) {
 		assert.False(t, closed, "window must not close at event %d", i+1)
 	}
 	// base+6s crosses the 5s window boundary in event-time.
+	// The triggering event (40) is NOT in the closed window — it seeds the next.
 	r, closed, _, err := w.Add(event(40, base.Add(6*time.Second)))
 	require.NoError(t, err)
 	assert.True(t, closed, "event-time window must close when event-time boundary is crossed")
 	require.NotNil(t, r)
-	assert.Equal(t, 100.0, r.Value) // 10+20+30+40
-	assert.Equal(t, int64(4), r.Count)
+	assert.Equal(t, 60.0, r.Value) // 10+20+30 only
+	assert.Equal(t, int64(3), r.Count)
 }
 
 // ─── SlidingCountWindow ───────────────────────────────────────────────────────
@@ -932,13 +934,14 @@ func TestTumblingTime_Overflow_DropOldest_MessageIDCleanup(t *testing.T) {
 	assert.Equal(t, int64(3), snap.BufferSize, "buffer must stay at MaxBufferSize after overflow + re-accept")
 
 	// Close the window: event E at T+61s crosses 60 s boundary.
-	// Overflow fires: evict C(30) → buffer = [D(40), A(10)], then append E(5).
-	// elapsed = 61s >= 60s → closeWindow.  result = sum(D=40, A=10, E=5) = 55.
+	// Overflow fires first: evict C(30) → buffer = [D(40), A(10)].
+	// Boundary check: elapsed=61s >= 60s → close WITHOUT E.
+	// E seeds the new window. result = sum(D=40, A=10) = 50.
 	r, closed, _, err := w.Add(window.WindowEvent{Value: 5, Timestamp: base.Add(61 * time.Second), MessageID: "E"})
 	require.NoError(t, err)
 	require.True(t, closed, "window must close when time boundary is crossed")
 	require.NotNil(t, r)
-	assert.Equal(t, 55.0, r.Value, "D(40)+A(10)+E(5)=55 — re-delivered A must contribute to the aggregate")
+	assert.Equal(t, 50.0, r.Value, "D(40)+A(10)=50 — E is the first event of the new window")
 }
 
 // TestTumblingTime_SaveLoad_PreservesSeenMap verifies that after SaveState /
@@ -1013,4 +1016,158 @@ func TestTumblingTime_Snapshot_WindowStart(t *testing.T) {
 	w.Add(window.WindowEvent{Value: 2, Timestamp: epoch.Add(time.Second)})
 	snap2 := w.Snapshot()
 	assert.Equal(t, epoch, snap2.WindowStart, "WindowStart must not advance within a window period")
+}
+
+// ─── Regression: TumblingCountWindow []WindowEvent migration ─────────────────
+
+// TestTumblingCount_Overflow_DropOldest_MessageIDCleanup verifies that when a
+// TumblingCountWindow evicts an event via OverflowDropOldest, the evicted
+// event's MessageID is removed from the dedup set. Before this fix,
+// TumblingCountWindow stored []float64 and had no way to track per-event IDs,
+// so the evicted ID remained in seen permanently — causing a data-loss path
+// identical to the one previously fixed in TumblingTimeWindow.
+func TestTumblingCount_Overflow_DropOldest_MessageIDCleanup(t *testing.T) {
+	w := window.NewTumblingCountWindow(window.WindowConfig{
+		Type:           window.WindowTumblingCount,
+		Size:           10, // large — won't close by count here
+		Function:       window.FuncSum,
+		MaxBufferSize:  3,
+		OverflowPolicy: window.OverflowDropOldest,
+	})
+	base := time.Now()
+
+	// Fill buffer to MaxBufferSize: [A(1), B(2), C(3)]
+	for _, ev := range []struct {
+		id  string
+		val float64
+	}{{"A", 1}, {"B", 2}, {"C", 3}} {
+		_, _, _, err := w.Add(window.WindowEvent{Value: ev.val, Timestamp: base, MessageID: ev.id})
+		require.NoError(t, err)
+	}
+
+	// D triggers overflow: evict A → buffer=[B,C,D]. A's ID must leave seen.
+	_, _, _, err := w.Add(window.WindowEvent{Value: 4, Timestamp: base.Add(time.Second), MessageID: "D"})
+	require.NoError(t, err)
+
+	// Re-deliver A: must be accepted (was evicted, ID cleared).
+	// Overflow fires: evict B → buffer=[C(3),D(4),A(re-delivered=10)].
+	_, _, _, err = w.Add(window.WindowEvent{Value: 10, Timestamp: base.Add(2 * time.Second), MessageID: "A"})
+	require.NoError(t, err, "re-delivered A must be accepted after eviction (dedup released)")
+
+	snap := w.Snapshot()
+	assert.Equal(t, int64(3), snap.BufferSize, "buffer must stay at MaxBufferSize")
+	assert.Equal(t, int64(2), snap.MessagesDropped, "two events evicted by overflow")
+}
+
+// TestTumblingCount_WindowStart_InResult verifies that when a TumblingCountWindow
+// closes, result.WindowStart is set to the event-time of the first event accepted
+// into that window period.
+func TestTumblingCount_WindowStart_InResult(t *testing.T) {
+	w := window.NewTumblingCountWindow(window.WindowConfig{
+		Type: window.WindowTumblingCount, Size: 3, Function: window.FuncSum,
+	})
+	epoch := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	ts := epoch
+	var r *window.WindowResult
+	for i, v := range []float64{10, 20, 30} {
+		var err error
+		var closed bool
+		r, closed, _, err = w.Add(window.WindowEvent{Value: v, Timestamp: ts.Add(time.Duration(i) * time.Second)})
+		require.NoError(t, err)
+		if i < 2 {
+			assert.False(t, closed)
+		}
+	}
+	require.NotNil(t, r)
+	assert.Equal(t, epoch, r.WindowStart, "WindowStart must be the first event's timestamp")
+	assert.Equal(t, 60.0, r.Value)
+}
+
+// TestTumblingCount_WindowStart_ResetsAfterClose verifies that WindowStart is
+// reset after a window closes so the next window gets its own origin.
+func TestTumblingCount_WindowStart_ResetsAfterClose(t *testing.T) {
+	w := window.NewTumblingCountWindow(window.WindowConfig{
+		Type: window.WindowTumblingCount, Size: 2, Function: window.FuncSum,
+	})
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	// First window: events at base and base+1s.
+	w.Add(window.WindowEvent{Value: 1, Timestamp: base})
+	r1, _, _, _ := w.Add(window.WindowEvent{Value: 2, Timestamp: base.Add(time.Second)})
+	require.NotNil(t, r1)
+	assert.Equal(t, base, r1.WindowStart)
+
+	// Second window: events at base+5s and base+6s.
+	w.Add(window.WindowEvent{Value: 3, Timestamp: base.Add(5 * time.Second)})
+	r2, _, _, _ := w.Add(window.WindowEvent{Value: 4, Timestamp: base.Add(6 * time.Second)})
+	require.NotNil(t, r2)
+	assert.Equal(t, base.Add(5*time.Second), r2.WindowStart, "WindowStart must reset for the second window")
+}
+
+// TestTumblingCount_SaveLoad_PreservesSeenMap verifies that after SaveState /
+// LoadState (using the new EventMessageIDs format) the dedup set is fully
+// restored, suppressing re-deliveries on the recovered window.
+func TestTumblingCount_SaveLoad_PreservesSeenMap(t *testing.T) {
+	w1 := window.NewTumblingCountWindow(window.WindowConfig{
+		Type: window.WindowTumblingCount, Size: 10, Function: window.FuncSum,
+	})
+	base := time.Now()
+	w1.Add(window.WindowEvent{Value: 5, Timestamp: base, MessageID: "seen-id"})
+
+	state := w1.SaveState()
+	w2 := window.NewTumblingCountWindow(window.WindowConfig{
+		Type: window.WindowTumblingCount, Size: 10, Function: window.FuncSum,
+	})
+	w2.LoadState(state)
+
+	// "seen-id" must still be blocked after restore.
+	r, closed, _, err := w2.Add(window.WindowEvent{Value: 99, Timestamp: base.Add(time.Second), MessageID: "seen-id"})
+	require.NoError(t, err)
+	assert.False(t, closed, "duplicate must be suppressed after state restore")
+	assert.Nil(t, r)
+
+	// A fresh ID must pass through.
+	_, _, _, err2 := w2.Add(window.WindowEvent{Value: 3, Timestamp: base.Add(2 * time.Second), MessageID: "new-id"})
+	require.NoError(t, err2)
+	snap := w2.Snapshot()
+	assert.Equal(t, int64(2), snap.BufferSize, "restored(5) + new-id(3) = 2 events")
+}
+
+// TestWindowResult_WindowStart_SlidingTime verifies that SlidingTimeWindow
+// sets result.WindowStart to the oldest event in the current rolling buffer.
+func TestWindowResult_WindowStart_SlidingTime(t *testing.T) {
+	w := window.NewSlidingTimeWindow(window.WindowConfig{
+		Type: window.WindowSlidingTime, Size: 5000, Function: window.FuncSum,
+	})
+	epoch := time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC)
+	w.Add(window.WindowEvent{Value: 10, Timestamp: epoch})
+	r, _, _, err := w.Add(window.WindowEvent{Value: 20, Timestamp: epoch.Add(2 * time.Second)})
+	require.NoError(t, err)
+	require.NotNil(t, r)
+	// Both events are within the 5 s window; oldest is at epoch.
+	assert.Equal(t, epoch, r.WindowStart, "WindowStart must be the oldest event's timestamp")
+}
+
+// TestWindowResult_WindowStart_SlidingCount verifies the same for SlidingCountWindow.
+func TestWindowResult_WindowStart_SlidingCount(t *testing.T) {
+	w := window.NewSlidingCountWindow(window.WindowConfig{
+		Type: window.WindowSlidingCount, Size: 3, Function: window.FuncSum,
+	})
+	base := time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC)
+	for i, v := range []float64{10, 20, 30} {
+		ts := base.Add(time.Duration(i) * time.Second)
+		r, _, _, err := w.Add(window.WindowEvent{Value: v, Timestamp: ts})
+		require.NoError(t, err)
+		if i == 0 {
+			assert.Equal(t, base, r.WindowStart, "single-event buffer: WindowStart == event's own timestamp")
+		}
+		if i == 2 {
+			// Buffer: [10@0, 20@1, 30@2] (size=3, no eviction yet)
+			assert.Equal(t, base, r.WindowStart, "oldest event is still at epoch")
+		}
+	}
+	// 4th event evicts first: buffer=[20@1, 30@2, 40@3]. WindowStart advances.
+	r4, _, _, err := w.Add(window.WindowEvent{Value: 40, Timestamp: base.Add(3 * time.Second)})
+	require.NoError(t, err)
+	assert.Equal(t, base.Add(time.Second), r4.WindowStart, "oldest event now at base+1s after eviction")
 }

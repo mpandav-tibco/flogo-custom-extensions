@@ -161,13 +161,19 @@ func (w *SlidingTimeWindow) Add(event WindowEvent) (*WindowResult, bool, *LateEv
 		values[i] = e.Value
 	}
 
+	windowStart := time.Time{}
+	if len(w.events) > 0 {
+		windowStart = w.events[0].Timestamp
+	}
+
 	w.windowsClosed++
 	result := &WindowResult{
-		Value:      compute(w.cfg.Function, values),
-		Count:      int64(len(values)),
-		WindowName: w.cfg.Name,
-		Key:        event.Key,
-		ClosedAt:   event.Timestamp,
+		Value:       compute(w.cfg.Function, values),
+		Count:       int64(len(values)),
+		WindowName:  w.cfg.Name,
+		Key:         event.Key,
+		WindowStart: windowStart,
+		ClosedAt:    event.Timestamp,
 	}
 	return result, true, nil, nil
 }
@@ -328,13 +334,19 @@ func (w *SlidingCountWindow) Add(event WindowEvent) (*WindowResult, bool, *LateE
 		values[i] = e.Value
 	}
 
+	windowStart := time.Time{}
+	if len(w.events) > 0 {
+		windowStart = w.events[0].Timestamp
+	}
+
 	w.windowsClosed++
 	result := &WindowResult{
-		Value:      compute(w.cfg.Function, values),
-		Count:      int64(len(values)),
-		WindowName: w.cfg.Name,
-		Key:        event.Key,
-		ClosedAt:   event.Timestamp,
+		Value:       compute(w.cfg.Function, values),
+		Count:       int64(len(values)),
+		WindowName:  w.cfg.Name,
+		Key:         event.Key,
+		WindowStart: windowStart,
+		ClosedAt:    event.Timestamp,
 	}
 	return result, true, nil, nil
 }
