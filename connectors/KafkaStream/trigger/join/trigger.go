@@ -6,7 +6,7 @@
 // State backing stores (Settings.StoreType):
 //   - "memory" (default) — process-local sync.Map; state lost on restart.
 //   - "file"             — memory + JSON snapshot on shutdown/rebalance;
-//                          graceful-restart recovery; requires PersistPath.
+//     graceful-restart recovery; requires PersistPath.
 package join
 
 import (
@@ -59,7 +59,7 @@ type Trigger struct {
 	handlers []*handler
 	topics   []string
 	clients  []sarama.ConsumerGroup // one ConsumerGroup client per topic
-		store    JoinStore              // backing store: memory | file
+	store    JoinStore              // backing store: memory | file
 	ctx      context.Context
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
