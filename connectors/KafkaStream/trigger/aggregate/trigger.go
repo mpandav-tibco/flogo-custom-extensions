@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -49,13 +50,14 @@ func init() {
 // every event (sliding).  Multiple handlers can be registered with different
 // EventType settings for windowClose vs. lateEvent routing.
 type Trigger struct {
-	settings *Settings
-	logger   log.Logger
-	handlers []*handler
-	client   sarama.ConsumerGroup
-	ctx      context.Context
-	cancel   context.CancelFunc
-	wg       sync.WaitGroup
+	settings   *Settings
+	logger     log.Logger
+	handlers   []*handler
+	client     sarama.ConsumerGroup
+	ctx        context.Context
+	cancel     context.CancelFunc
+	wg         sync.WaitGroup
+	msgCounter atomic.Int64 // per-trigger; replaces the global IncrPersistCounter
 }
 
 type handler struct {
@@ -101,6 +103,7 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 		if et == "" {
 			et = EventTypeWindowClose
 		}
+		t.logger.Debugf("kafka-stream/aggregate-trigger: registered handler — name=%q eventType=%q", h.Name(), et)
 		t.handlers = append(t.handlers, &handler{runner: h, hs: hs, eventType: et})
 	}
 
@@ -333,12 +336,14 @@ func (t *Trigger) processPayload(
 		t.logger.Infof("kafka-stream/aggregate-trigger: window %q auto-closed (idle timeout): %s=%.4f count=%d key=%q",
 			windowName, t.settings.Function, idleResult.Value, idleResult.Count, key)
 		// Seed the fresh window with the incoming event.
-		store.Add(window.WindowEvent{ //nolint:errcheck — post-idle-close Add cannot overflow
+		if _, _, _, addSeedErr := store.Add(window.WindowEvent{
 			Value:     value,
 			Timestamp: eventTime,
 			Key:       key,
 			MessageID: messageID,
-		})
+		}); addSeedErr != nil {
+			t.logger.Warnf("kafka-stream/aggregate-trigger: post-idle-close Add on window %q failed (ignored): %v", windowName, addSeedErr)
+		}
 		out := &Output{
 			WindowResult: WindowResult{
 				Result:       idleResult.Value,
@@ -425,8 +430,8 @@ func (t *Trigger) processPayload(
 // handleMessage decodes a raw Kafka message and dispatches it through the window pipeline.
 func (t *Trigger) handleMessage(session sarama.ConsumerGroupSession, msg *sarama.ConsumerMessage) {
 	if t.logger.DebugEnabled() {
-		t.logger.Debugf("kafka-stream/aggregate-trigger: record received — topic=%s partition=%d offset=%d",
-			msg.Topic, msg.Partition, msg.Offset)
+		t.logger.Debugf("kafka-stream/aggregate-trigger: record received — topic=%s partition=%d offset=%d key=%q len=%d",
+			msg.Topic, msg.Partition, msg.Offset, string(msg.Key), len(msg.Value))
 	}
 
 	// Build context: extract OTel trace propagation headers from the Kafka message (OOTB pattern).
@@ -495,17 +500,28 @@ func (t *Trigger) handleMessage(session sarama.ConsumerGroupSession, msg *sarama
 // Returns true if every matching handler completed without error, false otherwise.
 func (t *Trigger) fireHandlers(ctx context.Context, eventId string, eventType string, out *Output) bool {
 	allOK := true
+	matched := 0
 	for _, h := range t.handlers {
 		if h.eventType != EventTypeAll && h.eventType != eventType {
 			continue
 		}
+		matched++
+		t.logger.Debugf("kafka-stream/aggregate-trigger: invoking handler — name=%q eventType=%q eventId=%q",
+			h.runner.Name(), eventType, eventId)
 		hCtx, cancel := t.handlerContext(ctx)
 		_, err := h.runner.Handle(trigger.NewContextWithEventId(hCtx, eventId), out.ToMap())
 		cancel()
 		if err != nil {
-			t.logger.Errorf("kafka-stream/aggregate-trigger: handler fire error eventType=%s: %v", eventType, err)
+			t.logger.Errorf("kafka-stream/aggregate-trigger: handler error name=%q eventType=%q: %v", h.runner.Name(), eventType, err)
 			allOK = false
+		} else {
+			t.logger.Debugf("kafka-stream/aggregate-trigger: handler completed — name=%q eventType=%q eventId=%q",
+				h.runner.Name(), eventType, eventId)
 		}
+	}
+	if matched == 0 {
+		t.logger.Debugf("kafka-stream/aggregate-trigger: no handler registered for eventType=%q eventId=%q — event dropped",
+			eventType, eventId)
 	}
 	return allOK
 }
@@ -524,7 +540,7 @@ func (t *Trigger) maybePersist() {
 	if t.settings.PersistPath == "" || t.settings.PersistEveryN <= 0 {
 		return
 	}
-	n := kafkastream.IncrPersistCounter()
+	n := t.msgCounter.Add(1)
 	if n%t.settings.PersistEveryN == 0 {
 		if err := kafkastream.SaveStateTo(t.settings.PersistPath); err != nil {
 			t.logger.Warnf("kafka-stream/aggregate-trigger: periodic state save failed: %v", err)
@@ -620,6 +636,25 @@ func validateSettings(s *Settings) error {
 	if s.OnSchemaError != "" && s.OnSchemaError != "skip" && s.OnSchemaError != "retry" {
 		return fmt.Errorf("unsupported onSchemaError %q (accepted: \"skip\", \"retry\")", s.OnSchemaError)
 	}
+	validOverflowPolicies := map[string]bool{"": true, "drop_oldest": true, "drop_newest": true, "error": true}
+	if !validOverflowPolicies[s.OverflowPolicy] {
+		return fmt.Errorf("unsupported overflowPolicy %q (accepted: \"drop_oldest\", \"drop_newest\", \"error\")", s.OverflowPolicy)
+	}
+	if s.PersistEveryN < 0 {
+		return fmt.Errorf("persistEveryN must be >= 0, got %d", s.PersistEveryN)
+	}
+	if s.AllowedLateness < 0 {
+		return fmt.Errorf("allowedLateness must be >= 0, got %d", s.AllowedLateness)
+	}
+	if s.MaxBufferSize < 0 {
+		return fmt.Errorf("maxBufferSize must be >= 0, got %d", s.MaxBufferSize)
+	}
+	if s.MaxKeys < 0 {
+		return fmt.Errorf("maxKeys must be >= 0, got %d", s.MaxKeys)
+	}
+	if s.IdleTimeoutMs < 0 {
+		return fmt.Errorf("idleTimeoutMs must be >= 0, got %d", s.IdleTimeoutMs)
+	}
 	return nil
 }
 
@@ -629,8 +664,38 @@ func validateSettings(s *Settings) error {
 
 type consumerGroupHandler struct{ t *Trigger }
 
-func (h *consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
-func (h *consumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
+// Setup is invoked at the start of a new consumer group session (after rebalance).
+// When persistence is enabled, restores window state so the new partition owner
+// continues from the last saved snapshot rather than starting with empty windows.
+func (h *consumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
+	h.t.logger.Debugf("kafka-stream/aggregate-trigger: rebalance setup — topic=%q claims=%v",
+		h.t.settings.Topic, session.Claims()[h.t.settings.Topic])
+	if h.t.settings.PersistPath != "" {
+		if err := kafkastream.RestoreStateFrom(h.t.settings.PersistPath); err != nil {
+			h.t.logger.Warnf("kafka-stream/aggregate-trigger: rebalance restore from %q failed (ignored): %v",
+				h.t.settings.PersistPath, err)
+		} else {
+			h.t.logger.Infof("kafka-stream/aggregate-trigger: rebalance — window state restored from %q", h.t.settings.PersistPath)
+		}
+	}
+	return nil
+}
+
+// Cleanup is invoked at the end of a consumer group session (before rebalance).
+// When persistence is enabled, saves window state so the new partition owner
+// can restore it in its subsequent Setup call.
+func (h *consumerGroupHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+	h.t.logger.Debugf("kafka-stream/aggregate-trigger: rebalance cleanup — topic=%q", h.t.settings.Topic)
+	if h.t.settings.PersistPath != "" {
+		if err := kafkastream.SaveStateTo(h.t.settings.PersistPath); err != nil {
+			h.t.logger.Warnf("kafka-stream/aggregate-trigger: rebalance save to %q failed: %v",
+				h.t.settings.PersistPath, err)
+		} else {
+			h.t.logger.Infof("kafka-stream/aggregate-trigger: rebalance — window state saved to %q", h.t.settings.PersistPath)
+		}
+	}
+	return nil
+}
 
 func (h *consumerGroupHandler) ConsumeClaim(
 	session sarama.ConsumerGroupSession,

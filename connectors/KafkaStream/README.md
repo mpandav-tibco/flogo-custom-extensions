@@ -1,6 +1,6 @@
 # Kafka Stream Connector
 
-A Flogo custom extension for self-contained, stateful Kafka stream processing. The connector provides **three triggers** — each trigger owns its own Kafka transport (consumer group, broker connection, offset management) and fires a Flogo flow directly, with no separate Kafka trigger or intermediary activity required.
+A Flogo custom extension for self-contained, stateful Kafka stream processing. The connector provides **three triggers** — each trigger owns its own Kafka transport (consumer group, broker connection, offset management) and fires a Flogo flow directly.
 
 ```
 Kafka Topic(s)
@@ -32,7 +32,7 @@ In the VS Code Flogo extension, open **Extensions**, select **Add Custom Extensi
 
 
 
-Once imported, the **Aggregate Kafka Stream Trigger**, **Filter Kafka Stream Trigger**, and **Join Kafka Streams Trigger** appear in the trigger palette under the **KafkaStream** category.
+Once imported, the **Aggregate Kafka Stream Trigger**, **Filter Kafka Stream Trigger**, and **Join Kafka Streams Trigger** appear in the trigger palette.
 
 ---
 

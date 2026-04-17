@@ -286,8 +286,8 @@ func (t *Trigger) consumeLoop() {
 // predicate evaluation so they can be routed to a dead-letter flow.
 func (t *Trigger) handleMessage(session sarama.ConsumerGroupSession, msg *sarama.ConsumerMessage) {
 	if t.logger.DebugEnabled() {
-		t.logger.Debugf("kafka-stream/filter-trigger: record received — topic=%s partition=%d offset=%d",
-			msg.Topic, msg.Partition, msg.Offset)
+		t.logger.Debugf("kafka-stream/filter-trigger: record received — topic=%s partition=%d offset=%d key=%q len=%d",
+			msg.Topic, msg.Partition, msg.Offset, string(msg.Key), len(msg.Value))
 	}
 
 	// Build context: extract OTel trace propagation headers from the Kafka message (OOTB pattern).

@@ -6,6 +6,14 @@ Subscribes to two or more Kafka topics and fires the Flogo flow when messages ca
 
 The trigger owns its own Kafka transport.
 
+Supports:
+- Two-way, three-way, or N-way stream joins (minimum 2 topics)
+- Configurable join window with timeout handler for partial contributions
+- Memory and file-backed join state stores
+- File store: state survives graceful restarts and consumer rebalances
+- At-least-once delivery via `commitOnSuccess` (completing message only)
+- OTel trace propagation (trace context extracted from Kafka message headers)
+
 ```
 demo-readings  ──►┐
                   │  joinKeyField="device_id"      ┌──► [joined handler]  → both messages arrived
@@ -21,13 +29,15 @@ demo-alerts    ──►┘                                └──► [timeout
 |---------|------|----------|---------|-------------|
 | `kafkaConnection` | connection | ✓ | — | TIBCO Kafka shared connection (broker addresses, auth, TLS). |
 | `topics` | string | ✓ | — | Comma-separated list of Kafka topics to join (minimum 2). Example: `orders,payments`. |
-| `consumerGroup` | string | ✓ | — | Base consumer group ID. The trigger creates one group per topic: `<base>-<topicName>`. E.g. `my-join-cg-orders`, `my-join-cg-payments`. Must be unique per trigger instance. |
+| `consumerGroup` | string | ✓ | — | Base consumer group ID. The trigger creates one group per topic: `<base>-<sanitisedTopicName>`. E.g. `my-join-cg-orders`, `my-join-cg-payments`. Characters in the topic name that are not alphanumeric, `.`, `_`, or `-` are replaced with `-` in the group suffix. Must be unique per trigger instance. |
 | `joinKeyField` | string | ✓ | — | Message field whose value is used to correlate messages across topics. E.g. `order_id`, `device_id`. |
-| `joinWindowMs` | integer | ✓ | `30000` | Maximum time in milliseconds to wait for all topics to contribute a matching message. When expired, a timeout event is emitted. |
+| `joinWindowMs` | integer | ✓ | `30000` | Maximum time in milliseconds to wait for all topics to contribute a matching message. When expired, a timeout event is emitted. **Timeout detection latency:** the sweep fires every `joinWindowMs / 4` ms (minimum 100 ms), so a timed-out entry may not be detected until up to `joinWindowMs * 1.25` ms after the first contribution arrived. |
 | `initialOffset` | string | | `newest` | `newest` or `oldest` — where to start when no committed offset exists for this consumer group. |
 | `balanceStrategy` | string | | `roundrobin` | Kafka consumer group rebalance strategy: `roundrobin` · `sticky` · `range`. Applied to all per-topic consumer groups. |
 | `commitOnSuccess` | boolean | | `true` | When `true`, the completing (last-arriving) message's offset is marked only after all handlers complete without error (at-least-once). When `false`, the offset is always committed. |
 | `handlerTimeoutMs` | integer | | `0` | Maximum time in milliseconds for all handlers to complete. `0` = no timeout. |
+| `storeType` | string | | `memory` | Backing store for in-flight join state. `memory` — process-local, no persistence across restarts. `file` — JSON snapshot on disk; restores on startup and after rebalance. Requires `persistPath`. |
+| `persistPath` | string | | — | **Required when `storeType=file`.** Absolute path for the JSON snapshot file. Example: `/var/data/flogo/join-state.json`. For multi-instance deployments this must point to a shared filesystem. |
 
 ---
 
@@ -132,16 +142,42 @@ This means non-completing topic offsets are always committed eagerly — even if
 
 ---
 
+## Join Store Backends
+
+The trigger supports two backing stores, selected via the `storeType` setting.
+
+| `storeType` | Restart recovery | Rebalance handoff | Extra dependencies |
+|-------------|------------------|-------------------|--------------------|
+| `memory` (default) | ✗ | ✗ | none |
+| `file` | ✓ | ✓ (single-instance or shared FS) | none |
+
+### `storeType: "memory"` (default)
+
+No additional settings required. Best for development and single-instance deployments where losing in-flight state on restart is acceptable.
+
+### `storeType: "file"`
+
+In-flight join windows are written to a JSON snapshot file on graceful shutdown and before each consumer rebalance. They are restored on startup and after rebalance.
+
+| Setting | Description |
+|---------|-------------|
+| `persistPath` | **Required.** Absolute path for the snapshot file. Example: `/var/data/flogo/join-state.json` |
+
+> **Multi-instance note:** For cross-instance state sharing place `persistPath` on a shared filesystem (NFS, EFS, Azure Files). All instances must be able to read and write the same path.
+
+---
+
 ## Limitations
 
-- **In-process join store only.** Join windows live in the memory of the running Flogo process. Multiple Flogo instances consuming the same topics each maintain independent stores — there is no cross-process join coordination.
+- **`joinKeyField` missing from a message.** When a message does not contain the configured `joinKeyField`, an error is logged, the Kafka offset is committed immediately, and the message is discarded. It is not retried and does not fire a timeout handler. Ensure upstream producers always include the join key field.
 
-- **State lost on restart — partial joins become timeouts.** All in-flight join windows are discarded when the process stops. Non-completing topic offsets are committed eagerly (see [Offset Commit Behaviour](#offset-commit-behaviour)), so those messages will not be re-delivered. On restart, only the completing message (if `commitOnSuccess=true`) may be re-delivered, but with no matching partial state to join against it will produce a `timeout` event rather than a `joined` event. Configure a `timeout` handler or use `commitOnSuccess=false` to accept at-most-once semantics for the completing topic.
-
-- **No duplicate joined events across restarts.** With `commitOnSuccess=true` (default), a crash after the join completes but before the completing offset is committed re-delivers the completing message on restart. Because the non-completing messages are already committed, the join store will have no partial state for that key and the trigger will emit a `timeout` event — not a second `joined` event. With `commitOnSuccess=false`, all offsets are committed immediately and nothing re-fires.
+- **Non-completing topic offsets are committed eagerly (all store types).** When a message arrives but does not yet complete the join, its offset is committed immediately so the Sarama consumer session is not stalled waiting for the other topics. This means if the join subsequently times out, that message will not be re-delivered. This trade-off is inherent to multi-topic joins over independent consumer groups.
 
 - **Shared consumer group across trigger instances splits partitions.** If two trigger instances (e.g. one for `joined`, one for `timeout`) point at the same topics and the same `consumerGroup`, Kafka distributes partitions across both instances. Each instance sees only a subset of messages and joins will never complete — both sides timeout. Use a **single trigger instance** with `eventType: "all"`, or assign each instance a distinct `consumerGroup` value.
 
 - **Minimum 2 topics required.** Setting `topics` to a single topic name returns an error at startup. Duplicate topic names in the list are also rejected.
 
-- **No rebalance-aware state handoff.** When Kafka rebalances consumer partitions, in-flight join windows for keys mid-flight on reassigned partitions are silently discarded. The new consumer starts with an empty join store for those partitions.
+- **`memory` store: state lost on restart and rebalance.** Use `storeType: "file"` to survive restarts and rebalances.
+
+- **`file` store: rebalance handoff requires shared filesystem for multi-instance.** For single-instance deployments a local path is sufficient. For multi-instance deployments all instances must write to the same shared `persistPath`.
+

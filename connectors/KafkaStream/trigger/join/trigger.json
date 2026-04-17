@@ -122,6 +122,30 @@
                 "description": "Maximum time in milliseconds allowed for all handlers to complete. 0 (default) means no timeout. When exceeded the handler is treated as failed and, if Commit Completing Offset on Success Only is true, the offset is not marked.",
                 "appPropertySupport": true
             }
+        },
+        {
+            "name": "storeType",
+            "type": "string",
+            "value": "memory",
+            "display": {
+                "name": "Join Store Type",
+                "description": "Backing store for in-flight join state. 'memory' (default): process-local, no dependencies, state lost on restart. 'file': JSON snapshot on shutdown and rebalance, requires Persist Path.",
+                "type": "dropdown",
+                "appPropertySupport": true
+            },
+            "allowed": [
+                "memory",
+                "file"
+            ]
+        },
+        {
+            "name": "persistPath",
+            "type": "string",
+            "display": {
+                "name": "Persist Path (file store)",
+                "description": "Absolute file path for the JSON snapshot when Store Type is 'file'. Example: /var/data/flogo/join-state.json. The directory is created automatically.",
+                "appPropertySupport": true
+            }
         }
     ],
     "handler": {

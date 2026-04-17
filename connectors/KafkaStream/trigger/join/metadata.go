@@ -77,6 +77,21 @@ type Settings struct {
 	// HandlerTimeoutMs is the maximum time in milliseconds allowed for all
 	// handlers to complete.  0 means no timeout.
 	HandlerTimeoutMs int64 `md:"handlerTimeoutMs"`
+
+	// ── Join store ────────────────────────────────────────────────────────────
+	// StoreType selects the backing store for in-flight join state.
+	// "memory" (default) | "file"
+	//
+	// • "memory" — process-local sync.Map; no dependencies; state is lost on
+	//              restart or rebalance.
+	// • "file"   — wraps memory with a JSON snapshot written on shutdown and
+	//              before rebalance; restores on startup and after rebalance.
+	//              Requires PersistPath.
+	StoreType string `md:"storeType"`
+
+	// PersistPath is the absolute file path used for the JSON snapshot when
+	// storeType is "file".  Example: "/var/data/flogo/join-state.json"
+	PersistPath string `md:"persistPath"`
 }
 
 // TopicList parses and returns the trimmed, non-empty topic names from Topics.

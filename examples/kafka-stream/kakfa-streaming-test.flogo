@@ -1,0 +1,509 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate",
+    "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter",
+    "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/connector/kafka"
+  ],
+  "name": "kakfa-streaming-test",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#aggregate",
+      "name": "kafka-stream-aggregate-trigger",
+      "description": "Consumes messages from a Kafka topic, accumulates a numeric field into a stateful window, and fires the flow when the window closes (tumbling) or on every message (sliding). Supports keyed windows, event-time watermarks, late-event DLQ routing, overflow policies, MessageID deduplication, idle-timeout auto-close, and state persistence.",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "consumerGroup": "demo-aggregate-cg",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "windowName": "aggregate-demo-window",
+        "windowType": "TumblingTime",
+        "windowSize": 5,
+        "function": "sum",
+        "valueField": "tempreture",
+        "keyField": "",
+        "eventTimeField": "",
+        "messageIDField": "",
+        "allowedLateness": 0,
+        "maxBufferSize": 0,
+        "overflowPolicy": "drop_oldest",
+        "idleTimeoutMs": 0,
+        "maxKeys": 0,
+        "persistPath": "",
+        "persistEveryN": 0,
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 0,
+        "onSchemaError": "skip"
+      },
+      "id": "AggregateKafkaStreamTrigger",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "eventType": "windowClose"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:AggregateKafkaStream"
+            },
+            "input": {
+              "windowResult": "=$.windowResult",
+              "source": "=$.source"
+            }
+          },
+          "schemas": {
+            "output": {
+              "windowResult": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"number\"},\"count\":{\"type\":\"integer\"},\"windowName\":{\"type\":\"string\"},\"key\":{\"type\":\"string\"},\"windowClosed\":{\"type\":\"boolean\"},\"droppedCount\":{\"type\":\"integer\"},\"lateEventCount\":{\"type\":\"integer\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"number\"},\"count\":{\"type\":\"integer\"},\"windowName\":{\"type\":\"string\"},\"key\":{\"type\":\"string\"},\"windowClosed\":{\"type\":\"boolean\"},\"droppedCount\":{\"type\":\"integer\"},\"lateEventCount\":{\"type\":\"integer\"}}}"
+              },
+              "source": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"topic\":{\"type\":\"string\"},\"partition\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"lateEvent\":{\"type\":\"boolean\"},\"lateReason\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"topic\":{\"type\":\"string\"},\"partition\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"lateEvent\":{\"type\":\"boolean\"},\"lateReason\":{\"type\":\"string\"}}}"
+              }
+            }
+          },
+          "name": "AggregateKafkaStream"
+        }
+      ]
+    },
+    {
+      "ref": "#filter",
+      "name": "kafka-stream-filter-trigger",
+      "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) — no separate Kafka trigger is needed.",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "consumerGroup": "demo-filter-cg",
+        "initialOffset": "newest",
+        "operator": "eq",
+        "predicateMode": "and",
+        "passThroughOnMissing": false,
+        "enableDedup": false,
+        "dedupWindow": "10m",
+        "dedupMaxEntries": 100000,
+        "rateLimitRPS": 0,
+        "rateLimitBurst": 0,
+        "rateLimitMode": "drop",
+        "rateLimitMaxWaitMs": 500,
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 0,
+        "dedupPersistEveryN": 0
+      },
+      "id": "FilterKafkaStreamTrigger",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "eventType": "pass",
+            "field": "tempreture",
+            "operator": "gt",
+            "value": "25",
+            "predicates": "",
+            "dedupField": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:FilterKafkaStream"
+            },
+            "input": {
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "partition": "=$.partition",
+              "topic": "=$.topic",
+              "message": "=$.message"
+            }
+          },
+          "name": "FilterKafkaStream"
+        }
+      ]
+    },
+    {
+      "ref": "#join",
+      "name": "kafka-stream-join-trigger",
+      "description": "Joins demo-readings and demo-alerts on device_id within a 30 s window.",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topics": "demo-readings,demo-alerts",
+        "consumerGroup": "demo-join-cg",
+        "joinKeyField": "device_id",
+        "joinWindowMs": 30000,
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000
+      },
+      "id": "JoinKafkaStreams",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "eventType": "joined"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:JoinKafkaStreams"
+            },
+            "input": {
+              "joinResult": "=$.joinResult",
+              "timeoutResult": "=$.timeoutResult",
+              "eventType": "=$.eventType"
+            }
+          },
+          "schemas": {
+            "output": {
+              "joinResult": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}}"
+              },
+              "timeoutResult": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}}"
+              }
+            }
+          },
+          "name": "JoinKafkaStreams"
+        }
+      ]
+    },
+    {
+      "ref": "#join",
+      "name": "kafka-stream-join-trigger",
+      "description": "Timeout handler — fires when demo-readings or demo-alerts does not arrive within the 30 s join window.",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topics": "demo-readings,demo-alerts",
+        "consumerGroup": "demo-join-cg",
+        "joinKeyField": "device_id",
+        "joinWindowMs": 30000,
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000
+      },
+      "id": "JoinKafkaStreamsTimeout",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "eventType": "timeout"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:JoinKafkaStreams"
+            },
+            "input": {
+              "joinResult": "=$.joinResult",
+              "timeoutResult": "=$.timeoutResult",
+              "eventType": "=$.eventType"
+            }
+          },
+          "schemas": {
+            "output": {
+              "joinResult": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}}"
+              },
+              "timeoutResult": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}}"
+              }
+            }
+          },
+          "name": "JoinKafkaStreams"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:AggregateKafkaStream",
+      "data": {
+        "name": "AggregateKafkaStream",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"#### aggregate results - \",coerce.toString($flow.windowResult),coerce.toString($flow.source))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nTWVzc2FnZSI6eyJ4Ijo0NDUsInkiOjk0fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "windowResult",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"result\":{\"type\":\"number\"},\"count\":{\"type\":\"integer\"},\"windowName\":{\"type\":\"string\"},\"key\":{\"type\":\"string\"},\"windowClosed\":{\"type\":\"boolean\"},\"droppedCount\":{\"type\":\"integer\"},\"lateEventCount\":{\"type\":\"integer\"}}"
+              }
+            },
+            {
+              "name": "source",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"topic\":{\"type\":\"string\"},\"partition\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"lateEvent\":{\"type\":\"boolean\"},\"lateReason\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"AggregateKafkaStreamTrigger\",\"properties\":{\"windowResult\":{\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"number\"},\"count\":{\"type\":\"integer\"},\"windowName\":{\"type\":\"string\"},\"key\":{\"type\":\"string\"},\"windowClosed\":{\"type\":\"boolean\"},\"droppedCount\":{\"type\":\"integer\"},\"lateEventCount\":{\"type\":\"integer\"}}},\"source\":{\"type\":\"object\",\"properties\":{\"topic\":{\"type\":\"string\"},\"partition\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"lateEvent\":{\"type\":\"boolean\"},\"lateReason\":{\"type\":\"string\"}}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:FilterKafkaStream",
+      "data": {
+        "name": "FilterKafkaStream",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"#### Filter messages results - \",coerce.toString($flow.message),\" Topic - \",$flow.topic,\" Partition - \",coerce.toString($flow.partition), \" Offset - \", coerce.toString($flow.offset), \" Key - \", $flow.key)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nTWVzc2FnZSI6eyJ4IjozNTgsInkiOjg2fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"FilterKafkaStreamTrigger\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:JoinKafkaStreams",
+      "data": {
+        "name": "JoinKafkaStreams",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"##### Join Result - \", coerce.toString($flow.joinResult), \"  #### TimeoutResult - \", coerce.toString($flow.timeoutResult), \"##### EventType - \", $flow.eventType)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nTWVzc2FnZSI6eyJ4Ijo0MjAsInkiOjkyfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "joinResult",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}"
+              }
+            },
+            {
+              "name": "timeoutResult",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}"
+              }
+            },
+            {
+              "name": "eventType",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"JoinKafkaStreams\",\"properties\":{\"joinResult\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}},\"timeoutResult\":{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}},\"eventType\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "Kafka.kafka.Brokers",
+      "type": "string",
+      "value": "localhost:9092"
+    },
+    {
+      "name": "Kafka.kafka.Connection_Timeout",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "Kafka.kafka.Retry_Backoff",
+      "type": "float64",
+      "value": 250
+    },
+    {
+      "name": "Kafka.kafka.Max_Retry",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "Kafka.kafka.Refresh_Frequency",
+      "type": "float64",
+      "value": 40
+    }
+  ],
+  "connections": {
+    "1d56a409-8777-475e-a91c-07ad312336c9": {
+      "id": "1d56a409-8777-475e-a91c-07ad312336c9",
+      "name": "kafka",
+      "ref": "#kafka",
+      "isGlobal": false,
+      "settings": {
+        "name": "kafka",
+        "description": "Apache Kafka client configuration",
+        "brokers": "=$property[\"Kafka.kafka.Brokers\"]",
+        "authMode": "None",
+        "userName": "",
+        "password": "",
+        "clientID": "",
+        "clientSecret": "",
+        "tokenURL": "",
+        "scope": "",
+        "securityProtocol": "SASL_SSL",
+        "clientCert": "",
+        "clientKey": "",
+        "caCert": "",
+        "connectionTimeout": "=$property[\"Kafka.kafka.Connection_Timeout\"]",
+        "retryBackoff": "=$property[\"Kafka.kafka.Retry_Backoff\"]",
+        "retryMax": "=$property[\"Kafka.kafka.Max_Retry\"]",
+        "refreshFrequency": "=$property[\"Kafka.kafka.Refresh_Frequency\"]",
+        "useSchmaRegistry": false,
+        "url": "",
+        "userName_schemaRegistry": "",
+        "password_schemaRegistry": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS8iLCJpZCI6IkthZmthU3RyZWFtIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiS2Fma2EgU3RyZWFtIEV4dGVuc2lvbnMiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vS2Fma2FTdHJlYW0iLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTEiLCJ0YWciOiIxLjYuMTEtYjAyIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wbHVnaW5zL2NvbnRyaWJ1dGlvbnMva2Fma2Evc3JjL2FwcC9LYWZrYSIsImlkIjoiS2Fma2EiLCJ2ZXJzaW9uIjoiMS4zLjQiLCJ0YWciOiIxLjMuNC1iMDIiLCJuYW1lIjoiQXBhY2hlIEthZmthIiwiczNsb2NhdGlvbiI6IlRpYmNvL0thZmthIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.0"
+  }
+}

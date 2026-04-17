@@ -8,6 +8,7 @@ import (
 
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
+	"github.com/project-flogo/core/support/trace"
 	"github.com/project-flogo/core/trigger"
 )
 
@@ -227,8 +228,23 @@ func (t *Trigger) handleNewConnection(conn *SSEConnection) {
 				}
 			}()
 
+			// Propagate the OTel tracing context extracted at connection time,
+			// then attach SSE-specific event tags — mirrors the OOTB HTTP trigger pattern.
+			hCtx := conn.Ctx
+			if hCtx == nil {
+				hCtx = context.Background()
+			}
+			if trace.Enabled() {
+				tags := map[string]string{
+					"sse.connection_id": conn.ID,
+					"sse.client_ip":     conn.ClientIP,
+					"sse.topic":         conn.Topic,
+				}
+				hCtx = trigger.AppendEventDataToContext(hCtx, tags)
+			}
+
 			// Execute the handler directly with the data
-			_, err := h.Handle(context.Background(), out.ToMap())
+			_, err := h.Handle(hCtx, out.ToMap())
 			if err != nil {
 				t.logger.Errorf("Handler execution error: %v", err)
 			}

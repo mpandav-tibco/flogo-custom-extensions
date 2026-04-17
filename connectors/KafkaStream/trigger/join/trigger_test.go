@@ -19,12 +19,8 @@ func newJoinTrigger(s *Settings) *Trigger {
 		logger:   log.RootLogger(),
 		topics:   s.TopicList(),
 	}
+	t.store = newMemoryStore(len(t.topics))
 	return t
-}
-
-// clearJoinEntry removes  an in-flight join entry so tests start clean.
-func clearJoinEntry(trig *Trigger, key string) {
-	trig.joinRegistry.Delete(key)
 }
 
 // ─── validateSettings ────────────────────────────────────────────────────────
@@ -214,8 +210,8 @@ func TestProcessPayload_TwoKeys_Independent(t *testing.T) {
 	require.Equal(t, EventTypeJoined, et)
 	assert.Equal(t, "K2", out.JoinResult.JoinKey)
 
-	// K1 is still in the registry (pending orders side only — not yet joined).
-	_, loaded := trig.joinRegistry.Load("K1")
+	// K1 is still in the store (pending orders side only — not yet joined).
+	_, loaded := trig.store.rawLoad("K1")
 	assert.True(t, loaded, "K1 join entry should still be pending")
 }
 
@@ -270,7 +266,7 @@ func TestMissingTopics_OneContributed(t *testing.T) {
 		JoinKeyField:  "id",
 		JoinWindowMs:  1000,
 	})
-	contributions := map[string]interface{}{"orders": nil}
+	contributions := map[string]map[string]interface{}{"orders": nil}
 	missing := trig.missingTopics(contributions)
 	assert.ElementsMatch(t, []string{"payments", "shipments"}, missing)
 }
@@ -282,7 +278,7 @@ func TestMissingTopics_AllContributed(t *testing.T) {
 		JoinKeyField:  "id",
 		JoinWindowMs:  1000,
 	})
-	contributions := map[string]interface{}{"a": nil, "b": nil}
+	contributions := map[string]map[string]interface{}{"a": nil, "b": nil}
 	missing := trig.missingTopics(contributions)
 	assert.Empty(t, missing)
 }
@@ -297,13 +293,13 @@ func TestProcessPayload_ClosedEntry_StartsNewWindow(t *testing.T) {
 		JoinWindowMs:  10000,
 	})
 
-	// Simulate a timed-out entry already in the registry.
+	// Simulate a timed-out entry already in the store.
 	timedOut := &joinEntry{
 		contributions: make(map[string]map[string]interface{}),
 		createdAt:     time.Now().Add(-30 * time.Second),
 		closed:        true,
 	}
-	trig.joinRegistry.Store("Z1", timedOut)
+	trig.store.rawStore("Z1", timedOut)
 
 	// A new contribution for the same key should open a fresh window.
 	out, et, err := trig.processPayload("orders", map[string]interface{}{"id": "Z1", "v": 1})

@@ -82,6 +82,26 @@ func TestValidateSettings_MissingValueField(t *testing.T) {
 	assert.ErrorContains(t, validateSettings(s), "valueField")
 }
 
+func TestValidateSettings_InvalidOverflowPolicy(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", OverflowPolicy: "discard"}
+	assert.ErrorContains(t, validateSettings(s), "overflowPolicy")
+}
+
+func TestValidateSettings_NegativePersistEveryN(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", PersistEveryN: -1}
+	assert.ErrorContains(t, validateSettings(s), "persistEveryN")
+}
+
+func TestValidateSettings_NegativeAllowedLateness(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", AllowedLateness: -1}
+	assert.ErrorContains(t, validateSettings(s), "allowedLateness")
+}
+
+func TestValidateSettings_NegativeMaxBufferSize(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", MaxBufferSize: -1}
+	assert.ErrorContains(t, validateSettings(s), "maxBufferSize")
+}
+
 // ─── extractEventTime ────────────────────────────────────────────────────────
 
 func TestExtractEventTime_UnixMs_Int64(t *testing.T) {
