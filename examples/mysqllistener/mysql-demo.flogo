@@ -24,6 +24,7 @@
         "user": "testuser",
         "password": "",
         "databaseName": "testdb",
+        "tlsConfig": false,
         "sslMode": "require",
         "sslCA": "",
         "sslCert": "",
@@ -34,7 +35,7 @@
         "maxRetryAttempts": "3",
         "retryDelay": "5s",
         "healthCheckInterval": "60s",
-        "enableHeartbeat": true,
+        "enableHeartbeat": false,
         "heartbeatInterval": "30s"
       },
       "id": "MySQLBinlogListener",
@@ -45,7 +46,6 @@
             "serverID": 1001,
             "binlogFile": "",
             "binlogPos": 0,
-            "tables": "",
             "eventTypes": "ALL",
             "includeSchema": true,
             "maxRetries": 3,
@@ -179,10 +179,6 @@
               "type": "string"
             },
             {
-              "name": "binlogPos",
-              "type": "integer"
-            },
-            {
               "name": "serverID",
               "type": "integer"
             },
@@ -197,7 +193,7 @@
           ],
           "output": [],
           "fe_metadata": {
-            "input": "{\"type\":\"object\",\"title\":\"MySQLBinlogListener\",\"properties\":{\"eventID\":{\"type\":\"string\",\"required\":false},\"eventType\":{\"type\":\"string\",\"required\":false},\"database\":{\"type\":\"string\",\"required\":false},\"table\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false},\"data\":{\"type\":\"object\"},\"schema\":{\"type\":\"object\"},\"binlogFile\":{\"type\":\"string\",\"required\":false},\"binlogPos\":{\"type\":\"integer\",\"required\":false},\"serverID\":{\"type\":\"integer\",\"required\":false},\"gtid\":{\"type\":\"string\",\"required\":false},\"correlationID\":{\"type\":\"string\",\"required\":false}}}"
+            "input": "{\"type\":\"object\",\"title\":\"MySQLBinlogListener\",\"properties\":{\"eventID\":{\"type\":\"string\",\"required\":false},\"eventType\":{\"type\":\"string\",\"required\":false},\"database\":{\"type\":\"string\",\"required\":false},\"table\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false},\"data\":{\"type\":\"object\"},\"schema\":{\"type\":\"object\"},\"binlogFile\":{\"type\":\"string\",\"required\":false},\"serverID\":{\"type\":\"integer\",\"required\":false},\"gtid\":{\"type\":\"string\",\"required\":false},\"correlationID\":{\"type\":\"string\",\"required\":false}}}"
           }
         }
       }
@@ -205,9 +201,9 @@
   ],
   "properties": [],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvZmxvZ28tY3VzdG9tLWV4dGVuc2lvbnMvdHJpZ2dlci9teXNxbC1iaW5sb2ctbGlzdGVuZXIiLCJ2ZXJzaW9uIjoiMS4xLjAiLCJ0YWciOiIxLjEuMCIsIm5hbWUiOiJNeVNRTEJpbmxvZ0xpc3RlbmVyIiwiaWQiOiJteXNxbC1iaW5sb2ctbGlzdGVuZXIiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC90cmlnZ2VyL215c3FsLWJpbmxvZy1saXN0ZW5lciIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL21pbGluZHBhbmRhdi9hY3Rpdml0eS93cml0ZS1sb2ciLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJXcml0ZUxvZyIsImlkIjoidGliY28td3JpdGUtbG9nIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0RlZmF1bHQvYWN0aXZpdHkvd3JpdGUtbG9nIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHUiLCJpZCI6Ik15U1FMIiwidmVyc2lvbiI6IjIuNC41IEhGLTEiLCJ0YWciOiIyLjQuNS1iMDMiLCJuYW1lIjoiT3JhY2xlIE15U1FMIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L015U1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfSx7InJlZiI6ImdpdGh1Yi5jb20vbWlsaW5kcGFuZGF2L2FjdGl2aXR5L3dyaXRlLWxvZyIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IldyaXRlTG9nIiwiaWQiOiJ0aWJjby13cml0ZS1sb2ciLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC9hY3Rpdml0eS93cml0ZS1sb2ciLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
   "metadata": {
     "endpoints": [],
-    "flogoVersion": "2.25.7"
+    "flogoVersion": "2.26.0"
   }
 }

@@ -21,10 +21,10 @@
         "host": "localhost",
         "port": 5432,
         "user": "postgres",
-        "password": "SECRET:6NilF3gsDfzVP+F2IyrsSL5Z6xFHfVLt",
+        "password": "SECRET:Rj3kkIwvy0IW/7kGh+JDmeOncyVglFQS",
         "databaseName": "postgres",
         "sslMode": "disable",
-        "tlsConfig": false,
+        "tlsConfig": true,
         "tlsMode": "VerifyCA",
         "cacert": "",
         "clientcert": "",
@@ -135,9 +135,9 @@
   ],
   "properties": [],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2L3Bvc3RncmVzbGlzdGVuZXIiLCJ2ZXJzaW9uIjoiMC4yLjAiLCJ0YWciOiIwLjIuMCIsIm5hbWUiOiJQb3N0Z3JlU1FMTGlzdGVuZXIiLCJpZCI6InBvc3RncmVzbGlzdGVuZXIiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC90cmlnZ2VyL3Bvc3RncmVzbGlzdGVuZXIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9LHsicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvYWN0aXZpdHkvd3JpdGUtbG9nIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiV3JpdGVMb2ciLCJpZCI6InRpYmNvLXdyaXRlLWxvZyIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L3dyaXRlLWxvZyIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbSIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9LHsicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvYWN0aXZpdHkvd3JpdGUtbG9nIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiV3JpdGVMb2ciLCJpZCI6InRpYmNvLXdyaXRlLWxvZyIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L3dyaXRlLWxvZyIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [],
-    "flogoVersion": "2.25.7"
+    "flogoVersion": "2.26.0"
   }
 }
