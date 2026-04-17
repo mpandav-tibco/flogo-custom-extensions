@@ -895,7 +895,7 @@ func (m *MySQLBinlogListener) addSSLConfiguration(dsn *string) error {
 
 // isSSLRequired checks if SSL is required based on settings
 func (m *MySQLBinlogListener) isSSLRequired() bool {
-	return m.settings.SSLMode != "disable" && m.settings.SSLMode != ""
+	return m.settings.TLSConfig
 }
 
 // needsCustomTLSConfig checks if custom TLS configuration is needed
