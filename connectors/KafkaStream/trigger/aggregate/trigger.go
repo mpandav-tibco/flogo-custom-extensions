@@ -629,8 +629,38 @@ func validateSettings(s *Settings) error {
 
 type consumerGroupHandler struct{ t *Trigger }
 
-func (h *consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
-func (h *consumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
+// Setup is invoked at the start of a new consumer group session (after rebalance).
+// When persistence is enabled, restores window state so the new partition owner
+// continues from the last saved snapshot rather than starting with empty windows.
+func (h *consumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
+	h.t.logger.Debugf("kafka-stream/aggregate-trigger: rebalance setup — topic=%q claims=%v",
+		h.t.settings.Topic, session.Claims()[h.t.settings.Topic])
+	if h.t.settings.PersistPath != "" {
+		if err := kafkastream.RestoreStateFrom(h.t.settings.PersistPath); err != nil {
+			h.t.logger.Warnf("kafka-stream/aggregate-trigger: rebalance restore from %q failed (ignored): %v",
+				h.t.settings.PersistPath, err)
+		} else {
+			h.t.logger.Infof("kafka-stream/aggregate-trigger: rebalance — window state restored from %q", h.t.settings.PersistPath)
+		}
+	}
+	return nil
+}
+
+// Cleanup is invoked at the end of a consumer group session (before rebalance).
+// When persistence is enabled, saves window state so the new partition owner
+// can restore it in its subsequent Setup call.
+func (h *consumerGroupHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+	h.t.logger.Debugf("kafka-stream/aggregate-trigger: rebalance cleanup — topic=%q", h.t.settings.Topic)
+	if h.t.settings.PersistPath != "" {
+		if err := kafkastream.SaveStateTo(h.t.settings.PersistPath); err != nil {
+			h.t.logger.Warnf("kafka-stream/aggregate-trigger: rebalance save to %q failed: %v",
+				h.t.settings.PersistPath, err)
+		} else {
+			h.t.logger.Infof("kafka-stream/aggregate-trigger: rebalance — window state saved to %q", h.t.settings.PersistPath)
+		}
+	}
+	return nil
+}
 
 func (h *consumerGroupHandler) ConsumeClaim(
 	session sarama.ConsumerGroupSession,
