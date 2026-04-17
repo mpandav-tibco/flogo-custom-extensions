@@ -24,11 +24,12 @@ type Settings struct {
 	HeartbeatInterval   string `md:"heartbeatInterval"`     // Heartbeat interval (default: "30s")
 
 	// SSL/TLS Configuration
-	SSLMode       string `md:"sslMode"`       // SSL mode: disable, require, verify-ca, verify-full
+	TLSConfig     bool   `md:"tlsConfig"`     // Enable TLS/SSL configuration
+	SSLMode       string `md:"sslMode"`       // SSL mode: require, verify-ca, verify-full (only when TLSConfig=true)
 	SSLCA         string `md:"sslCA"`         // SSL CA certificate file path
 	SSLCert       string `md:"sslCert"`       // SSL certificate file path
 	SSLKey        string `md:"sslKey"`        // SSL private key file path
-	SkipSSLVerify bool   `md:"skipSSLVerify"` // Skip SSL certificate verification
+	SkipSSLVerify bool   `md:"skipSSLVerify"` // Skip SSL certificate verification (only for require mode)
 }
 
 // HandlerSettings contains the configuration for each binlog stream handler

@@ -5,7 +5,13 @@
   "title": "MySQL Binlog Listener",
   "description": "A dedicated MySQL/MariaDB binlog streaming trigger that captures real-time database changes",
   "homepage": "https://github.com/project-flogo/contrib",
-
+  "display": {
+    "category": "MySQL",
+    "visible": true,
+    "description": "Listens for MySQL/MariaDB binary log (binlog) events and fires a Flogo flow for each INSERT, UPDATE, or DELETE",
+    "smallIcon": "icons/my_sql.png",
+    "largeIcon": "icons/my_sql.png"
+  },
   "settings": [
     {
       "name": "host",
@@ -69,15 +75,30 @@
       }
     },
     {
+      "name": "tlsConfig",
+      "type": "boolean",
+      "value": false,
+      "description": "Enable TLS/SSL for the MySQL connection",
+      "display": {
+        "name": "Enable TLS Configuration",
+        "description": "Enable TLS/SSL secure connection. When enabled, configure SSL Mode and certificates below."
+      }
+    },
+    {
       "name": "sslMode",
       "type": "string",
-      "value": "disable",
-      "allowed": ["disable", "require", "verify-ca", "verify-full"],
-      "description": "SSL mode: disable, require, verify-ca, verify-full",
+      "value": "require",
+      "allowed": [
+        "require",
+        "verify-ca",
+        "verify-full"
+      ],
+      "description": "SSL mode: require, verify-ca, verify-full",
       "display": {
         "name": "SSL Mode",
-        "description": "SSL mode: disable, require, verify-ca, verify-full",
+        "description": "require: encrypt but skip certificate verification. verify-ca: verify server CA certificate. verify-full: verify CA and hostname.",
         "type": "dropdown",
+        "visible": false,
         "appPropertySupport": true
       }
     },
@@ -89,8 +110,13 @@
         "name": "SSL CA Certificate",
         "description": "SSL CA certificate file path (required for verify-ca and verify-full modes)",
         "type": "fileselector",
-        "fileExtensions": [".crt", ".pem", ".cer", ".der"],
-        "visible": "=$property[\"sslMode\"] == \"verify-ca\" || $property[\"sslMode\"] == \"verify-full\"",
+        "fileExtensions": [
+          ".crt",
+          ".pem",
+          ".cer",
+          ".der"
+        ],
+        "visible": false,
         "appPropertySupport": true
       }
     },
@@ -102,8 +128,13 @@
         "name": "SSL Client Certificate",
         "description": "SSL client certificate file path (optional for client authentication)",
         "type": "fileselector",
-        "fileExtensions": [".crt", ".pem", ".cer", ".der"],
-        "visible": "=$property[\"sslMode\"] != \"disable\"",
+        "fileExtensions": [
+          ".crt",
+          ".pem",
+          ".cer",
+          ".der"
+        ],
+        "visible": false,
         "appPropertySupport": true
       }
     },
@@ -115,8 +146,12 @@
         "name": "SSL Client Private Key",
         "description": "SSL client private key file path (required if client certificate is provided)",
         "type": "fileselector",
-        "fileExtensions": [".key", ".pem", ".der"],
-        "visible": "=$property[\"sslMode\"] != \"disable\"",
+        "fileExtensions": [
+          ".key",
+          ".pem",
+          ".der"
+        ],
+        "visible": false,
         "appPropertySupport": true
       }
     },
@@ -128,7 +163,7 @@
       "display": {
         "name": "Skip SSL Verification",
         "description": "Skip SSL certificate verification (for testing only)",
-        "visible": "=$property[\"sslMode\"] == \"require\"",
+        "visible": false,
         "appPropertySupport": true
       }
     },
@@ -206,7 +241,7 @@
       "display": {
         "name": "Heartbeat Interval",
         "description": "Heartbeat interval",
-        "visible": "=$property[\"enableHeartbeat\"] == true",
+        "visible": false,
         "appPropertySupport": true
       }
     }
@@ -243,7 +278,7 @@
         "display": {
           "name": "Binlog Position",
           "description": "Starting binlog position (only used when binlogFile is specified, defaults to 4)",
-          "visible": "=$property[\"binlogFile\"] != null && $property[\"binlogFile\"] != \"\"",
+          "visible": false,
           "appPropertySupport": true
         }
       },
@@ -264,7 +299,12 @@
         "name": "eventTypes",
         "type": "string",
         "value": "ALL",
-        "allowed": ["ALL", "INSERT", "UPDATE", "DELETE"],
+        "allowed": [
+          "ALL",
+          "INSERT",
+          "UPDATE",
+          "DELETE"
+        ],
         "description": "Types of events to capture",
         "display": {
           "name": "Event Types",
