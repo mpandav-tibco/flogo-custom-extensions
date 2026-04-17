@@ -1,12 +1,10 @@
 # Join Kafka Streams Trigger
 
-**Name:** `kafka-stream-join-trigger`  
-**Category:** KafkaStream  
-**Ref:** `github.com/milindpandav/flogo-extensions/kafkastream/trigger/join`
+
 
 Subscribes to two or more Kafka topics and fires the Flogo flow when messages carrying the **same join key value** have been received from **every configured topic** within a configurable time window — a classic stream-join / stream-enrichment pattern. Each topic uses its own Sarama consumer group. When the window expires before all topics contribute, an optional `timeout` handler fires with the partial data.
 
-The trigger owns its own Kafka transport — no separate Kafka trigger is needed.
+The trigger owns its own Kafka transport.
 
 ```
 demo-readings  ──►┐
@@ -136,7 +134,14 @@ This means non-completing topic offsets are always committed eagerly — even if
 
 ## Limitations
 
-- **In-process join store only.** Join windows live in memory. Multiple Flogo instances consuming the same topics each maintain independent stores — there is no cross-process join coordination.
-- **State lost on restart.** All in-flight join windows are discarded when the process stops. Messages already committed will not be re-joined on restart.
-- **No duplicate suppression across restarts.** A message pair that was partially processed before a crash may re-fire after restart.
-- **Minimum 2 topics.** Setting `topics` to a single topic name will return an error at startup.
+- **In-process join store only.** Join windows live in the memory of the running Flogo process. Multiple Flogo instances consuming the same topics each maintain independent stores — there is no cross-process join coordination.
+
+- **State lost on restart — partial joins become timeouts.** All in-flight join windows are discarded when the process stops. Non-completing topic offsets are committed eagerly (see [Offset Commit Behaviour](#offset-commit-behaviour)), so those messages will not be re-delivered. On restart, only the completing message (if `commitOnSuccess=true`) may be re-delivered, but with no matching partial state to join against it will produce a `timeout` event rather than a `joined` event. Configure a `timeout` handler or use `commitOnSuccess=false` to accept at-most-once semantics for the completing topic.
+
+- **No duplicate joined events across restarts.** With `commitOnSuccess=true` (default), a crash after the join completes but before the completing offset is committed re-delivers the completing message on restart. Because the non-completing messages are already committed, the join store will have no partial state for that key and the trigger will emit a `timeout` event — not a second `joined` event. With `commitOnSuccess=false`, all offsets are committed immediately and nothing re-fires.
+
+- **Shared consumer group across trigger instances splits partitions.** If two trigger instances (e.g. one for `joined`, one for `timeout`) point at the same topics and the same `consumerGroup`, Kafka distributes partitions across both instances. Each instance sees only a subset of messages and joins will never complete — both sides timeout. Use a **single trigger instance** with `eventType: "all"`, or assign each instance a distinct `consumerGroup` value.
+
+- **Minimum 2 topics required.** Setting `topics` to a single topic name returns an error at startup. Duplicate topic names in the list are also rejected.
+
+- **No rebalance-aware state handoff.** When Kafka rebalances consumer partitions, in-flight join windows for keys mid-flight on reassigned partitions are silently discarded. The new consumer starts with an empty join store for those partitions.
