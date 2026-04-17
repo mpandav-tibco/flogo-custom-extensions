@@ -129,14 +129,13 @@
             "value": "memory",
             "display": {
                 "name": "Join Store Type",
-                "description": "Backing store for in-flight join state. 'memory' (default): process-local, no dependencies, state lost on restart. 'file': JSON snapshot on shutdown and rebalance, requires Persist Path. 'redis': Redis-backed, cross-instance sharing + automatic restart/rebalance recovery, requires Redis Address.",
+                "description": "Backing store for in-flight join state. 'memory' (default): process-local, no dependencies, state lost on restart. 'file': JSON snapshot on shutdown and rebalance, requires Persist Path.",
                 "type": "dropdown",
                 "appPropertySupport": true
             },
             "allowed": [
                 "memory",
-                "file",
-                "redis"
+                "file"
             ]
         },
         {
@@ -145,34 +144,6 @@
             "display": {
                 "name": "Persist Path (file store)",
                 "description": "Absolute file path for the JSON snapshot when Store Type is 'file'. Example: /var/data/flogo/join-state.json. The directory is created automatically.",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "redisAddr",
-            "type": "string",
-            "display": {
-                "name": "Redis Address",
-                "description": "Redis server address (host:port) used when Store Type is 'redis'. Example: localhost:6379.",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "redisPassword",
-            "type": "string",
-            "display": {
-                "name": "Redis Password",
-                "description": "Redis AUTH password. Leave empty if the Redis server does not require authentication.",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "redisDB",
-            "type": "integer",
-            "value": 0,
-            "display": {
-                "name": "Redis Database",
-                "description": "Redis database number (0–15). 0 is the default database.",
                 "appPropertySupport": true
             }
         }

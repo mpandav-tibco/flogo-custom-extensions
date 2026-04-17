@@ -134,13 +134,12 @@ This means non-completing topic offsets are always committed eagerly — even if
 
 ## Join Store Backends
 
-The trigger supports three pluggable backing stores, selected via the `storeType` setting.
+The trigger supports two backing stores, selected via the `storeType` setting.
 
-| `storeType` | Cross-instance sharing | Restart recovery | Rebalance handoff | Extra dependencies |
-|-------------|------------------------|------------------|-------------------|--------------------|
-| `memory` (default) | ✗ | ✗ | ✗ | none |
-| `file` | ✗ (shared FS required) | ✓ | ✓ (single-instance or shared FS) | none |
-| `redis` | ✓ | ✓ | ✓ | Redis ≥ 5.0 |
+| `storeType` | Restart recovery | Rebalance handoff | Extra dependencies |
+|-------------|------------------|-------------------|--------------------|
+| `memory` (default) | ✗ | ✗ | none |
+| `file` | ✓ | ✓ (single-instance or shared FS) | none |
 
 ### `storeType: "memory"` (default)
 
@@ -156,18 +155,6 @@ In-flight join windows are written to a JSON snapshot file on graceful shutdown 
 
 > **Multi-instance note:** For cross-instance state sharing place `persistPath` on a shared filesystem (NFS, EFS, Azure Files). All instances must be able to read and write the same path.
 
-### `storeType: "redis"`
-
-All contributions are written to Redis using an atomic Lua script. Every Flogo instance in the same consumer group hits the same keys — contributions from instance A are immediately visible to instance B. State survives process restarts and partition rebalances without explicit Save/Load actions.
-
-| Setting | Description |
-|---------|-------------|
-| `redisAddr` | **Required.** Redis host:port. Example: `localhost:6379` |
-| `redisPassword` | Optional. Redis AUTH password (empty = no auth). |
-| `redisDB` | Optional. Redis database number (default: 0). |
-
-Redis keys use the format `join:<consumerGroup>:<joinKey>` with TTL = `joinWindowMs × 3`.
-
 ---
 
 ## Limitations
@@ -178,7 +165,7 @@ Redis keys use the format `join:<consumerGroup>:<joinKey>` with TTL = `joinWindo
 
 - **Minimum 2 topics required.** Setting `topics` to a single topic name returns an error at startup. Duplicate topic names in the list are also rejected.
 
-- **`memory` store: state lost on restart and rebalance.** Use `storeType: "file"` or `storeType: "redis"` to survive restarts and rebalances.
+- **`memory` store: state lost on restart and rebalance.** Use `storeType: "file"` to survive restarts and rebalances.
 
 - **`file` store: rebalance handoff requires shared filesystem for multi-instance.** For single-instance deployments a local path is sufficient. For multi-instance deployments all instances must write to the same shared `persistPath`.
 

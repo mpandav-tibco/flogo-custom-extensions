@@ -1,6 +1,6 @@
 // Package join — store.go
 // Defines the JoinStore interface and the default in-memory implementation.
-// Additional backends (file, Redis) each live in their own source files.
+// The file store backend lives in store_file.go.
 package join
 
 import (
@@ -21,20 +21,12 @@ const (
 	// rebalance the snapshot is restored. Enables single-process restart recovery.
 	// Requires Settings.PersistPath to be set.
 	StoreTypeFile = "file"
-
-	// StoreTypeRedis uses Redis as the authoritative backing store.
-	// All Contribute and SweepExpired operations hit Redis, making the state
-	// visible to every Flogo instance in the same consumer group and automatically
-	// surviving restarts and partition rebalances without extra configuration.
-	// Requires Settings.RedisAddr.
-	StoreTypeRedis = "redis"
 )
 
 // JoinStore is the backing store abstraction used by the join trigger.
 //
 // Memory store  — fast, single-process; default.
 // File store    — adds graceful-restart snapshot to disk; no new dependencies.
-// Redis store   — full cross-instance sharing + rebalance handoff via Redis.
 //
 // All implementations are safe for concurrent use.
 type JoinStore interface {

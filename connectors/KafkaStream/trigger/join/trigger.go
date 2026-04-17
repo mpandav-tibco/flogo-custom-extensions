@@ -6,10 +6,7 @@
 // State backing stores (Settings.StoreType):
 //   - "memory" (default) — process-local sync.Map; state lost on restart.
 //   - "file"             — memory + JSON snapshot on shutdown/rebalance;
-//     graceful-restart recovery; requires PersistPath.
-//   - "redis"            — Redis-backed; cross-instance sharing, restart
-//     recovery, and rebalance handoff all automatic;
-//     requires RedisAddr.
+//                          graceful-restart recovery; requires PersistPath.
 package join
 
 import (
@@ -62,7 +59,7 @@ type Trigger struct {
 	handlers []*handler
 	topics   []string
 	clients  []sarama.ConsumerGroup // one ConsumerGroup client per topic
-	store    JoinStore              // backing store: memory | file | redis
+		store    JoinStore              // backing store: memory | file
 	ctx      context.Context
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
@@ -119,25 +116,6 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 		}
 		t.store = newFileStore(t.settings.PersistPath, len(t.topics))
 		t.logger.Infof("kafka-stream/join-trigger: store=file path=%q", t.settings.PersistPath)
-	case StoreTypeRedis:
-		if t.settings.RedisAddr == "" {
-			return fmt.Errorf("kafka-stream/join-trigger: storeType=\"redis\" requires redisAddr to be set")
-		}
-		rs, err := newRedisStore(
-			RedisOptions{
-				Addr:     t.settings.RedisAddr,
-				Password: t.settings.RedisPassword,
-				DB:       t.settings.RedisDB,
-			},
-			t.settings.ConsumerGroup,
-			len(t.topics),
-			t.settings.JoinWindowMs,
-		)
-		if err != nil {
-			return fmt.Errorf("kafka-stream/join-trigger: redis store init: %w", err)
-		}
-		t.store = rs
-		t.logger.Infof("kafka-stream/join-trigger: store=redis addr=%q db=%d", t.settings.RedisAddr, t.settings.RedisDB)
 	default: // "memory" or empty
 		t.store = newMemoryStore(len(t.topics))
 		t.logger.Debugf("kafka-stream/join-trigger: store=memory (process-local)")
@@ -188,8 +166,8 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 // topic plus the timeout-sweep goroutine.
 func (t *Trigger) Start() error {
 	// Restore in-flight state from the durable store before consuming messages.
-	// For the file store this reads the JSON snapshot. For Redis this is a no-op
-	// (state is always in Redis). For the memory store this is also a no-op.
+	// For the file store this reads the JSON snapshot.
+	// For the memory store this is a no-op.
 	if err := t.store.Load(t.logger); err != nil {
 		t.logger.Warnf("kafka-stream/join-trigger: store.Load error on startup: %v", err)
 	}
@@ -308,8 +286,7 @@ func (t *Trigger) timeoutSweepLoop() {
 }
 
 // processPayload is the core join logic. It delegates contribution recording
-// and completeness checking to the JoinStore, which provides the appropriate
-// atomicity guarantees (mutex for memory/file; Lua script for Redis).
+// and completeness checking to the JoinStore.
 //
 // Returns (*Output, eventType, nil) when all topics have contributed.
 // Returns (nil, "", nil) when the contribution is recorded but incomplete.
@@ -559,8 +536,8 @@ type consumerGroupHandler struct {
 }
 
 // Setup is invoked at the start of a new consumer group session (after rebalance).
-// For file/Redis stores, restores in-flight state that may have been written by
-// the previous session owner. For the memory store this is a no-op.
+// For the file store, restores in-flight state written by the previous session owner.
+// For the memory store this is a no-op.
 func (h *consumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
 	h.t.logger.Debugf("kafka-stream/join-trigger: rebalance setup — topic=%q claims=%v",
 		h.topic, session.Claims()[h.topic])
@@ -571,7 +548,7 @@ func (h *consumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error 
 }
 
 // Cleanup is invoked at the end of a consumer group session (before rebalance).
-// For file/Redis stores, persists all in-flight join state so the new partition
+// For the file store, persists all in-flight join state so the new partition
 // owner can restore it.  For the memory store this is a no-op.
 func (h *consumerGroupHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 	h.t.logger.Debugf("kafka-stream/join-trigger: rebalance cleanup — topic=%q", h.topic)
