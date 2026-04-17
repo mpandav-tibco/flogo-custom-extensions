@@ -132,16 +132,53 @@ This means non-completing topic offsets are always committed eagerly — even if
 
 ---
 
+## Join Store Backends
+
+The trigger supports three pluggable backing stores, selected via the `storeType` setting.
+
+| `storeType` | Cross-instance sharing | Restart recovery | Rebalance handoff | Extra dependencies |
+|-------------|------------------------|------------------|-------------------|--------------------|
+| `memory` (default) | ✗ | ✗ | ✗ | none |
+| `file` | ✗ (shared FS required) | ✓ | ✓ (single-instance or shared FS) | none |
+| `redis` | ✓ | ✓ | ✓ | Redis ≥ 5.0 |
+
+### `storeType: "memory"` (default)
+
+No additional settings required. Best for development and single-instance deployments where losing in-flight state on restart is acceptable.
+
+### `storeType: "file"`
+
+In-flight join windows are written to a JSON snapshot file on graceful shutdown and before each consumer rebalance. They are restored on startup and after rebalance.
+
+| Setting | Description |
+|---------|-------------|
+| `persistPath` | **Required.** Absolute path for the snapshot file. Example: `/var/data/flogo/join-state.json` |
+
+> **Multi-instance note:** For cross-instance state sharing place `persistPath` on a shared filesystem (NFS, EFS, Azure Files). All instances must be able to read and write the same path.
+
+### `storeType: "redis"`
+
+All contributions are written to Redis using an atomic Lua script. Every Flogo instance in the same consumer group hits the same keys — contributions from instance A are immediately visible to instance B. State survives process restarts and partition rebalances without explicit Save/Load actions.
+
+| Setting | Description |
+|---------|-------------|
+| `redisAddr` | **Required.** Redis host:port. Example: `localhost:6379` |
+| `redisPassword` | Optional. Redis AUTH password (empty = no auth). |
+| `redisDB` | Optional. Redis database number (default: 0). |
+
+Redis keys use the format `join:<consumerGroup>:<joinKey>` with TTL = `joinWindowMs × 3`.
+
+---
+
 ## Limitations
 
-- **In-process join store only.** Join windows live in the memory of the running Flogo process. Multiple Flogo instances consuming the same topics each maintain independent stores — there is no cross-process join coordination.
-
-- **State lost on restart — partial joins become timeouts.** All in-flight join windows are discarded when the process stops. Non-completing topic offsets are committed eagerly (see [Offset Commit Behaviour](#offset-commit-behaviour)), so those messages will not be re-delivered. On restart, only the completing message (if `commitOnSuccess=true`) may be re-delivered, but with no matching partial state to join against it will produce a `timeout` event rather than a `joined` event. Configure a `timeout` handler or use `commitOnSuccess=false` to accept at-most-once semantics for the completing topic.
-
-- **No duplicate joined events across restarts.** With `commitOnSuccess=true` (default), a crash after the join completes but before the completing offset is committed re-delivers the completing message on restart. Because the non-completing messages are already committed, the join store will have no partial state for that key and the trigger will emit a `timeout` event — not a second `joined` event. With `commitOnSuccess=false`, all offsets are committed immediately and nothing re-fires.
+- **Non-completing topic offsets are committed eagerly (all store types).** When a message arrives but does not yet complete the join, its offset is committed immediately so the Sarama consumer session is not stalled waiting for the other topics. This means if the join subsequently times out, that message will not be re-delivered. This trade-off is inherent to multi-topic joins over independent consumer groups.
 
 - **Shared consumer group across trigger instances splits partitions.** If two trigger instances (e.g. one for `joined`, one for `timeout`) point at the same topics and the same `consumerGroup`, Kafka distributes partitions across both instances. Each instance sees only a subset of messages and joins will never complete — both sides timeout. Use a **single trigger instance** with `eventType: "all"`, or assign each instance a distinct `consumerGroup` value.
 
 - **Minimum 2 topics required.** Setting `topics` to a single topic name returns an error at startup. Duplicate topic names in the list are also rejected.
 
-- **No rebalance-aware state handoff.** When Kafka rebalances consumer partitions, in-flight join windows for keys mid-flight on reassigned partitions are silently discarded. The new consumer starts with an empty join store for those partitions.
+- **`memory` store: state lost on restart and rebalance.** Use `storeType: "file"` or `storeType: "redis"` to survive restarts and rebalances.
+
+- **`file` store: rebalance handoff requires shared filesystem for multi-instance.** For single-instance deployments a local path is sufficient. For multi-instance deployments all instances must write to the same shared `persistPath`.
+

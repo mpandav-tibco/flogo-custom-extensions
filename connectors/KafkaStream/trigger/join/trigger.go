@@ -2,6 +2,14 @@
 // more Kafka topics and fires the associated flow when messages sharing the
 // same joinKeyField value have been received from every configured topic within
 // joinWindowMs milliseconds — a classic stream-join / stream-enrichment pattern.
+//
+// State backing stores (Settings.StoreType):
+//   - "memory" (default) — process-local sync.Map; state lost on restart.
+//   - "file"             — memory + JSON snapshot on shutdown/rebalance;
+//                          graceful-restart recovery; requires PersistPath.
+//   - "redis"            — Redis-backed; cross-instance sharing, restart
+//                          recovery, and rebalance handoff all automatic;
+//                          requires RedisAddr.
 package join
 
 import (
@@ -49,15 +57,15 @@ type handler struct {
 // messages with the same joinKeyField value arrive from all configured topics
 // within joinWindowMs milliseconds.
 type Trigger struct {
-	settings     *Settings
-	logger       log.Logger
-	handlers     []*handler
-	topics       []string
-	clients      []sarama.ConsumerGroup // one ConsumerGroup client per topic
-	joinRegistry sync.Map               // joinKey (string) → *joinEntry
-	ctx          context.Context
-	cancel       context.CancelFunc
-	wg           sync.WaitGroup
+	settings *Settings
+	logger   log.Logger
+	handlers []*handler
+	topics   []string
+	clients  []sarama.ConsumerGroup // one ConsumerGroup client per topic
+	store    JoinStore              // backing store: memory | file | redis
+	ctx      context.Context
+	cancel   context.CancelFunc
+	wg       sync.WaitGroup
 }
 
 // Factory creates Trigger instances.
@@ -84,7 +92,8 @@ func (*Factory) New(config *trigger.Config) (trigger.Trigger, error) {
 
 func (t *Trigger) Metadata() *trigger.Metadata { return triggerMd }
 
-// Initialize wires up handlers and creates one Kafka consumer group per topic.
+// Initialize wires up handlers, initialises the join store, and creates one
+// Kafka consumer group per topic.
 func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 	t.logger = ctx.Logger()
 	t.topics = t.settings.TopicList()
@@ -98,7 +107,40 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 		if et == "" {
 			et = EventTypeJoined
 		}
+		t.logger.Debugf("kafka-stream/join-trigger: registered handler — name=%q eventType=%q", h.Name(), et)
 		t.handlers = append(t.handlers, &handler{runner: h, hs: hs, eventType: et})
+	}
+
+	// ── Initialise the join store ────────────────────────────────────────────
+	switch strings.ToLower(t.settings.StoreType) {
+	case StoreTypeFile:
+		if t.settings.PersistPath == "" {
+			return fmt.Errorf("kafka-stream/join-trigger: storeType=\"file\" requires persistPath to be set")
+		}
+		t.store = newFileStore(t.settings.PersistPath, len(t.topics))
+		t.logger.Infof("kafka-stream/join-trigger: store=file path=%q", t.settings.PersistPath)
+	case StoreTypeRedis:
+		if t.settings.RedisAddr == "" {
+			return fmt.Errorf("kafka-stream/join-trigger: storeType=\"redis\" requires redisAddr to be set")
+		}
+		rs, err := newRedisStore(
+			RedisOptions{
+				Addr:     t.settings.RedisAddr,
+				Password: t.settings.RedisPassword,
+				DB:       t.settings.RedisDB,
+			},
+			t.settings.ConsumerGroup,
+			len(t.topics),
+			t.settings.JoinWindowMs,
+		)
+		if err != nil {
+			return fmt.Errorf("kafka-stream/join-trigger: redis store init: %w", err)
+		}
+		t.store = rs
+		t.logger.Infof("kafka-stream/join-trigger: store=redis addr=%q db=%d", t.settings.RedisAddr, t.settings.RedisDB)
+	default: // "memory" or empty
+		t.store = newMemoryStore(len(t.topics))
+		t.logger.Debugf("kafka-stream/join-trigger: store=memory (process-local)")
 	}
 
 	ksc := t.settings.Connection.(*kafkaconn.KafkaSharedConfigManager)
@@ -142,11 +184,20 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 	return nil
 }
 
-// Start launches one consumer goroutine per topic and the timeout-sweep goroutine.
+// Start restores any persisted state then launches one consumer goroutine per
+// topic plus the timeout-sweep goroutine.
 func (t *Trigger) Start() error {
+	// Restore in-flight state from the durable store before consuming messages.
+	// For the file store this reads the JSON snapshot. For Redis this is a no-op
+	// (state is always in Redis). For the memory store this is also a no-op.
+	if err := t.store.Load(t.logger); err != nil {
+		t.logger.Warnf("kafka-stream/join-trigger: store.Load error on startup: %v", err)
+	}
+
 	t.ctx, t.cancel = context.WithCancel(context.Background())
 	for i, topic := range t.topics {
 		t.wg.Add(1)
+		t.logger.Debugf("kafka-stream/join-trigger: starting consumer goroutine — topic=%q", topic)
 		go t.consumeLoop(t.clients[i], topic)
 	}
 	t.wg.Add(1)
@@ -155,14 +206,27 @@ func (t *Trigger) Start() error {
 	return nil
 }
 
-// Stop signals all goroutines to stop and closes the Kafka consumer group clients.
+// Stop signals all goroutines to stop, persists in-flight state, then closes
+// the Kafka consumer group clients and the join store.
 func (t *Trigger) Stop() error {
+	t.logger.Debugf("kafka-stream/join-trigger: stopping — persisting in-flight state")
+
+	// Persist before cancelling so consumers have a chance to flush in-flight
+	// state before we tear down the goroutines.
+	if err := t.store.Save(t.logger); err != nil {
+		t.logger.Warnf("kafka-stream/join-trigger: store.Save error on shutdown: %v", err)
+	}
+
 	t.cancel()
 	t.wg.Wait()
+
 	for i, client := range t.clients {
 		if err := client.Close(); err != nil {
 			t.logger.Warnf("kafka-stream/join-trigger: consumer group close error for topic=%q: %v", t.topics[i], err)
 		}
+	}
+	if err := t.store.Close(); err != nil {
+		t.logger.Warnf("kafka-stream/join-trigger: store.Close error: %v", err)
 	}
 	t.logger.Infof("kafka-stream/join-trigger: stopped — topics=%v", t.topics)
 	return nil
@@ -191,8 +255,8 @@ func (t *Trigger) consumeLoop(client sarama.ConsumerGroup, topic string) {
 	}
 }
 
-// timeoutSweepLoop periodically evicts join entries that have exceeded
-// joinWindowMs without receiving contributions from all topics.
+// timeoutSweepLoop periodically sweeps the join store for entries that have
+// exceeded joinWindowMs without contributions from all topics.
 func (t *Trigger) timeoutSweepLoop() {
 	defer t.wg.Done()
 	sweepInterval := time.Duration(t.settings.JoinWindowMs/4) * time.Millisecond
@@ -202,61 +266,55 @@ func (t *Trigger) timeoutSweepLoop() {
 	deadline := time.Duration(t.settings.JoinWindowMs) * time.Millisecond
 	ticker := time.NewTicker(sweepInterval)
 	defer ticker.Stop()
+	t.logger.Debugf("kafka-stream/join-trigger: timeout sweep started — interval=%s window=%s", sweepInterval, deadline)
 
 	for {
 		select {
 		case <-ticker.C:
 			now := time.Now()
-			t.joinRegistry.Range(func(rawKey, rawVal interface{}) bool {
-				entry := rawVal.(*joinEntry)
-				entry.mu.Lock()
-				if entry.closed || now.Sub(entry.createdAt) < deadline {
-					entry.mu.Unlock()
-					return true
-				}
-				// Mark closed before releasing the lock so a concurrent
-				// processPayload call sees it and does not double-fire.
-				entry.closed = true
-				partial := make(map[string]interface{}, len(entry.contributions))
-				for topicKey, payload := range entry.contributions {
-					partial[topicKey] = payload
-				}
-				createdAt := entry.createdAt
-				entry.mu.Unlock()
-
-				joinKey := rawKey.(string)
-				t.joinRegistry.Delete(joinKey)
-
-				missing := t.missingTopics(partial)
+			t.logger.Debugf("kafka-stream/join-trigger: timeout sweep tick — checking in-flight entries")
+			t.store.SweepExpired(now, deadline, func(joinKey string, partial *persistedEntry) {
+				missing := t.missingTopics(partial.Contributions)
+				age := now.Sub(partial.CreatedAt)
 				t.logger.Warnf("kafka-stream/join-trigger: join timed out — key=%q age=%s missingTopics=%v",
-					joinKey, now.Sub(createdAt), missing)
+					joinKey, age, missing)
 
+				// Convert partial.Contributions to map[string]interface{} for Output.
+				partialMsgs := make(map[string]interface{}, len(partial.Contributions))
+				for topicKey, payload := range partial.Contributions {
+					partialMsgs[topicKey] = payload
+				}
 				out := &Output{
 					TimeoutResult: TimeoutResult{
-						PartialMessages: partial,
+						PartialMessages: partialMsgs,
 						JoinKey:         joinKey,
 						MissingTopics:   missing,
-						CreatedAt:       createdAt.UnixMilli(),
+						CreatedAt:       partial.CreatedAt.UnixMilli(),
 					},
 					EventType: EventTypeTimeout,
 				}
 				eventId := fmt.Sprintf("join-timeout:%s", joinKey)
+				t.logger.Debugf("kafka-stream/join-trigger: firing timeout handler — key=%q eventId=%q", joinKey, eventId)
 				t.fireHandlers(context.Background(), eventId, EventTypeTimeout, out)
-				return true
 			})
 		case <-t.ctx.Done():
+			t.logger.Debugf("kafka-stream/join-trigger: timeout sweep stopping")
 			return
 		}
 	}
 }
 
-// processPayload is the core join logic.  It records a topic's contribution,
-// and when all topics have contributed returns the joined Output.  An empty
-// eventType return means the contribution is recorded but the join is not yet
-// complete.  This method is kept separate from handleMessage to allow
-// unit-testing without a live Kafka broker.
+// processPayload is the core join logic. It delegates contribution recording
+// and completeness checking to the JoinStore, which provides the appropriate
+// atomicity guarantees (mutex for memory/file; Lua script for Redis).
+//
+// Returns (*Output, eventType, nil) when all topics have contributed.
+// Returns (nil, "", nil) when the contribution is recorded but incomplete.
+// Returns (nil, "", error) when the message cannot be processed.
+//
+// Kept separate from handleMessage to enable unit-testing without a Kafka broker.
 func (t *Trigger) processPayload(topic string, payload map[string]interface{}) (*Output, string, error) {
-	// Extract join key.
+	// ── Extract join key ─────────────────────────────────────────────────────
 	rawKey, ok := payload[t.settings.JoinKeyField]
 	if !ok {
 		return nil, "", fmt.Errorf("joinKeyField %q not found in message from topic %q", t.settings.JoinKeyField, topic)
@@ -266,58 +324,35 @@ func (t *Trigger) processPayload(topic string, payload map[string]interface{}) (
 		return nil, "", fmt.Errorf("joinKeyField %q value cannot be coerced to a non-empty string (topic %q)", t.settings.JoinKeyField, topic)
 	}
 
-	// Load or create the join entry for this key.
-	actual, _ := t.joinRegistry.LoadOrStore(joinKey, &joinEntry{
-		contributions: make(map[string]map[string]interface{}),
-		createdAt:     time.Now(),
-	})
-	entry := actual.(*joinEntry)
-
-	entry.mu.Lock()
-	// If the entry was already closed by the timeout sweep, start a fresh one
-	// so this message begins a new join window rather than being silently lost.
-	if entry.closed {
-		entry.mu.Unlock()
-		fresh := &joinEntry{
-			contributions: make(map[string]map[string]interface{}),
-			createdAt:     time.Now(),
-		}
-		// CompareAndSwap is not available on sync.Map pre-Go 1.20; use Store to
-		// overwrite.  A race between two goroutines here is benign: both would
-		// store identical fresh entries and only one contribution would proceed.
-		t.joinRegistry.Store(joinKey, fresh)
-		entry = fresh
-		entry.mu.Lock()
+	if t.logger.DebugEnabled() {
+		t.logger.Debugf("kafka-stream/join-trigger: contribution received — key=%q topic=%q", joinKey, topic)
 	}
 
-	// Record this topic's contribution (last-write-wins on duplicate).
-	entry.contributions[topic] = payload
-	complete := len(entry.contributions) == len(t.topics)
-
-	var merged map[string]interface{}
-	var contributingTopics []string
-	if complete {
-		// Capture state while holding the lock, then mark closed.
-		entry.closed = true
-		merged = make(map[string]interface{}, len(t.topics))
-		contributingTopics = make([]string, 0, len(t.topics))
-		for _, topicName := range t.topics {
-			merged[topicName] = entry.contributions[topicName]
-			contributingTopics = append(contributingTopics, topicName)
-		}
+	// ── Delegate to store (atomic contribute + completeness check) ───────────
+	allContribs, complete, err := t.store.Contribute(joinKey, topic, payload, time.Now())
+	if err != nil {
+		return nil, "", fmt.Errorf("store.Contribute key=%q topic=%q: %w", joinKey, topic, err)
 	}
-	entry.mu.Unlock()
 
 	if !complete {
 		if t.logger.DebugEnabled() {
-			t.logger.Debugf("kafka-stream/join-trigger: contribution recorded — key=%q topic=%q (%d/%d topics)",
-				joinKey, topic, len(entry.contributions), len(t.topics))
+			t.logger.Debugf("kafka-stream/join-trigger: contribution recorded — key=%q topic=%q (waiting for remaining topics)", joinKey, topic)
 		}
-		return nil, "", nil // still waiting for other topics
+		return nil, "", nil
 	}
 
-	// All topics contributed — clean up and return the joined result.
-	t.joinRegistry.Delete(joinKey)
+	// ── All topics contributed — build output ────────────────────────────────
+	contributingTopics := make([]string, 0, len(t.topics))
+	for _, topicName := range t.topics {
+		contributingTopics = append(contributingTopics, topicName)
+	}
+
+	// Convert map[string]map[string]interface{} → map[string]interface{} for Output.
+	merged := make(map[string]interface{}, len(allContribs))
+	for topicName, topicPayload := range allContribs {
+		merged[topicName] = topicPayload
+	}
+
 	t.logger.Infof("kafka-stream/join-trigger: join complete — key=%q topics=%v", joinKey, contributingTopics)
 
 	out := &Output{
@@ -336,8 +371,8 @@ func (t *Trigger) processPayload(topic string, payload map[string]interface{}) (
 // it through the join pipeline.
 func (t *Trigger) handleMessage(session sarama.ConsumerGroupSession, msg *sarama.ConsumerMessage, topic string) {
 	if t.logger.DebugEnabled() {
-		t.logger.Debugf("kafka-stream/join-trigger: record received — topic=%s partition=%d offset=%d",
-			topic, msg.Partition, msg.Offset)
+		t.logger.Debugf("kafka-stream/join-trigger: record received — topic=%s partition=%d offset=%d key=%q len=%d",
+			topic, msg.Partition, msg.Offset, string(msg.Key), len(msg.Value))
 	}
 
 	// OTel trace propagation (mirrors other triggers in this workspace).
@@ -355,35 +390,46 @@ func (t *Trigger) handleMessage(session sarama.ConsumerGroupSession, msg *sarama
 
 	var payload map[string]interface{}
 	if err := json.Unmarshal(msg.Value, &payload); err != nil {
-		// Poison-pill — always mark the offset so the consumer does not stall.
-		t.logger.Errorf("kafka-stream/join-trigger: cannot decode JSON topic=%q offset=%d partition=%d — skipping (poison-pill): %v",
-			topic, msg.Offset, msg.Partition, err)
+		// Poison-pill — mark offset so the consumer does not stall.
+		t.logger.Errorf("kafka-stream/join-trigger: cannot decode JSON topic=%q partition=%d offset=%d — skipping (poison-pill): %v",
+			topic, msg.Partition, msg.Offset, err)
 		session.MarkMessage(msg, "")
 		return
 	}
 
 	out, eventType, err := t.processPayload(topic, payload)
 	if err != nil {
-		t.logger.Errorf("kafka-stream/join-trigger: processPayload error topic=%q offset=%d: %v", topic, msg.Offset, err)
+		t.logger.Errorf("kafka-stream/join-trigger: processPayload error topic=%q partition=%d offset=%d: %v",
+			topic, msg.Partition, msg.Offset, err)
 		session.MarkMessage(msg, "")
 		return
 	}
 
 	if eventType == "" || out == nil {
-		// Contribution recorded; this is not the completing message.
+		// Contribution recorded; not the completing message.
 		// Always mark the offset — we cannot hold a Sarama session open
 		// waiting for contributions from other topics.
+		if t.logger.DebugEnabled() {
+			t.logger.Debugf("kafka-stream/join-trigger: offset marked (non-completing) — topic=%q partition=%d offset=%d",
+				topic, msg.Partition, msg.Offset)
+		}
 		session.MarkMessage(msg, "")
 		return
 	}
 
-	// This message completes the join.  Honour commitOnSuccess semantics.
+	// This message completes the join. Honour commitOnSuccess semantics.
+	t.logger.Debugf("kafka-stream/join-trigger: completing message — topic=%q partition=%d offset=%d commitOnSuccess=%v",
+		topic, msg.Partition, msg.Offset, t.settings.CommitOnSuccess)
 	handlersOK := t.fireHandlers(ctx, eventId, eventType, out)
 	if !t.settings.CommitOnSuccess || handlersOK {
 		session.MarkMessage(msg, "")
+		if t.logger.DebugEnabled() {
+			t.logger.Debugf("kafka-stream/join-trigger: offset marked (completing) — topic=%q partition=%d offset=%d",
+				topic, msg.Partition, msg.Offset)
+		}
 	} else {
-		t.logger.Warnf("kafka-stream/join-trigger: handler failed — not marking offset=%d topic=%q (will be redelivered after restart/rebalance)",
-			msg.Offset, topic)
+		t.logger.Warnf("kafka-stream/join-trigger: handler failed — NOT marking offset topic=%q partition=%d offset=%d (will be redelivered after restart/rebalance)",
+			topic, msg.Partition, msg.Offset)
 	}
 }
 
@@ -391,17 +437,28 @@ func (t *Trigger) handleMessage(session sarama.ConsumerGroupSession, msg *sarama
 // Returns true if every matching handler completed without error.
 func (t *Trigger) fireHandlers(ctx context.Context, eventId string, eventType string, out *Output) bool {
 	allOK := true
+	matched := 0
 	for _, h := range t.handlers {
 		if h.eventType != EventTypeAll && h.eventType != eventType {
 			continue
 		}
+		matched++
+		t.logger.Debugf("kafka-stream/join-trigger: invoking handler — name=%q eventType=%q eventId=%q",
+			h.runner.Name(), eventType, eventId)
 		hCtx, cancel := t.handlerContext(ctx)
 		_, err := h.runner.Handle(trigger.NewContextWithEventId(hCtx, eventId), out.ToMap())
 		cancel()
 		if err != nil {
-			t.logger.Errorf("kafka-stream/join-trigger: handler fire error eventType=%s: %v", eventType, err)
+			t.logger.Errorf("kafka-stream/join-trigger: handler error name=%q eventType=%q: %v", h.runner.Name(), eventType, err)
 			allOK = false
+		} else {
+			t.logger.Debugf("kafka-stream/join-trigger: handler completed — name=%q eventType=%q eventId=%q",
+				h.runner.Name(), eventType, eventId)
 		}
+	}
+	if matched == 0 {
+		t.logger.Debugf("kafka-stream/join-trigger: no handler registered for eventType=%q eventId=%q — event dropped",
+			eventType, eventId)
 	}
 	return allOK
 }
@@ -416,7 +473,7 @@ func (t *Trigger) handlerContext(parent context.Context) (context.Context, conte
 }
 
 // missingTopics returns the topic names that have not yet contributed to the join.
-func (t *Trigger) missingTopics(contributions map[string]interface{}) []string {
+func (t *Trigger) missingTopics(contributions map[string]map[string]interface{}) []string {
 	var missing []string
 	for _, topic := range t.topics {
 		if _, ok := contributions[topic]; !ok {
@@ -498,8 +555,28 @@ type consumerGroupHandler struct {
 	topic string
 }
 
-func (*consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
-func (*consumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
+// Setup is invoked at the start of a new consumer group session (after rebalance).
+// For file/Redis stores, restores in-flight state that may have been written by
+// the previous session owner. For the memory store this is a no-op.
+func (h *consumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
+	h.t.logger.Debugf("kafka-stream/join-trigger: rebalance setup — topic=%q claims=%v",
+		h.topic, session.Claims()[h.topic])
+	if err := h.t.store.Load(h.t.logger); err != nil {
+		h.t.logger.Warnf("kafka-stream/join-trigger: rebalance Load error topic=%q: %v", h.topic, err)
+	}
+	return nil
+}
+
+// Cleanup is invoked at the end of a consumer group session (before rebalance).
+// For file/Redis stores, persists all in-flight join state so the new partition
+// owner can restore it.  For the memory store this is a no-op.
+func (h *consumerGroupHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+	h.t.logger.Debugf("kafka-stream/join-trigger: rebalance cleanup — topic=%q", h.topic)
+	if err := h.t.store.Save(h.t.logger); err != nil {
+		h.t.logger.Warnf("kafka-stream/join-trigger: rebalance Save error topic=%q: %v", h.topic, err)
+	}
+	return nil
+}
 
 func (h *consumerGroupHandler) ConsumeClaim(
 	session sarama.ConsumerGroupSession,

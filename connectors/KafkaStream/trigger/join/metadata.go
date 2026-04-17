@@ -77,6 +77,36 @@ type Settings struct {
 	// HandlerTimeoutMs is the maximum time in milliseconds allowed for all
 	// handlers to complete.  0 means no timeout.
 	HandlerTimeoutMs int64 `md:"handlerTimeoutMs"`
+
+	// ── Join store ────────────────────────────────────────────────────────────
+	// StoreType selects the backing store for in-flight join state.
+	// "memory" (default) | "file" | "redis"
+	//
+	// • "memory" — process-local sync.Map; no dependencies; state is lost on
+	//              restart or rebalance.
+	// • "file"   — wraps memory with a JSON snapshot written on shutdown and
+	//              before rebalance; restores on startup and after rebalance.
+	//              Requires PersistPath; shared filesystem needed for
+	//              multi-instance deployments.
+	// • "redis"  — all state lives in Redis; every instance shares the same
+	//              in-flight entries; survives restarts and rebalances without
+	//              any extra configuration.  Requires RedisAddr.
+	StoreType string `md:"storeType"`
+
+	// PersistPath is the absolute file path used for the JSON snapshot when
+	// storeType is "file".  Example: "/var/data/flogo/join-state.json"
+	PersistPath string `md:"persistPath"`
+
+	// RedisAddr is the Redis server address (host:port) used when storeType is
+	// "redis".  Example: "localhost:6379"
+	RedisAddr string `md:"redisAddr"`
+
+	// RedisPassword is the Redis AUTH password.  Leave empty when the Redis
+	// server does not require authentication.
+	RedisPassword string `md:"redisPassword"`
+
+	// RedisDB is the Redis database number (0–15).  0 is the default database.
+	RedisDB int `md:"redisDB"`
 }
 
 // TopicList parses and returns the trimmed, non-empty topic names from Topics.
