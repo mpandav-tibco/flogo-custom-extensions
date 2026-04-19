@@ -16,6 +16,10 @@
         {
             "type": "flogo:trigger",
             "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join"
+        },
+        {
+            "type": "flogo:trigger",
+            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/split"
         }
     ]
 }

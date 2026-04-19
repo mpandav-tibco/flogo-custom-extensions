@@ -6,6 +6,7 @@
     "github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate",
     "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter",
     "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join",
+    "github.com/milindpandav/flogo-extensions/kafkastream/trigger/split",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
     "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/connector/kafka"
@@ -84,7 +85,7 @@
     {
       "ref": "#filter",
       "name": "kafka-stream-filter-trigger",
-      "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) — no separate Kafka trigger is needed.",
+      "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) \u2014 no separate Kafka trigger is needed.",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
@@ -147,7 +148,8 @@
         "initialOffset": "newest",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000
+        "handlerTimeoutMs": 5000,
+        "storeType": "memory"
       },
       "id": "JoinKafkaStreams",
       "handlers": [
@@ -188,7 +190,7 @@
     {
       "ref": "#join",
       "name": "kafka-stream-join-trigger",
-      "description": "Timeout handler — fires when demo-readings or demo-alerts does not arrive within the 30 s join window.",
+      "description": "Timeout handler \u2014 fires when demo-readings or demo-alerts does not arrive within the 30 s join window.",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topics": "demo-readings,demo-alerts",
@@ -198,7 +200,8 @@
         "initialOffset": "newest",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000
+        "handlerTimeoutMs": 5000,
+        "storeType": "memory"
       },
       "id": "JoinKafkaStreamsTimeout",
       "handlers": [
@@ -233,6 +236,774 @@
             }
           },
           "name": "JoinKafkaStreams"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-hot",
+      "description": "tempreture > 30 - HOT messages",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "routingMode": "first-match",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cg-hot"
+      },
+      "id": "SplitKafkaStream_Hot",
+      "handlers": [
+        {
+          "description": "tempreture > 30 - HOT messages",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "tempreture",
+            "operator": "gt",
+            "value": "30",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitKafkaStream_Hot"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitKafkaStream_Hot"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-warm",
+      "description": "tempreture > 20 - WARM messages",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "routingMode": "first-match",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cg-warm"
+      },
+      "id": "SplitKafkaStream_Warm",
+      "handlers": [
+        {
+          "description": "tempreture > 20 - WARM messages",
+          "settings": {
+            "eventType": "matched",
+            "priority": 2,
+            "field": "tempreture",
+            "operator": "gt",
+            "value": "20",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitKafkaStream_Warm"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitKafkaStream_Warm"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-cold",
+      "description": "No predicate - COLD/default messages",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "routingMode": "first-match",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cg-cold"
+      },
+      "id": "SplitKafkaStream_Cold",
+      "handlers": [
+        {
+          "description": "No predicate - COLD/default messages",
+          "settings": {
+            "eventType": "matched",
+            "priority": 3,
+            "field": "",
+            "operator": "",
+            "value": "",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitKafkaStream_Cold"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitKafkaStream_Cold"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-unmatched",
+      "description": "Unmatched handler - fires when no matched handler passes",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "routingMode": "first-match",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cg-unmatched"
+      },
+      "id": "SplitKafkaStream_Unmatched",
+      "handlers": [
+        {
+          "description": "Unmatched handler - fires when no matched handler passes",
+          "settings": {
+            "eventType": "unmatched",
+            "priority": 0,
+            "field": "",
+            "operator": "",
+            "value": "",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitKafkaStream_Unmatched"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitKafkaStream_Unmatched"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-tap",
+      "description": "Tap/all handler - fires for every message",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "routingMode": "first-match",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cg-tap"
+      },
+      "id": "SplitKafkaStream_Tap",
+      "handlers": [
+        {
+          "description": "Tap/all handler - fires for every message",
+          "settings": {
+            "eventType": "all",
+            "priority": 0,
+            "field": "",
+            "operator": "",
+            "value": "",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitKafkaStream_Tap"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitKafkaStream_Tap"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_eq",
+      "description": "CC: eq operator \u2014 status == active",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-eq",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Eq",
+      "handlers": [
+        {
+          "description": "CC: eq operator \u2014 status == active",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "status",
+            "operator": "eq",
+            "value": "active",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Eq"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Eq"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_neq",
+      "description": "CC: neq operator \u2014 status != inactive",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-neq",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Neq",
+      "handlers": [
+        {
+          "description": "CC: neq operator \u2014 status != inactive",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "status",
+            "operator": "neq",
+            "value": "inactive",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Neq"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Neq"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_gte",
+      "description": "CC: gte operator \u2014 tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-gte",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Gte",
+      "handlers": [
+        {
+          "description": "CC: gte operator \u2014 tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "tempreture",
+            "operator": "gte",
+            "value": "30",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Gte"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Gte"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_lt",
+      "description": "CC: lt operator \u2014 tempreture < 20 (strict: 20 does NOT pass)",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-lt",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Lt",
+      "handlers": [
+        {
+          "description": "CC: lt operator \u2014 tempreture < 20 (strict: 20 does NOT pass)",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "tempreture",
+            "operator": "lt",
+            "value": "20",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Lt"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Lt"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_lte",
+      "description": "CC: lte operator \u2014 tempreture <= 20 (20 passes)",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-lte",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Lte",
+      "handlers": [
+        {
+          "description": "CC: lte operator \u2014 tempreture <= 20 (20 passes)",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "tempreture",
+            "operator": "lte",
+            "value": "20",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Lte"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Lte"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_contains",
+      "description": "CC: contains operator \u2014 alert contains CRITICAL",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-contains",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Contains",
+      "handlers": [
+        {
+          "description": "CC: contains operator \u2014 alert contains CRITICAL",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "alert",
+            "operator": "contains",
+            "value": "CRITICAL",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Contains"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Contains"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_regex",
+      "description": "CC: regex operator \u2014 device matches ^sensor-[A-Z]+$ (uppercase only)",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-regex",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_Regex",
+      "handlers": [
+        {
+          "description": "CC: regex operator \u2014 device matches ^sensor-[A-Z]+$ (uppercase only)",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "device",
+            "operator": "regex",
+            "value": "^sensor-[A-Z]+$",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_Regex"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_Regex"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_multiand",
+      "description": "CC: multi-predicate AND \u2014 tempreture>20 AND status==ok",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-multiand",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_MultiAnd",
+      "handlers": [
+        {
+          "description": "CC: multi-predicate AND \u2014 tempreture>20 AND status==ok",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "",
+            "operator": "",
+            "value": "",
+            "predicates": "[{\"field\": \"tempreture\", \"operator\": \"gt\", \"value\": \"20\"}, {\"field\": \"status\", \"operator\": \"eq\", \"value\": \"ok\"}]",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_MultiAnd"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_MultiAnd"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_multior",
+      "description": "CC: multi-predicate OR \u2014 tempreture>30 OR status==critical",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-multior",
+        "routingMode": "first-match"
+      },
+      "id": "SplitCC_MultiOr",
+      "handlers": [
+        {
+          "description": "CC: multi-predicate OR \u2014 tempreture>30 OR status==critical",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "",
+            "operator": "",
+            "value": "",
+            "predicates": "[{\"field\": \"tempreture\", \"operator\": \"gt\", \"value\": \"30\"}, {\"field\": \"status\", \"operator\": \"eq\", \"value\": \"critical\"}]",
+            "predicateMode": "or"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_MultiOr"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_MultiOr"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_allmatcha",
+      "description": "CC: all-match routingMode, tempreture > 20 (A)",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-allmatcha",
+        "routingMode": "all-match"
+      },
+      "id": "SplitCC_AllMatchA",
+      "handlers": [
+        {
+          "description": "CC: all-match routingMode, tempreture > 20 (A)",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "tempreture",
+            "operator": "gt",
+            "value": "20",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_AllMatchA"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_AllMatchA"
+        }
+      ]
+    },
+    {
+      "ref": "#split",
+      "name": "kafka-stream-split-trigger-splitcc_allmatchb",
+      "description": "CC: all-match routingMode, tempreture > 30 (B)",
+      "settings": {
+        "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
+        "topic": "demo",
+        "initialOffset": "newest",
+        "balanceStrategy": "roundrobin",
+        "commitOnSuccess": true,
+        "handlerTimeoutMs": 5000,
+        "consumerGroup": "demo-split-cc-allmatchb",
+        "routingMode": "all-match"
+      },
+      "id": "SplitCC_AllMatchB",
+      "handlers": [
+        {
+          "description": "CC: all-match routingMode, tempreture > 30 (B)",
+          "settings": {
+            "eventType": "matched",
+            "priority": 1,
+            "field": "tempreture",
+            "operator": "gt",
+            "value": "30",
+            "predicates": "",
+            "predicateMode": "and"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:SplitCC_AllMatchB"
+            },
+            "input": {
+              "message": "=$.message",
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "matchedHandlerName": "=$.matchedHandlerName",
+              "routingMode": "=$.routingMode",
+              "evalError": "=$.evalError",
+              "evalErrorReason": "=$.evalErrorReason"
+            }
+          },
+          "name": "SplitCC_AllMatchB"
         }
       ]
     }
@@ -437,6 +1208,1350 @@
           "output": [],
           "fe_metadata": {
             "input": "{\"type\":\"object\",\"title\":\"JoinKafkaStreams\",\"properties\":{\"joinResult\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"object\",\"description\":\"Map of topic name to full decoded JSON payload from that topic.\"},\"joinKey\":{\"type\":\"string\"},\"topics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"joinedAt\":{\"type\":\"integer\",\"description\":\"Unix-ms wall-clock time when the join completed.\"}}},\"timeoutResult\":{\"type\":\"object\",\"properties\":{\"partialMessages\":{\"type\":\"object\",\"description\":\"Map of topic name to payload for topics that contributed before timeout.\"},\"joinKey\":{\"type\":\"string\"},\"missingTopics\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"createdAt\":{\"type\":\"integer\",\"description\":\"Unix-ms time when the join window was first opened.\"}}},\"eventType\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitKafkaStream_Hot",
+      "data": {
+        "name": "SplitKafkaStream_Hot",
+        "description": "tempreture > 30 - HOT messages",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"HOT >> \", coerce.toString($flow.message), \" | topic=\", $flow.topic, \" | offset=\", coerce.toString($flow.offset), \" | handler=\", $flow.matchedHandlerName)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitKafkaStream\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitKafkaStream_Warm",
+      "data": {
+        "name": "SplitKafkaStream_Warm",
+        "description": "tempreture > 20 - WARM messages",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"WARM >> \", coerce.toString($flow.message), \" | topic=\", $flow.topic, \" | offset=\", coerce.toString($flow.offset), \" | handler=\", $flow.matchedHandlerName)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitKafkaStream\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitKafkaStream_Cold",
+      "data": {
+        "name": "SplitKafkaStream_Cold",
+        "description": "No predicate - COLD/default messages",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"COLD >> \", coerce.toString($flow.message), \" | topic=\", $flow.topic, \" | offset=\", coerce.toString($flow.offset))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitKafkaStream\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitKafkaStream_Unmatched",
+      "data": {
+        "name": "SplitKafkaStream_Unmatched",
+        "description": "Unmatched handler - fires when no matched handler passes",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"UNMATCHED >> \", coerce.toString($flow.message), \" | topic=\", $flow.topic, \" | offset=\", coerce.toString($flow.offset))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitKafkaStream\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitKafkaStream_Tap",
+      "data": {
+        "name": "SplitKafkaStream_Tap",
+        "description": "Tap/all handler - fires for every message",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"TAP >> \", coerce.toString($flow.message), \" | topic=\", $flow.topic, \" | offset=\", coerce.toString($flow.offset))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitKafkaStream\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Eq",
+      "data": {
+        "name": "SplitCC_Eq",
+        "description": "CC: eq operator \u2014 status == active",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_EQ >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Neq",
+      "data": {
+        "name": "SplitCC_Neq",
+        "description": "CC: neq operator \u2014 status != inactive",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_NEQ >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Gte",
+      "data": {
+        "name": "SplitCC_Gte",
+        "description": "CC: gte operator \u2014 tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_GTE >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Lt",
+      "data": {
+        "name": "SplitCC_Lt",
+        "description": "CC: lt operator \u2014 tempreture < 20 (strict: 20 does NOT pass)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_LT >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Lte",
+      "data": {
+        "name": "SplitCC_Lte",
+        "description": "CC: lte operator \u2014 tempreture <= 20 (20 passes)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_LTE >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Contains",
+      "data": {
+        "name": "SplitCC_Contains",
+        "description": "CC: contains operator \u2014 alert contains CRITICAL",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_CONTAINS >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_Regex",
+      "data": {
+        "name": "SplitCC_Regex",
+        "description": "CC: regex operator \u2014 device matches ^sensor-[A-Z]+$ (uppercase only)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_REGEX >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_MultiAnd",
+      "data": {
+        "name": "SplitCC_MultiAnd",
+        "description": "CC: multi-predicate AND \u2014 tempreture>20 AND status==ok",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_MULTIAND >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_MultiOr",
+      "data": {
+        "name": "SplitCC_MultiOr",
+        "description": "CC: multi-predicate OR \u2014 tempreture>30 OR status==critical",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_MULTIOR >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_AllMatchA",
+      "data": {
+        "name": "SplitCC_AllMatchA",
+        "description": "CC: all-match routingMode, tempreture > 20 (A)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_ALLMATCHA >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:SplitCC_AllMatchB",
+      "data": {
+        "name": "SplitCC_AllMatchB",
+        "description": "CC: all-match routingMode, tempreture > 30 (B)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"CC_ALLMATCHB >> \", coerce.toString($flow.message), \" | handler=\", $flow.matchedHandlerName, \" | evalErr=\", coerce.toString($flow.evalError), \" | routingMode=\", $flow.routingMode)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "metadata": {
+          "input": [
+            {
+              "name": "message",
+              "type": "object"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "matchedHandlerName",
+              "type": "string"
+            },
+            {
+              "name": "routingMode",
+              "type": "string"
+            },
+            {
+              "name": "evalError",
+              "type": "boolean"
+            },
+            {
+              "name": "evalErrorReason",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SplitCC\",\"properties\":{\"message\":{\"type\":\"object\"},\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"matchedHandlerName\":{\"type\":\"string\",\"required\":false},\"routingMode\":{\"type\":\"string\",\"required\":false},\"evalError\":{\"type\":\"boolean\",\"required\":false},\"evalErrorReason\":{\"type\":\"string\",\"required\":false}}}"
           }
         }
       }
