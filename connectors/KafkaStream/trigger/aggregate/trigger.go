@@ -57,6 +57,7 @@ type Trigger struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
 	wg         sync.WaitGroup
+	stopOnce   sync.Once
 	msgCounter atomic.Int64 // per-trigger; replaces the global IncrPersistCounter
 }
 
@@ -185,11 +186,21 @@ func (t *Trigger) Start() error {
 		go t.idleSweepLoop()
 	}
 
+	// Drain the Sarama consumer-group errors channel. Without a reader the
+	// channel fills (default buffer: 256) under sustained broker errors and
+	// then blocks the Sarama broker reader goroutine, stalling consumption.
+	go func() {
+		for err := range t.client.Errors() {
+			t.logger.Errorf("kafka-stream/aggregate-trigger: sarama consumer error: %v", err)
+		}
+	}()
+
 	t.logger.Infof("kafka-stream/aggregate-trigger: started — topic=%q window=%q", t.settings.Topic, t.settings.WindowName)
 	return nil
 }
 
 // Stop signals the consumer and sweep goroutines to stop and persists state.
+// It is safe to call Stop more than once; the Sarama client is closed exactly once.
 func (t *Trigger) Stop() error {
 	t.cancel()
 	t.wg.Wait()
@@ -201,9 +212,11 @@ func (t *Trigger) Stop() error {
 		}
 	}
 
-	if err := t.client.Close(); err != nil {
-		t.logger.Warnf("kafka-stream/aggregate-trigger: consumer group close error: %v", err)
-	}
+	t.stopOnce.Do(func() {
+		if err := t.client.Close(); err != nil {
+			t.logger.Warnf("kafka-stream/aggregate-trigger: consumer group close error: %v", err)
+		}
+	})
 	t.logger.Infof("kafka-stream/aggregate-trigger: stopped — topic=%q window=%q", t.settings.Topic, t.settings.WindowName)
 	return nil
 }
@@ -263,9 +276,13 @@ func (t *Trigger) idleSweepLoop() {
 				// session.MarkMessage to call here. If the handler fails the partial result
 				// is unrecoverable (the window was already closed and removed from the
 				// registry). We log at ERROR so operations can detect and investigate.
-				if ok := t.fireHandlers(context.Background(), idleEventId, EventTypeWindowClose, out); !ok {
+				// Use handlerContext to apply the configured HandlerTimeoutMs so that
+				// a stuck downstream flow does not block the sweep goroutine indefinitely.
+				sweepCtx, sweepCancel := t.handlerContext(context.Background())
+				if ok := t.fireHandlers(sweepCtx, idleEventId, EventTypeWindowClose, out); !ok {
 					t.logger.Errorf("kafka-stream/aggregate-trigger: one or more handlers failed for idle-swept window %q — result may be lost (no Kafka offset to retry)", r.WindowName)
 				}
+				sweepCancel()
 			}
 		case <-t.ctx.Done():
 			return
