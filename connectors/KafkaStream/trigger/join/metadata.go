@@ -5,6 +5,7 @@
 package join
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/project-flogo/core/data/coerce"
@@ -92,6 +93,13 @@ type Settings struct {
 	// PersistPath is the absolute file path used for the JSON snapshot when
 	// storeType is "file".  Example: "/var/data/flogo/join-state.json"
 	PersistPath string `md:"persistPath"`
+
+	// MaxKeys is the maximum number of in-flight join keys allowed in the
+	// store at any time.  0 (default) means unlimited.  Setting this to a
+	// positive value prevents unbounded memory growth under high-cardinality
+	// join keys.  When the limit is reached, new join keys are rejected and
+	// logged as errors.
+	MaxKeys int64 `md:"maxKeys"`
 }
 
 // TopicList parses and returns the trimmed, non-empty topic names from Topics.
@@ -180,10 +188,16 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		o.JoinResult.JoinKey, _ = coerce.ToString(jrMap["joinKey"])
-		o.JoinResult.JoinedAt, _ = coerce.ToInt64(jrMap["joinedAt"])
+		if o.JoinResult.JoinKey, err = coerce.ToString(jrMap["joinKey"]); err != nil {
+			return fmt.Errorf("joinResult.joinKey: %w", err)
+		}
+		if o.JoinResult.JoinedAt, err = coerce.ToInt64(jrMap["joinedAt"]); err != nil {
+			return fmt.Errorf("joinResult.joinedAt: %w", err)
+		}
 		if msgs, ok := jrMap["messages"]; ok {
-			o.JoinResult.Messages, _ = coerce.ToObject(msgs)
+			if o.JoinResult.Messages, err = coerce.ToObject(msgs); err != nil {
+				return fmt.Errorf("joinResult.messages: %w", err)
+			}
 		}
 	}
 	if tr, ok := values["timeoutResult"]; ok {
@@ -191,10 +205,16 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		o.TimeoutResult.JoinKey, _ = coerce.ToString(trMap["joinKey"])
-		o.TimeoutResult.CreatedAt, _ = coerce.ToInt64(trMap["createdAt"])
+		if o.TimeoutResult.JoinKey, err = coerce.ToString(trMap["joinKey"]); err != nil {
+			return fmt.Errorf("timeoutResult.joinKey: %w", err)
+		}
+		if o.TimeoutResult.CreatedAt, err = coerce.ToInt64(trMap["createdAt"]); err != nil {
+			return fmt.Errorf("timeoutResult.createdAt: %w", err)
+		}
 		if msgs, ok := trMap["partialMessages"]; ok {
-			o.TimeoutResult.PartialMessages, _ = coerce.ToObject(msgs)
+			if o.TimeoutResult.PartialMessages, err = coerce.ToObject(msgs); err != nil {
+				return fmt.Errorf("timeoutResult.partialMessages: %w", err)
+			}
 		}
 	}
 	return nil

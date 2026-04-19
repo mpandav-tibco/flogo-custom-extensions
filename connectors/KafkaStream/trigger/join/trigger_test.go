@@ -1,6 +1,7 @@
 package join
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ func newJoinTrigger(s *Settings) *Trigger {
 		logger:   log.RootLogger(),
 		topics:   s.TopicList(),
 	}
-	t.store = newMemoryStore(len(t.topics))
+	t.store = newMemoryStore(len(t.topics), int(s.MaxKeys))
 	return t
 }
 
@@ -349,4 +350,125 @@ func TestOutput_ToMap_TimeoutRoundTrip(t *testing.T) {
 	require.NoError(t, restored.FromMap(m))
 	assert.Equal(t, EventTypeTimeout, restored.EventType)
 	assert.Equal(t, "T1", restored.TimeoutResult.JoinKey)
+}
+
+// ─── Store cardinality limit ─────────────────────────────────────────────────
+
+func TestMemoryStore_CardinalityLimit_Enforced(t *testing.T) {
+	store := newMemoryStore(2, 2) // 2 topics, maxKeys=2
+	now := time.Now()
+
+	// First two keys succeed
+	_, complete1, err1 := store.Contribute("key-1", "orders", map[string]interface{}{"v": 1}, now)
+	assert.NoError(t, err1)
+	assert.False(t, complete1)
+
+	_, complete2, err2 := store.Contribute("key-2", "orders", map[string]interface{}{"v": 2}, now)
+	assert.NoError(t, err2)
+	assert.False(t, complete2)
+
+	// Third key exceeds limit
+	_, _, err3 := store.Contribute("key-3", "orders", map[string]interface{}{"v": 3}, now)
+	assert.Error(t, err3)
+	assert.Contains(t, err3.Error(), "cardinality limit")
+}
+
+func TestMemoryStore_CardinalityLimit_FreedAfterComplete(t *testing.T) {
+	store := newMemoryStore(2, 1) // 2 topics, maxKeys=1
+	now := time.Now()
+
+	// First key succeeds
+	_, _, err1 := store.Contribute("key-1", "orders", map[string]interface{}{"v": 1}, now)
+	assert.NoError(t, err1)
+
+	// Complete key-1 by contributing from second topic
+	_, complete, err2 := store.Contribute("key-1", "payments", map[string]interface{}{"v": 2}, now)
+	assert.NoError(t, err2)
+	assert.True(t, complete)
+
+	// Now a new key should be accepted (slot freed)
+	_, _, err3 := store.Contribute("key-2", "orders", map[string]interface{}{"v": 3}, now)
+	assert.NoError(t, err3)
+}
+
+func TestMemoryStore_CardinalityLimit_Zero_Unlimited(t *testing.T) {
+	store := newMemoryStore(2, 0) // maxKeys=0 → unlimited
+	now := time.Now()
+
+	for i := 0; i < 100; i++ {
+		_, _, err := store.Contribute(fmt.Sprintf("key-%d", i), "orders", map[string]interface{}{"v": i}, now)
+		assert.NoError(t, err)
+	}
+}
+
+// ─── Restore — keyCount synchronisation (M2 fix) ─────────────────────────────
+
+func TestMemoryStore_Restore_UpdatesKeyCount(t *testing.T) {
+	store := newMemoryStore(2, 10)
+	now := time.Now()
+
+	entries := map[string]*persistedEntry{
+		"key-1": {Contributions: map[string]map[string]interface{}{"orders": {"v": 1}}, CreatedAt: now},
+		"key-2": {Contributions: map[string]map[string]interface{}{"orders": {"v": 2}}, CreatedAt: now},
+		"key-3": {Contributions: map[string]map[string]interface{}{"orders": {"v": 3}}, CreatedAt: now},
+	}
+	store.Restore(entries)
+
+	// After restore, keyCount must reflect the number of restored entries.
+	assert.Equal(t, int64(3), store.keyCount.Load(), "keyCount should equal number of restored entries")
+}
+
+func TestMemoryStore_Restore_KeyCount_EnforcedAfterRestore(t *testing.T) {
+	store := newMemoryStore(2, 2) // maxKeys=2
+	now := time.Now()
+
+	entries := map[string]*persistedEntry{
+		"key-1": {Contributions: map[string]map[string]interface{}{"orders": {"v": 1}}, CreatedAt: now},
+		"key-2": {Contributions: map[string]map[string]interface{}{"orders": {"v": 2}}, CreatedAt: now},
+	}
+	store.Restore(entries)
+
+	// Store is now at capacity (2/2). A third key should be rejected.
+	_, _, err := store.Contribute("key-3", "orders", map[string]interface{}{"v": 3}, now)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "cardinality limit")
+}
+
+func TestMemoryStore_Restore_Idempotent(t *testing.T) {
+	store := newMemoryStore(2, 10)
+	now := time.Now()
+
+	entries := map[string]*persistedEntry{
+		"key-1": {Contributions: map[string]map[string]interface{}{"orders": {"v": 1}}, CreatedAt: now},
+	}
+	// Restore twice — duplicate keys should not double-count.
+	store.Restore(entries)
+	store.Restore(entries)
+
+	assert.Equal(t, int64(1), store.keyCount.Load(), "idempotent restore should not double-count keyCount")
+}
+
+func TestMemoryStore_Restore_EmptyEntries(t *testing.T) {
+	store := newMemoryStore(2, 5)
+	store.Restore(map[string]*persistedEntry{})
+	assert.Equal(t, int64(0), store.keyCount.Load(), "empty restore should leave keyCount at 0")
+}
+
+func TestMemoryStore_Restore_ThenComplete_FreesSlot(t *testing.T) {
+	store := newMemoryStore(2, 1) // maxKeys=1
+	now := time.Now()
+
+	entries := map[string]*persistedEntry{
+		"key-1": {Contributions: map[string]map[string]interface{}{"orders": {"v": 1}}, CreatedAt: now},
+	}
+	store.Restore(entries)
+
+	// At capacity (1/1). Complete key-1 by adding second topic.
+	_, complete, err := store.Contribute("key-1", "payments", map[string]interface{}{"v": 2}, now)
+	require.NoError(t, err)
+	assert.True(t, complete, "key-1 should complete with both topics")
+
+	// Now slot is freed — a new key should be accepted.
+	_, _, err2 := store.Contribute("key-2", "orders", map[string]interface{}{"v": 3}, now)
+	assert.NoError(t, err2, "new key should be accepted after slot freed")
 }

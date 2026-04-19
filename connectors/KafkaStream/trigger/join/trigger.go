@@ -63,6 +63,7 @@ type Trigger struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
+	stopOnce sync.Once
 }
 
 // Factory creates Trigger instances.
@@ -114,10 +115,10 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 		if t.settings.PersistPath == "" {
 			return fmt.Errorf("kafka-stream/join-trigger: storeType=\"file\" requires persistPath to be set")
 		}
-		t.store = newFileStore(t.settings.PersistPath, len(t.topics))
+		t.store = newFileStore(t.settings.PersistPath, len(t.topics), int(t.settings.MaxKeys))
 		t.logger.Infof("kafka-stream/join-trigger: store=file path=%q", t.settings.PersistPath)
 	default: // "memory" or empty
-		t.store = newMemoryStore(len(t.topics))
+		t.store = newMemoryStore(len(t.topics), int(t.settings.MaxKeys))
 		t.logger.Debugf("kafka-stream/join-trigger: store=memory (process-local)")
 	}
 
@@ -177,6 +178,14 @@ func (t *Trigger) Start() error {
 		t.wg.Add(1)
 		t.logger.Debugf("kafka-stream/join-trigger: starting consumer goroutine — topic=%q", topic)
 		go t.consumeLoop(t.clients[i], topic)
+		// Drain the Sarama consumer-group errors channel for each client.
+		// Without a reader the channel fills (default buffer: 256) under sustained
+		// broker errors and blocks the Sarama broker reader goroutine.
+		go func(c sarama.ConsumerGroup, tp string) {
+			for err := range c.Errors() {
+				t.logger.Errorf("kafka-stream/join-trigger: sarama consumer error topic=%q: %v", tp, err)
+			}
+		}(t.clients[i], topic)
 	}
 	t.wg.Add(1)
 	go t.timeoutSweepLoop()
@@ -189,6 +198,7 @@ func (t *Trigger) Start() error {
 // Save() is called AFTER wg.Wait() so the snapshot is captured from a stable,
 // quiescent store — no concurrent Contribute calls can modify state after the
 // goroutines have exited.
+// It is safe to call Stop more than once; Sarama clients are closed exactly once.
 func (t *Trigger) Stop() error {
 	t.logger.Debugf("kafka-stream/join-trigger: stopping — waiting for goroutines")
 
@@ -201,11 +211,13 @@ func (t *Trigger) Stop() error {
 		t.logger.Warnf("kafka-stream/join-trigger: store.Save error on shutdown: %v", err)
 	}
 
-	for i, client := range t.clients {
-		if err := client.Close(); err != nil {
-			t.logger.Warnf("kafka-stream/join-trigger: consumer group close error for topic=%q: %v", t.topics[i], err)
+	t.stopOnce.Do(func() {
+		for i, client := range t.clients {
+			if err := client.Close(); err != nil {
+				t.logger.Warnf("kafka-stream/join-trigger: consumer group close error for topic=%q: %v", t.topics[i], err)
+			}
 		}
-	}
+	})
 	if err := t.store.Close(); err != nil {
 		t.logger.Warnf("kafka-stream/join-trigger: store.Close error: %v", err)
 	}
@@ -276,7 +288,11 @@ func (t *Trigger) timeoutSweepLoop() {
 				}
 				eventId := fmt.Sprintf("join-timeout:%s", joinKey)
 				t.logger.Debugf("kafka-stream/join-trigger: firing timeout handler — key=%q eventId=%q", joinKey, eventId)
-				t.fireHandlers(context.Background(), eventId, EventTypeTimeout, out)
+				// Use handlerContext to apply the configured HandlerTimeoutMs so that
+				// a stuck downstream flow does not block the sweep goroutine indefinitely.
+				sweepCtx, sweepCancel := t.handlerContext(context.Background())
+				t.fireHandlers(sweepCtx, eventId, EventTypeTimeout, out)
+				sweepCancel()
 			})
 		case <-t.ctx.Done():
 			t.logger.Debugf("kafka-stream/join-trigger: timeout sweep stopping")

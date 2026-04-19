@@ -38,6 +38,7 @@ demo-alerts    ──►┘                                └──► [timeout
 | `handlerTimeoutMs` | integer | | `0` | Maximum time in milliseconds for all handlers to complete. `0` = no timeout. |
 | `storeType` | string | | `memory` | Backing store for in-flight join state. `memory` — process-local, no persistence across restarts. `file` — JSON snapshot on disk; restores on startup and after rebalance. Requires `persistPath`. |
 | `persistPath` | string | | — | **Required when `storeType=file`.** Absolute path for the JSON snapshot file. Example: `/var/data/flogo/join-state.json`. For multi-instance deployments this must point to a shared filesystem. |
+| `maxKeys` | integer | | `0` | Maximum number of in-flight join keys allowed concurrently in the store. When exceeded, new join keys are rejected with an error and the message's offset is committed immediately. `0` = unlimited (default). Use to cap memory consumption in high-cardinality join scenarios. |
 
 ---
 

@@ -2,6 +2,7 @@ package filter
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -119,17 +120,29 @@ func TestEvalSingle_EndsWith_Pass(t *testing.T) {
 }
 
 func TestEvalSingle_Regex_Pass(t *testing.T) {
-	ok, _, errMsg := evalSingle(map[string]interface{}{"id": "USR-12345"}, "id", "regex", `^USR-\d+$`, false, nil)
+	compiled := regexp.MustCompile(`^USR-\d+$`)
+	ok, _, errMsg := evalSingle(map[string]interface{}{"id": "USR-12345"}, "id", "regex", `^USR-\d+$`, false, compiled)
 	assert.True(t, ok)
 	assert.Empty(t, errMsg)
 }
 
 func TestEvalSingle_Regex_Fail(t *testing.T) {
-	ok, _, _ := evalSingle(map[string]interface{}{"id": "SVC-abc"}, "id", "regex", `^USR-\d+$`, false, nil)
+	compiled := regexp.MustCompile(`^USR-\d+$`)
+	ok, _, _ := evalSingle(map[string]interface{}{"id": "SVC-abc"}, "id", "regex", `^USR-\d+$`, false, compiled)
 	assert.False(t, ok)
 }
 
+func TestEvalSingle_Regex_NilCompiled_Error(t *testing.T) {
+	// After Initialize(), compiled is always non-nil for regex operators.
+	// A nil value indicates a handler initialisation bug and must fail fast.
+	ok, _, errMsg := evalSingle(map[string]interface{}{"id": "USR-12345"}, "id", "regex", `^USR-\d+$`, false, nil)
+	assert.False(t, ok)
+	assert.Contains(t, errMsg, "not pre-compiled")
+}
+
 func TestEvalSingle_Regex_Invalid(t *testing.T) {
+	// With compiled=nil and operator="regex", the new code fails fast with
+	// "not pre-compiled". Invalid regex patterns are caught at Initialize().
 	ok, _, errMsg := evalSingle(map[string]interface{}{"id": "x"}, "id", "regex", `[invalid`, false, nil)
 	assert.False(t, ok)
 	assert.NotEmpty(t, errMsg)
@@ -283,6 +296,48 @@ func TestEvalMulti_MissingField_AND_Block(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestEvalMulti_MissingField_OR_PassThrough_NoAutoPass(t *testing.T) {
+	// Regression: previously OR + passThroughOnMissing short-circuited to true
+	// on a missing field, even when no predicate actually matched. After the fix,
+	// a missing field in OR mode is skipped (continue), not auto-passed.
+	preds := []Predicate{
+		{Field: "missing1", Operator: "eq", Value: "x"},
+		{Field: "missing2", Operator: "eq", Value: "y"},
+	}
+	ok, _, _ := evalMulti(
+		map[string]interface{}{"other": "value"}, // neither field present
+		preds, "or", true, nil,                   // passThroughOnMissing=true, OR mode
+	)
+	// All predicates skipped → OR with zero passes → should be false
+	assert.False(t, ok, "OR + passThroughOnMissing should NOT auto-pass when all fields are missing")
+}
+
+func TestEvalMulti_MissingField_OR_PassThrough_OnePresent(t *testing.T) {
+	// When one field is present and matches, OR should pass even with missing fields.
+	preds := []Predicate{
+		{Field: "missing", Operator: "eq", Value: "x"},
+		{Field: "status", Operator: "eq", Value: "200"},
+	}
+	ok, _, _ := evalMulti(
+		map[string]interface{}{"status": 200.0},
+		preds, "or", true, nil,
+	)
+	assert.True(t, ok, "OR should pass when at least one present field matches")
+}
+
+func TestEvalMulti_Regex_NilCompiled_Error(t *testing.T) {
+	// Regression: evalMulti must fail fast if a regex predicate has nil compiled.
+	preds := []Predicate{
+		{Field: "id", Operator: "regex", Value: `^USR-\d+$`},
+	}
+	ok, _, errMsg := evalMulti(
+		map[string]interface{}{"id": "USR-123"},
+		preds, "and", false, nil, // nil compiledRegexes → compiled=nil for all
+	)
+	assert.False(t, ok)
+	assert.Contains(t, errMsg, "not pre-compiled")
+}
+
 // ─── Trigger.evaluate (integration of defaults) ───────────────────────────────
 
 func TestTriggerEvaluate_HandlerOperatorOverridesTriggerDefault(t *testing.T) {
@@ -418,4 +473,167 @@ func TestEvalPredicate_NumericGtBeyondStringPath(t *testing.T) {
 	ok, _, errMsg := evalPredicate("not-a-number", "val", "gt", "5", nil)
 	assert.False(t, ok)
 	assert.NotEmpty(t, errMsg)
+}
+
+// ─── supportedOps direct access (M1 fix validation) ─────────────────────────
+
+func TestSupportedOps_AllExpectedKeys(t *testing.T) {
+	expected := []string{"eq", "neq", "gt", "gte", "lt", "lte", "contains", "startsWith", "endsWith", "regex"}
+	for _, op := range expected {
+		assert.True(t, supportedOps[op], "operator %q should be in supportedOps", op)
+	}
+}
+
+func TestSupportedOps_UnknownReturnsFalse(t *testing.T) {
+	assert.False(t, supportedOps["LIKE"])
+	assert.False(t, supportedOps[""])
+	assert.False(t, supportedOps["between"])
+}
+
+// ─── evalSingle — missing field with passThroughOnMissing ────────────────────
+
+func TestEvalSingle_MissingField_PassThroughTrue(t *testing.T) {
+	ok, _, errMsg := evalSingle(map[string]interface{}{}, "status", "eq", "200", true, nil)
+	assert.True(t, ok, "passThroughOnMissing=true → should pass")
+	assert.Empty(t, errMsg)
+}
+
+func TestEvalSingle_MissingField_PassThroughFalse(t *testing.T) {
+	ok, reason, errMsg := evalSingle(map[string]interface{}{}, "status", "eq", "200", false, nil)
+	assert.False(t, ok)
+	assert.NotEmpty(t, reason)
+	assert.Empty(t, errMsg)
+}
+
+// ─── evalSingle — boundary numeric comparisons ──────────────────────────────
+
+func TestEvalSingle_Gte_Boundary(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"v": 30.0}, "v", "gte", "30", false, nil)
+	assert.True(t, ok, "30 >= 30 should be true")
+}
+
+func TestEvalSingle_Lte_Boundary(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"v": 30.0}, "v", "lte", "30", false, nil)
+	assert.True(t, ok, "30 <= 30 should be true")
+}
+
+func TestEvalSingle_Lt_Equal_Fail(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"v": 30.0}, "v", "lt", "30", false, nil)
+	assert.False(t, ok, "30 < 30 should be false")
+}
+
+func TestEvalSingle_Gt_Equal_Fail(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"v": 30.0}, "v", "gt", "30", false, nil)
+	assert.False(t, ok, "30 > 30 should be false")
+}
+
+// ─── evalSingle — string operators ──────────────────────────────────────────
+
+func TestEvalSingle_Contains_CaseSensitive(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"msg": "Hello World"}, "msg", "contains", "World", false, nil)
+	assert.True(t, ok)
+}
+
+func TestEvalSingle_Contains_NoMatch(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"msg": "Hello World"}, "msg", "contains", "world", false, nil)
+	assert.False(t, ok, "contains should be case-sensitive")
+}
+
+func TestEvalSingle_StartsWith_SentencePass(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"msg": "Hello World"}, "msg", "startsWith", "Hello", false, nil)
+	assert.True(t, ok)
+}
+
+func TestEvalSingle_StartsWith_SentenceFail(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"msg": "Hello World"}, "msg", "startsWith", "World", false, nil)
+	assert.False(t, ok)
+}
+
+func TestEvalSingle_EndsWith_SentencePass(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"msg": "Hello World"}, "msg", "endsWith", "World", false, nil)
+	assert.True(t, ok)
+}
+
+func TestEvalSingle_EndsWith_SentenceFail(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"msg": "Hello World"}, "msg", "endsWith", "Hello", false, nil)
+	assert.False(t, ok)
+}
+
+// ─── evalSingle — regex operator ────────────────────────────────────────────
+
+func TestEvalSingle_Regex_NumericCode_Pass(t *testing.T) {
+	re := regexp.MustCompile(`^\d{3}$`)
+	ok, _, _ := evalSingle(map[string]interface{}{"code": "200"}, "code", "regex", `^\d{3}$`, false, re)
+	assert.True(t, ok)
+}
+
+func TestEvalSingle_Regex_NumericCode_Fail(t *testing.T) {
+	re := regexp.MustCompile(`^\d{3}$`)
+	ok, _, _ := evalSingle(map[string]interface{}{"code": "not-numeric"}, "code", "regex", `^\d{3}$`, false, re)
+	assert.False(t, ok)
+}
+
+// ─── evalSingle — unsupported operator ──────────────────────────────────────
+
+func TestEvalSingle_UnsupportedOperator(t *testing.T) {
+	ok, _, errMsg := evalSingle(map[string]interface{}{"v": 1.0}, "v", "LIKE", "1", false, nil)
+	assert.False(t, ok)
+	assert.NotEmpty(t, errMsg, "unsupported operator should produce error message")
+}
+
+func TestEvalSingle_EmptyOperator(t *testing.T) {
+	ok, _, errMsg := evalSingle(map[string]interface{}{"v": 1.0}, "v", "", "1", false, nil)
+	assert.False(t, ok)
+	assert.NotEmpty(t, errMsg)
+}
+
+// ─── evalSingle — negative numbers and decimals ─────────────────────────────
+
+func TestEvalSingle_NegativeNumericComparison(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"temp": -5.0}, "temp", "lt", "0", false, nil)
+	assert.True(t, ok, "-5 < 0 should be true")
+}
+
+func TestEvalSingle_DecimalPrecision(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"price": 9.99}, "price", "eq", "9.99", false, nil)
+	assert.True(t, ok)
+}
+
+// ─── evalSingle — null / nil value in message ───────────────────────────────
+
+func TestEvalSingle_NilValue_PassThroughFalse(t *testing.T) {
+	// Field exists but value is nil.
+	ok, _, _ := evalSingle(map[string]interface{}{"v": nil}, "v", "eq", "1", false, nil)
+	assert.False(t, ok)
+}
+
+// ─── validateSettings — edge cases ──────────────────────────────────────────
+
+func TestValidateSettings_WhitespaceTopic(t *testing.T) {
+	err := validateSettings(&Settings{Topic: "   ", ConsumerGroup: "g"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "topic")
+}
+
+func TestValidateSettings_WhitespaceConsumerGroup(t *testing.T) {
+	err := validateSettings(&Settings{Topic: "t", ConsumerGroup: "  "})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "consumerGroup")
+}
+
+func TestValidateSettings_InvalidOperator(t *testing.T) {
+	err := validateSettings(&Settings{Topic: "t", ConsumerGroup: "g", Operator: "LIKE"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "operator")
+}
+
+func TestValidateSettings_ValidOperator(t *testing.T) {
+	for _, op := range []string{"eq", "neq", "gt", "gte", "lt", "lte", "contains", "startsWith", "endsWith", "regex"} {
+		require.NoError(t, validateSettings(&Settings{Topic: "t", ConsumerGroup: "g", Operator: op}), "operator %q should be valid", op)
+	}
+}
+
+func TestValidateSettings_EmptyOperator_OK(t *testing.T) {
+	// Empty operator is valid — means multi-predicate mode.
+	require.NoError(t, validateSettings(&Settings{Topic: "t", ConsumerGroup: "g"}))
 }

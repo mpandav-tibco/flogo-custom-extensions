@@ -31,8 +31,8 @@ type fileStore struct {
 	path string
 }
 
-func newFileStore(path string, totalTopics int) *fileStore {
-	return &fileStore{memoryStore: newMemoryStore(totalTopics), path: path}
+func newFileStore(path string, totalTopics int, maxKeys int) *fileStore {
+	return &fileStore{memoryStore: newMemoryStore(totalTopics, maxKeys), path: path}
 }
 
 // Save writes a JSON snapshot of all in-flight (non-closed) join entries to

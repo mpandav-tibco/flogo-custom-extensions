@@ -4,7 +4,9 @@
 package join
 
 import (
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/project-flogo/core/support/log"
@@ -99,10 +101,12 @@ func (pe *persistedEntry) toJoinEntry() *joinEntry {
 type memoryStore struct {
 	m           sync.Map
 	totalTopics int
+	maxKeys     int          // 0 = unlimited
+	keyCount    atomic.Int64 // approximate live-entry count for cardinality limit
 }
 
-func newMemoryStore(totalTopics int) *memoryStore {
-	return &memoryStore{totalTopics: totalTopics}
+func newMemoryStore(totalTopics int, maxKeys int) *memoryStore {
+	return &memoryStore{totalTopics: totalTopics, maxKeys: maxKeys}
 }
 
 // Contribute implements JoinStore.
@@ -119,10 +123,19 @@ func (s *memoryStore) Contribute(joinKey, topic string, payload map[string]inter
 	// dropped.
 	var entry *joinEntry
 	for {
-		actual, _ := s.m.LoadOrStore(joinKey, &joinEntry{
+		actual, loaded := s.m.LoadOrStore(joinKey, &joinEntry{
 			contributions: make(map[string]map[string]interface{}),
 			createdAt:     now,
 		})
+		if !loaded {
+			// New key created. Enforce cardinality limit.
+			newCount := s.keyCount.Add(1)
+			if s.maxKeys > 0 && int(newCount) > s.maxKeys {
+				s.keyCount.Add(-1)
+				s.m.Delete(joinKey)
+				return nil, false, fmt.Errorf("join store cardinality limit reached (%d): rejecting new joinKey %q", s.maxKeys, joinKey)
+			}
+		}
 		entry = actual.(*joinEntry)
 		entry.mu.Lock()
 		if !entry.closed {
@@ -160,6 +173,7 @@ func (s *memoryStore) Contribute(joinKey, topic string, payload map[string]inter
 
 	if complete {
 		s.m.Delete(joinKey)
+		s.keyCount.Add(-1)
 	}
 	return allContribs, complete, nil
 }
@@ -183,6 +197,7 @@ func (s *memoryStore) SweepExpired(now time.Time, deadline time.Duration, onExpi
 
 		key := rawKey.(string)
 		s.m.Delete(key)
+		s.keyCount.Add(-1)
 		onExpired(key, &persistedEntry{Contributions: partial, CreatedAt: createdAt})
 		return true
 	})
@@ -219,7 +234,9 @@ func (s *memoryStore) Snapshot() map[string]*persistedEntry {
 // overwriting contributions accumulated between the first and second callbacks.
 func (s *memoryStore) Restore(entries map[string]*persistedEntry) {
 	for key, pe := range entries {
-		s.m.LoadOrStore(key, pe.toJoinEntry())
+		if _, loaded := s.m.LoadOrStore(key, pe.toJoinEntry()); !loaded {
+			s.keyCount.Add(1)
+		}
 	}
 }
 

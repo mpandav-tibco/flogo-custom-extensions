@@ -548,3 +548,530 @@ func TestProcessPayload_TumblingTime_AccumulatesWithoutClose(t *testing.T) {
 		assert.Nil(t, out)
 	}
 }
+
+// ─── validateSettings — additional corner cases ──────────────────────────────
+
+func TestValidateSettings_MissingWindowName(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v"}
+	assert.ErrorContains(t, validateSettings(s), "windowName")
+}
+
+func TestValidateSettings_NegativeWindowSize(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: -3, Function: "sum", ValueField: "v"}
+	assert.ErrorContains(t, validateSettings(s), "windowSize")
+}
+
+func TestValidateSettings_InvalidOnSchemaError(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", OnSchemaError: "abort"}
+	assert.ErrorContains(t, validateSettings(s), "onSchemaError")
+}
+
+func TestValidateSettings_ValidOnSchemaError_Skip(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", OnSchemaError: "skip"}
+	require.NoError(t, validateSettings(s))
+}
+
+func TestValidateSettings_ValidOnSchemaError_Retry(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", OnSchemaError: "retry"}
+	require.NoError(t, validateSettings(s))
+}
+
+func TestValidateSettings_NegativeMaxKeys(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", MaxKeys: -1}
+	assert.ErrorContains(t, validateSettings(s), "maxKeys")
+}
+
+func TestValidateSettings_NegativeIdleTimeoutMs(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", IdleTimeoutMs: -1}
+	assert.ErrorContains(t, validateSettings(s), "idleTimeoutMs")
+}
+
+func TestValidateSettings_ValidOverflowPolicies(t *testing.T) {
+	for _, p := range []string{"", "drop_oldest", "drop_newest", "error"} {
+		s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v", OverflowPolicy: p}
+		require.NoError(t, validateSettings(s), "overflowPolicy %q should be valid", p)
+	}
+}
+
+func TestValidateSettings_AllWindowTypes(t *testing.T) {
+	for _, wt := range []string{"TumblingTime", "TumblingCount", "SlidingTime", "SlidingCount"} {
+		s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: wt, WindowSize: 5, Function: "sum", ValueField: "v"}
+		require.NoError(t, validateSettings(s), "windowType %q should be valid", wt)
+	}
+}
+
+func TestValidateSettings_AllFunctions(t *testing.T) {
+	for _, fn := range []string{"sum", "count", "avg", "min", "max"} {
+		s := &Settings{Topic: "t", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: fn, ValueField: "v"}
+		require.NoError(t, validateSettings(s), "function %q should be valid", fn)
+	}
+}
+
+func TestValidateSettings_WhitespaceTopic(t *testing.T) {
+	s := &Settings{Topic: "  ", ConsumerGroup: "g", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v"}
+	assert.ErrorContains(t, validateSettings(s), "topic")
+}
+
+func TestValidateSettings_WhitespaceConsumerGroup(t *testing.T) {
+	s := &Settings{Topic: "t", ConsumerGroup: "  ", WindowName: "w", WindowType: "TumblingCount", WindowSize: 5, Function: "sum", ValueField: "v"}
+	assert.ErrorContains(t, validateSettings(s), "consumerGroup")
+}
+
+// ─── processPayload — consecutive windows ─────────────────────────────────────
+
+func TestProcessPayload_TumblingCount_ConsecutiveWindows(t *testing.T) {
+	wn := "tt-tc-consec"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	var results []float64
+	for _, v := range []float64{10, 20, 30, 40, 50, 60} {
+		out, et, err := process(t, trig, map[string]interface{}{"v": v})
+		require.NoError(t, err)
+		if et == EventTypeWindowClose {
+			results = append(results, out.WindowResult.Result)
+		}
+	}
+	assert.Equal(t, []float64{30, 70, 110}, results, "three consecutive windows should close with correct sums")
+}
+
+// ─── processPayload — single element window ───────────────────────────────────
+
+func TestProcessPayload_TumblingCount_SingleElement(t *testing.T) {
+	wn := "tt-tc-single"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 1,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	// Every message should close its own window.
+	for _, v := range []float64{7, 14, 21} {
+		out, et, err := process(t, trig, map[string]interface{}{"v": v})
+		require.NoError(t, err)
+		require.Equal(t, EventTypeWindowClose, et)
+		assert.Equal(t, v, out.WindowResult.Result)
+		assert.Equal(t, int64(1), out.WindowResult.Count)
+	}
+}
+
+// ─── processPayload — zero value ──────────────────────────────────────────────
+
+func TestProcessPayload_TumblingCount_ZeroValues(t *testing.T) {
+	wn := "tt-tc-zero"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 3,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	var last *Output
+	for _, v := range []float64{0, 0, 0} {
+		out, et, err := process(t, trig, map[string]interface{}{"v": v})
+		require.NoError(t, err)
+		if et == EventTypeWindowClose {
+			last = out
+		}
+	}
+	require.NotNil(t, last)
+	assert.Equal(t, 0.0, last.WindowResult.Result)
+}
+
+// ─── processPayload — negative values ─────────────────────────────────────────
+
+func TestProcessPayload_TumblingCount_NegativeValues(t *testing.T) {
+	wn := "tt-tc-neg"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 3,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	var last *Output
+	for _, v := range []float64{-10, 5, -3} {
+		out, et, err := process(t, trig, map[string]interface{}{"v": v})
+		require.NoError(t, err)
+		if et == EventTypeWindowClose {
+			last = out
+		}
+	}
+	require.NotNil(t, last)
+	assert.Equal(t, -8.0, last.WindowResult.Result)
+}
+
+// ─── processPayload — very large values ───────────────────────────────────────
+
+func TestProcessPayload_TumblingCount_LargeValues(t *testing.T) {
+	wn := "tt-tc-large"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	var last *Output
+	for _, v := range []float64{1e15, 2e15} {
+		out, et, err := process(t, trig, map[string]interface{}{"v": v})
+		require.NoError(t, err)
+		if et == EventTypeWindowClose {
+			last = out
+		}
+	}
+	require.NotNil(t, last)
+	assert.Equal(t, 3e15, last.WindowResult.Result)
+}
+
+// ─── processPayload — value field types ───────────────────────────────────────
+
+func TestProcessPayload_ValueAsInt_CoercedToFloat(t *testing.T) {
+	wn := "tt-tc-int"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	// Integer values should be coerced to float64.
+	_, _, err1 := process(t, trig, map[string]interface{}{"v": 10})
+	require.NoError(t, err1)
+	out, et, err2 := process(t, trig, map[string]interface{}{"v": 20})
+	require.NoError(t, err2)
+	require.Equal(t, EventTypeWindowClose, et)
+	assert.Equal(t, 30.0, out.WindowResult.Result)
+}
+
+func TestProcessPayload_ValueAsStringNumeric_CoercedToFloat(t *testing.T) {
+	wn := "tt-tc-strnum"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	_, _, err1 := process(t, trig, map[string]interface{}{"v": "10.5"})
+	require.NoError(t, err1)
+	out, et, err2 := process(t, trig, map[string]interface{}{"v": "20.5"})
+	require.NoError(t, err2)
+	require.Equal(t, EventTypeWindowClose, et)
+	assert.Equal(t, 31.0, out.WindowResult.Result)
+}
+
+func TestProcessPayload_ValueAsBool_CoercedToNumeric(t *testing.T) {
+	wn := "tt-tc-bool"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	// Flogo's coerce.ToFloat64 converts bool to 0/1 — this is valid behavior.
+	_, _, err1 := process(t, trig, map[string]interface{}{"v": true})
+	require.NoError(t, err1)
+	out, et, err2 := process(t, trig, map[string]interface{}{"v": false})
+	require.NoError(t, err2)
+	require.Equal(t, EventTypeWindowClose, et)
+	assert.Equal(t, 1.0, out.WindowResult.Result, "true=1, false=0 → sum=1")
+}
+
+// ─── processPayload — empty payload ──────────────────────────────────────────
+
+func TestProcessPayload_EmptyPayload_MissingField(t *testing.T) {
+	wn := "tt-tc-empty"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	_, _, err := process(t, trig, map[string]interface{}{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "not found")
+}
+
+// ─── processPayload — mixed keys ──────────────────────────────────────────────
+
+func TestProcessPayload_KeyedWindows_ManyKeys(t *testing.T) {
+	baseWN := "tt-keyed-many"
+	// Pre-clean all possible keyed windows.
+	keys := []string{"k1", "k2", "k3", "k4", "k5"}
+	toClean := []string{baseWN}
+	for _, k := range keys {
+		toClean = append(toClean, baseWN+":"+k)
+	}
+	clearWindow(toClean...)
+
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: baseWN, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v", KeyField: "key",
+	})
+
+	closedWindows := map[string]float64{}
+	for _, k := range keys {
+		for _, v := range []float64{100, 200} {
+			out, et, err := process(t, trig, map[string]interface{}{"v": v, "key": k})
+			require.NoError(t, err)
+			if et == EventTypeWindowClose && out != nil {
+				closedWindows[out.WindowResult.Key] = out.WindowResult.Result
+			}
+		}
+	}
+	for _, k := range keys {
+		assert.Equal(t, 300.0, closedWindows[k], "keyed window for %q should sum to 300", k)
+	}
+}
+
+// ─── processPayload — SlidingCount min/max/avg ───────────────────────────────
+
+func TestProcessPayload_SlidingCount_Avg(t *testing.T) {
+	wn := "tt-sc-avg"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "SlidingCount", WindowSize: 3,
+		Function: "avg", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	type step struct {
+		value       float64
+		expectedAvg float64
+	}
+	steps := []step{
+		{10, 10.0}, // [10] → avg=10
+		{20, 15.0}, // [10,20] → avg=15
+		{30, 20.0}, // [10,20,30] → avg=20
+		{40, 30.0}, // [20,30,40] → avg=30
+	}
+	for _, s := range steps {
+		out, et, err := process(t, trig, map[string]interface{}{"v": s.value})
+		require.NoError(t, err)
+		require.Equal(t, EventTypeWindowClose, et)
+		assert.Equal(t, s.expectedAvg, out.WindowResult.Result)
+	}
+}
+
+func TestProcessPayload_SlidingCount_Min(t *testing.T) {
+	wn := "tt-sc-min"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "SlidingCount", WindowSize: 3,
+		Function: "min", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	type step struct {
+		value       float64
+		expectedMin float64
+	}
+	steps := []step{
+		{30, 30},
+		{10, 10},
+		{20, 10},
+		{50, 10}, // window: [10,20,50] → min=10
+		{60, 20}, // window: [20,50,60] → min=20
+	}
+	for _, s := range steps {
+		out, et, err := process(t, trig, map[string]interface{}{"v": s.value})
+		require.NoError(t, err)
+		require.Equal(t, EventTypeWindowClose, et)
+		assert.Equal(t, s.expectedMin, out.WindowResult.Result, "after adding %.0f", s.value)
+	}
+}
+
+// ─── processPayload — window resets after close ───────────────────────────────
+
+func TestProcessPayload_TumblingCount_ResetsAfterClose(t *testing.T) {
+	wn := "tt-tc-reset"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	// First window: 10+20=30
+	process(t, trig, map[string]interface{}{"v": 10.0})
+	out1, et1, _ := process(t, trig, map[string]interface{}{"v": 20.0})
+	require.Equal(t, EventTypeWindowClose, et1)
+	assert.Equal(t, 30.0, out1.WindowResult.Result)
+
+	// Second window: 100+200=300 (NOT 330)
+	process(t, trig, map[string]interface{}{"v": 100.0})
+	out2, et2, _ := process(t, trig, map[string]interface{}{"v": 200.0})
+	require.Equal(t, EventTypeWindowClose, et2)
+	assert.Equal(t, 300.0, out2.WindowResult.Result, "second window should start fresh")
+}
+
+// ─── Output round-trip — late event ──────────────────────────────────────────
+
+func TestOutput_RoundTrip_LateEvent(t *testing.T) {
+	orig := &Output{
+		WindowResult: WindowResult{
+			WindowName: "win-late",
+			Key:        "dev-X",
+		},
+		Source: Source{
+			Topic:      "test-topic",
+			Partition:  1,
+			Offset:     42,
+			LateEvent:  true,
+			LateReason: "event arrived after watermark",
+		},
+	}
+	restored := &Output{}
+	require.NoError(t, restored.FromMap(orig.ToMap()))
+	assert.True(t, restored.Source.LateEvent)
+	assert.Equal(t, "event arrived after watermark", restored.Source.LateReason)
+	assert.Equal(t, "win-late", restored.WindowResult.WindowName)
+}
+
+// ─── Output round-trip — zero values ─────────────────────────────────────────
+
+func TestOutput_RoundTrip_ZeroValues(t *testing.T) {
+	orig := &Output{
+		WindowResult: WindowResult{
+			Result: 0, Count: 0, WindowName: "", Key: "",
+			WindowClosed: false, DroppedCount: 0, LateEventCount: 0,
+		},
+		Source: Source{
+			Topic: "", Partition: 0, Offset: 0, LateEvent: false, LateReason: "",
+		},
+	}
+	restored := &Output{}
+	require.NoError(t, restored.FromMap(orig.ToMap()))
+	assert.Equal(t, 0.0, restored.WindowResult.Result)
+	assert.False(t, restored.WindowResult.WindowClosed)
+	assert.False(t, restored.Source.LateEvent)
+}
+
+// ─── resolveBalanceStrategy ──────────────────────────────────────────────────
+
+func TestResolveBalanceStrategy_Roundrobin(t *testing.T) {
+	bs := resolveBalanceStrategy("roundrobin")
+	assert.NotNil(t, bs)
+}
+
+func TestResolveBalanceStrategy_Sticky(t *testing.T) {
+	bs := resolveBalanceStrategy("sticky")
+	assert.NotNil(t, bs)
+}
+
+func TestResolveBalanceStrategy_Range(t *testing.T) {
+	bs := resolveBalanceStrategy("range")
+	assert.NotNil(t, bs)
+}
+
+func TestResolveBalanceStrategy_Empty_DefaultsRoundrobin(t *testing.T) {
+	bs := resolveBalanceStrategy("")
+	assert.NotNil(t, bs)
+}
+
+func TestResolveBalanceStrategy_CaseInsensitive(t *testing.T) {
+	bs := resolveBalanceStrategy("STICKY")
+	assert.NotNil(t, bs)
+}
+
+// ─── extractEventTime — additional corner cases ──────────────────────────────
+
+func TestExtractEventTime_BoolValue_WallClock(t *testing.T) {
+	before := time.Now()
+	got := extractEventTime(map[string]interface{}{"ts": true}, "ts")
+	assert.False(t, got.Before(before))
+}
+
+func TestExtractEventTime_NilValue_WallClock(t *testing.T) {
+	before := time.Now()
+	got := extractEventTime(map[string]interface{}{"ts": nil}, "ts")
+	assert.False(t, got.Before(before))
+}
+
+func TestExtractEventTime_NegativeMs(t *testing.T) {
+	// Negative Unix-ms is technically valid (before epoch).
+	got := extractEventTime(map[string]interface{}{"ts": float64(-1000)}, "ts")
+	assert.Equal(t, time.UnixMilli(-1000), got)
+}
+
+func TestExtractEventTime_ZeroMs(t *testing.T) {
+	got := extractEventTime(map[string]interface{}{"ts": float64(0)}, "ts")
+	assert.Equal(t, time.UnixMilli(0), got)
+}
+
+// ─── processPayload — keyed window without KeyField set ──────────────────────
+
+func TestProcessPayload_NoKeyField_UsesGlobalWindow(t *testing.T) {
+	wn := "tt-nokey"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+		// KeyField intentionally not set
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	// All messages go to the same global window.
+	process(t, trig, map[string]interface{}{"v": 5.0, "device": "A"})
+	out, et, err := process(t, trig, map[string]interface{}{"v": 10.0, "device": "B"})
+	require.NoError(t, err)
+	require.Equal(t, EventTypeWindowClose, et)
+	assert.Equal(t, 15.0, out.WindowResult.Result)
+	assert.Empty(t, out.WindowResult.Key, "no KeyField → key should be empty")
+}
+
+// ─── processPayload — keyField present but value missing ─────────────────────
+
+func TestProcessPayload_KeyFieldMissing_EmptyKey(t *testing.T) {
+	wn := "tt-keymiss"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v", KeyField: "device",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, _ = kafkastream.GetOrCreateWindowStore(cfg)
+
+	// Payload missing the keyField → empty key → global window.
+	process(t, trig, map[string]interface{}{"v": 1.0})
+	out, et, err := process(t, trig, map[string]interface{}{"v": 2.0})
+	require.NoError(t, err)
+	require.Equal(t, EventTypeWindowClose, et)
+	assert.Equal(t, 3.0, out.WindowResult.Result)
+}

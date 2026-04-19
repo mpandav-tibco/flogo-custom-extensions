@@ -1,0 +1,268 @@
+{
+    "name": "kafka-stream-split-trigger",
+    "title": "Split Kafka Stream",
+    "version": "1.0.0",
+    "type": "flogo:trigger",
+    "description": "Consumes messages from a Kafka topic and routes each message to one or more handler branches based on content-based predicates — stream-split / content-based routing pattern. Supports first-match (switch/case) and all-match (fan-out) routing modes, multi-predicate AND/OR evaluation, regex matching, catch-all unmatched branches, error DLQ branches, and tap (monitor-all) branches.",
+    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/split",
+    "display": {
+        "category": "KafkaStream",
+        "visible": true,
+        "description": "Route each Kafka message to one or more handler branches based on content-based predicates.",
+        "smallIcon": "icons/consumer_trigger.png",
+        "largeIcon": "icons/consumer_trigger@2x.png",
+        "connector": [
+            "Kafka/tibco-kafka"
+        ],
+        "wizard": [
+            "Choose Connection"
+        ]
+    },
+    "settings": [
+        {
+            "name": "kafkaConnection",
+            "type": "connection",
+            "required": true,
+            "display": {
+                "name": "Kafka Connection",
+                "description": "TIBCO Kafka shared connection providing broker addresses, authentication, and TLS settings.",
+                "type": "connection"
+            },
+            "wizard": {
+                "type": "dropdown",
+                "selection": "single",
+                "step": "Choose Connection"
+            },
+            "allowed": []
+        },
+        {
+            "name": "topic",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Source Topic",
+                "description": "Kafka topic to consume messages from and split into sub-streams.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "consumerGroup",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Consumer Group",
+                "description": "Kafka consumer group ID. Each trigger instance in the same group shares partition load.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "initialOffset",
+            "type": "string",
+            "value": "newest",
+            "display": {
+                "name": "Initial Offset",
+                "description": "Where to start consuming when no committed offset exists for this consumer group.",
+                "type": "dropdown",
+                "appPropertySupport": true
+            },
+            "allowed": [
+                "newest",
+                "oldest"
+            ]
+        },
+        {
+            "name": "routingMode",
+            "type": "string",
+            "value": "first-match",
+            "display": {
+                "name": "Routing Mode",
+                "description": "'first-match' (default): evaluate handlers in priority order; the FIRST handler whose predicates pass receives the message — exclusive routing, like a switch/case chain. 'all-match': evaluate ALL handlers; every handler whose predicates pass receives a copy of the message — fan-out routing.",
+                "type": "dropdown",
+                "appPropertySupport": true
+            },
+            "allowed": [
+                "first-match",
+                "all-match"
+            ]
+        },
+        {
+            "name": "balanceStrategy",
+            "type": "string",
+            "value": "roundrobin",
+            "display": {
+                "name": "Balance Strategy",
+                "description": "Kafka consumer group rebalance strategy. 'roundrobin' (default) — simple round-robin partition assignment. 'sticky' — minimises partition reassignments on rebalance. 'range' — assigns contiguous partition ranges per consumer.",
+                "type": "dropdown",
+                "appPropertySupport": true
+            },
+            "allowed": [
+                "roundrobin",
+                "sticky",
+                "range"
+            ]
+        },
+        {
+            "name": "commitOnSuccess",
+            "type": "boolean",
+            "value": true,
+            "display": {
+                "name": "Commit Offset on Success Only",
+                "description": "When true (default), the Kafka offset is committed only when all fired handlers complete without error — the message is redelivered on flow failure (at-least-once). When false, the offset is always committed regardless of handler result (at-most-once).",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "handlerTimeoutMs",
+            "type": "integer",
+            "value": 0,
+            "display": {
+                "name": "Handler Timeout (ms)",
+                "description": "Maximum time in milliseconds allowed for all handlers to complete for a single message. 0 (default) means no timeout. When exceeded the handler is treated as failed and, if Commit Offset on Success Only is true, the offset is not marked.",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "eventType",
+                "type": "string",
+                "value": "matched",
+                "display": {
+                    "name": "Event Type",
+                    "description": "'matched' (default): fires when this handler's predicates match the message — define Field/Predicates below. 'unmatched': fires when NO matched handler's predicates passed — catch-all / DLQ branch, no predicates needed. 'evalError': fires when predicate evaluation fails — error DLQ, no predicates needed. 'all': fires for every message regardless of routing outcome — tap/monitor/audit, no predicates needed.",
+                    "type": "dropdown",
+                    "appPropertySupport": true
+                },
+                "allowed": [
+                    "matched",
+                    "unmatched",
+                    "evalError",
+                    "all"
+                ]
+            },
+            {
+                "name": "priority",
+                "type": "integer",
+                "value": 0,
+                "display": {
+                    "name": "Priority",
+                    "description": "Evaluation order for 'first-match' routing mode. Handlers with lower Priority values are evaluated first. Handlers with equal Priority are evaluated in registration order. Has no effect for 'all-match' mode or for unmatched/evalError/all event types.",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "field",
+                "type": "string",
+                "display": {
+                    "name": "Field",
+                    "description": "Message field to evaluate in single-predicate mode. Leave empty when using multi-predicate mode (Predicates JSON). Only applies when Event Type is 'matched'.",
+                    "appPropertySupport": true,
+                    "visible": false
+                }
+            },
+            {
+                "name": "operator",
+                "type": "string",
+                "display": {
+                    "name": "Operator",
+                    "description": "Comparison operator for single-predicate mode. Only applies when Event Type is 'matched'.",
+                    "type": "dropdown",
+                    "appPropertySupport": true,
+                    "visible": false
+                },
+                "allowed": [
+                    "eq",
+                    "neq",
+                    "gt",
+                    "gte",
+                    "lt",
+                    "lte",
+                    "contains",
+                    "startsWith",
+                    "endsWith",
+                    "regex"
+                ]
+            },
+            {
+                "name": "value",
+                "type": "string",
+                "display": {
+                    "name": "Value",
+                    "description": "Comparison value for single-predicate mode. Only applies when Event Type is 'matched'.",
+                    "appPropertySupport": true,
+                    "visible": false
+                }
+            },
+            {
+                "name": "predicates",
+                "type": "string",
+                "display": {
+                    "name": "Predicates (JSON)",
+                    "description": "Multi-predicate definition as a JSON array. E.g. [{\"field\":\"status\",\"operator\":\"eq\",\"value\":\"ok\"},{\"field\":\"region\",\"operator\":\"eq\",\"value\":\"us-east\"}]. Evaluated using Predicate Mode (AND/OR). Only applies when Event Type is 'matched'.",
+                    "type": "textbox",
+                    "appPropertySupport": true,
+                    "visible": false
+                }
+            },
+            {
+                "name": "predicateMode",
+                "type": "string",
+                "value": "and",
+                "display": {
+                    "name": "Predicate Mode",
+                    "description": "How multiple predicates are combined. 'and' (default): all predicates must pass. 'or': at least one must pass. Only applies when Event Type is 'matched' and Predicates JSON is set.",
+                    "appPropertySupport": true,
+                    "visible": false
+                },
+                "allowed": [
+                    "and",
+                    "or"
+                ]
+            }
+        ]
+    },
+    "outputs": [
+        {
+            "name": "message",
+            "type": "object"
+        },
+        {
+            "name": "topic",
+            "type": "string"
+        },
+        {
+            "name": "partition",
+            "type": "integer"
+        },
+        {
+            "name": "offset",
+            "type": "integer"
+        },
+        {
+            "name": "key",
+            "type": "string"
+        },
+        {
+            "name": "matchedHandlerName",
+            "type": "string"
+        },
+        {
+            "name": "routingMode",
+            "type": "string"
+        },
+        {
+            "name": "evalError",
+            "type": "boolean"
+        },
+        {
+            "name": "evalErrorReason",
+            "type": "string"
+        }
+    ],
+    "actions": [
+        {
+            "name": "Finish"
+        }
+    ]
+}

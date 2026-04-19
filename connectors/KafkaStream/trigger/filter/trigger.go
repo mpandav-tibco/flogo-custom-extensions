@@ -46,6 +46,7 @@ type Trigger struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
 	wg       sync.WaitGroup
+	stopOnce sync.Once
 
 	// Shared dedup store and rate-limiter (trigger-level, not per-handler).
 	dedup    *dedupStore
@@ -115,9 +116,8 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 			}
 			// Validate operators at startup so bad configs surface immediately
 			// rather than at runtime when the first matching message arrives.
-			ops := validOps()
 			for i, p := range preds {
-				if !ops[p.Operator] {
+				if !supportedOps[p.Operator] {
 					return fmt.Errorf("kafka-stream/filter-trigger: handler predicate[%d]: unsupported operator %q", i, p.Operator)
 				}
 			}
@@ -145,7 +145,7 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 			if resolvedOp == "" {
 				resolvedOp = t.settings.Operator
 			}
-			if resolvedOp == "" || !validOps()[resolvedOp] {
+			if resolvedOp == "" || !supportedOps[resolvedOp] {
 				return fmt.Errorf("kafka-stream/filter-trigger: handler single-predicate field=%q has unsupported or missing operator %q", hs.Field, resolvedOp)
 			}
 		}
@@ -232,11 +232,20 @@ func (t *Trigger) Start() error {
 	t.ctx, t.cancel = context.WithCancel(context.Background())
 	t.wg.Add(1)
 	go t.consumeLoop()
+	// Drain the Sarama consumer-group errors channel. Without a reader the
+	// channel fills (default buffer: 256) under sustained broker errors and
+	// then blocks the Sarama broker reader goroutine, stalling consumption.
+	go func() {
+		for err := range t.client.Errors() {
+			t.logger.Errorf("kafka-stream/filter-trigger: sarama consumer error: %v", err)
+		}
+	}()
 	t.logger.Infof("kafka-stream/filter-trigger: started — topic=%q", t.settings.Topic)
 	return nil
 }
 
 // Stop signals the consumer loop to stop and waits for the goroutine to finish.
+// It is safe to call Stop more than once; the Sarama client is closed exactly once.
 func (t *Trigger) Stop() error {
 	t.cancel()
 	t.wg.Wait()
@@ -250,9 +259,11 @@ func (t *Trigger) Stop() error {
 			t.logger.Warnf("kafka-stream/filter-trigger: dedup state save on stop failed: %v", err)
 		}
 	}
-	if err := t.client.Close(); err != nil {
-		t.logger.Warnf("kafka-stream/filter-trigger: consumer group close error: %v", err)
-	}
+	t.stopOnce.Do(func() {
+		if err := t.client.Close(); err != nil {
+			t.logger.Warnf("kafka-stream/filter-trigger: consumer group close error: %v", err)
+		}
+	})
 	t.logger.Infof("kafka-stream/filter-trigger: stopped — topic=%q", t.settings.Topic)
 	return nil
 }
@@ -450,7 +461,7 @@ func evalSingle(msg map[string]interface{}, field, operator, value string, passT
 	if field == "" {
 		return false, "", "filter not configured: set 'field' for single-predicate mode"
 	}
-	if operator == "" || !validOps()[operator] {
+	if operator == "" || !supportedOps[operator] {
 		return false, "", fmt.Sprintf("unsupported or missing operator %q", operator)
 	}
 	rawField, exists := msg[field]
@@ -461,11 +472,11 @@ func evalSingle(msg map[string]interface{}, field, operator, value string, passT
 		return false, fmt.Sprintf("field %q not found in message", field), ""
 	}
 	if operator == "regex" {
+		// compiled is always non-nil for regex operators after Initialize().
+		// A nil value here means the handler was not properly initialised —
+		// fail fast rather than silently compile per message at 10k+ msg/s.
 		if compiled == nil {
-			var err error
-			if compiled, err = regexp.Compile(value); err != nil {
-				return false, "", fmt.Sprintf("invalid regex %q: %v", value, err)
-			}
+			return false, "", fmt.Sprintf("regex not pre-compiled for field %q — handler was not fully initialised (this is a bug)", field)
 		}
 	}
 	ok, r, evalErr := evalPredicate(rawField, field, operator, value, compiled)
@@ -488,10 +499,11 @@ func evalMulti(msg map[string]interface{}, preds []Predicate, mode string, passT
 		rawField, exists := msg[p.Field]
 		if !exists {
 			if passThroughOnMissing {
-				if !isAnd {
-					return true, "", "" // OR short-circuit: one pass is enough
-				}
-				continue // AND: treat missing as pass-through
+				// Treat a missing field as "no opinion" — skip the predicate in
+				// both AND and OR mode rather than short-circuiting to true.
+				// AND: absence is not a failure; other predicates still apply.
+				// OR:  absence is not a pass; other predicates must still match.
+				continue
 			}
 			r := fmt.Sprintf("field %q not found", p.Field)
 			if isAnd {
@@ -505,11 +517,11 @@ func evalMulti(msg map[string]interface{}, preds []Predicate, mode string, passT
 			if compiledRegexes != nil {
 				compiled = compiledRegexes[i]
 			}
+			// compiled is always non-nil for regex operators after Initialize().
+			// A nil value means the handler was not properly initialised —
+			// fail fast rather than silently compile per message at 10k+ msg/s.
 			if compiled == nil {
-				var err error
-				if compiled, err = regexp.Compile(p.Value); err != nil {
-					return false, "", fmt.Sprintf("invalid regex %q: %v", p.Value, err)
-				}
+				return false, "", fmt.Sprintf("regex not pre-compiled for field %q predicate[%d] — handler was not fully initialised (this is a bug)", p.Field, i)
 			}
 		}
 		ok, r, evalErr := evalPredicate(rawField, p.Field, p.Operator, p.Value, compiled)
@@ -623,10 +635,6 @@ func evalPredicate(rawField interface{}, fieldName, op, compareVal string, compi
 		return false, fmt.Sprintf("%q == %q (equal)", fieldStr, compareVal), nil
 	}
 	return false, "", fmt.Errorf("operator %q requires numeric operands; field %q is not numeric", op, fieldName)
-}
-
-func validOps() map[string]bool {
-	return supportedOps
 }
 
 // supportedOps is the set of valid predicate operators. Defined as a package-
@@ -762,7 +770,7 @@ func validateSettings(s *Settings) error {
 	if strings.TrimSpace(s.ConsumerGroup) == "" {
 		return fmt.Errorf("consumerGroup must not be empty")
 	}
-	if s.Operator != "" && !validOps()[s.Operator] {
+	if s.Operator != "" && !supportedOps[s.Operator] {
 		return fmt.Errorf("unsupported trigger-level operator %q", s.Operator)
 	}
 	if s.PredicateMode != "" && strings.ToLower(s.PredicateMode) != "and" && strings.ToLower(s.PredicateMode) != "or" {
