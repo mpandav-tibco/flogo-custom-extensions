@@ -1,6 +1,6 @@
 # Kafka Stream Connector
 
-A Flogo custom extension for self-contained, stateful Kafka stream processing. The connector provides **three triggers** — each trigger owns its own Kafka transport (consumer group, broker connection, offset management) and fires a Flogo flow directly.
+A Flogo custom extension for self-contained, stateful Kafka stream processing. The connector provides **four triggers** — each trigger owns its own Kafka transport (consumer group, broker connection, offset management) and fires a Flogo flow directly.
 
 ```
 Kafka Topic(s)
@@ -9,7 +9,9 @@ Kafka Topic(s)
      │
      ├──► [Filter Trigger]     →  flow fires when predicate passes      →  downstream logic
      │
-     └──► [Join Trigger]       →  flow fires when all topics contribute  →  downstream logic
+     ├──► [Join Trigger]       →  flow fires when all topics contribute  →  downstream logic
+     │
+     └──► [Split Trigger]      →  flow fires per content-based route     →  downstream logic
 ```
 
 ---
@@ -21,6 +23,7 @@ Kafka Topic(s)
 | **Aggregate** — `kafka-stream-aggregate-trigger` | Consumes messages from a Kafka topic and accumulates a numeric field into a stateful window (tumbling or sliding, time- or count-based). Fires the flow when the window closes with the aggregate result (`sum`, `avg`, `count`, `min`, `max`). Supports keyed sub-windows, event-time watermarks, late-event DLQ routing, overflow policies, deduplication, and state persistence. | [trigger/aggregate/README.md](trigger/aggregate/README.md) |
 | **Filter** — `kafka-stream-filter-trigger` | Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Messages that do not pass are silently acknowledged and dropped. Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. | [trigger/filter/README.md](trigger/filter/README.md) |
 | **Join** — `kafka-stream-join-trigger` | Subscribes to two or more Kafka topics and fires the flow when messages sharing the same join key value arrive from every configured topic within a time window (stream-join / stream-enrichment). Supports a `timeout` handler for partial / DLQ semantics when the window expires before all topics contribute. | [trigger/join/README.md](trigger/join/README.md) |
+| **Split** — `kafka-stream-split-trigger` | Consumes messages from a Kafka topic and routes each message to one or more handler branches based on content-based predicates (content-based routing / stream-split). Supports first-match (if-else chain) and all-match (fan-out) routing modes, priority-ordered evaluation, unmatched catch-all handler, evaluation-error DLQ handler, tap/audit handler, per-handler and per-message timeout caps, and OTel trace propagation. | [trigger/split/README.md](trigger/split/README.md) |
 ---
 
 ## Getting Started
@@ -60,7 +63,12 @@ connectors/KafkaStream/
     │   ├── trigger.json
     │   ├── metadata.go
     │   └── README.md
-    └── join/                     ← kafka-stream-join-trigger — see README inside
+    ├── join/                     ← kafka-stream-join-trigger — see README inside
+    │   ├── trigger.go
+    │   ├── trigger.json
+    │   ├── metadata.go
+    │   └── README.md
+    └── split/                    ← kafka-stream-split-trigger — see README inside
         ├── trigger.go
         ├── trigger.json
         ├── metadata.go

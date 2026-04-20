@@ -9,7 +9,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | Component | Version | Type | Description |
 |-----------|---------|------|-------------|
 | [SSE Connector](connectors/sse/) | 1.0.0 | Connector | Server-Sent Events real-time streaming with event buffering and topic filtering |
-| [Kafka Stream Connector](connectors/KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, and event-time processing |
+| [Kafka Stream Connector](connectors/KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, content-based routing, and event-time processing |
 
 ### 🧮 Functions
 
@@ -48,6 +48,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Kafka Stream Aggregate Trigger](connectors/KafkaStream/trigger/aggregate/) | 1.0.0 | Kafka Stream | Stateful windowed aggregation over a Kafka topic — fires on window close with sum/avg/count/min/max result |
 | [Kafka Stream Filter Trigger](connectors/KafkaStream/trigger/filter/) | 1.0.0 | Kafka Stream | Fire a flow only for messages satisfying single or multi-predicate AND/OR conditions; supports deduplication and rate limiting |
 | [Kafka Stream Join Trigger](connectors/KafkaStream/trigger/join/) | 1.0.0 | Kafka Stream | Stream-join across two or more Kafka topics — fires when messages with the same join key arrive from all topics within a configurable window |
+| [Kafka Stream Split Trigger](connectors/KafkaStream/trigger/split/) | 1.0.0 | Kafka Stream | Content-based routing over a Kafka topic — routes each message to one or more handler branches via first-match or all-match predicate evaluation with priority ordering |
 
 ## 🚀 Quick Start
 
@@ -72,7 +73,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [AWS SQS Delete Demo](examples/aws_signature4/) | AWS Signature V4 Generator, REST Invoke Activity | AWS SQS message deletion demo using Signature V4 authentication |
 | [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
-| [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, and join readings with alert thresholds across two topics |
+| [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger, Kafka Stream Split Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, join readings with alert thresholds across two topics, and route messages to branches via content-based split |
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 
 ## 🤝 Contributing
