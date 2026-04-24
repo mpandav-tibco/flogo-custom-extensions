@@ -1,0 +1,51 @@
+{
+  "name": "tibco-vectordb-list-cols",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/listCollections",
+  "title": "VectorDB: List Collections",
+  "description": "List all collections / indexes available in the connected VectorDB.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/list.png"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": [
+        "vectordb-connector"
+      ]
+    }
+  ],
+  "input": [],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "collections",
+      "type": "array"
+    },
+    {
+      "name": "totalCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "name": "tibco-vectordb-count",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/countDocuments",
+  "title": "VectorDB: Count Documents",
+  "description": "Count documents in a collection, optionally with filters.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/count.png"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": [
+        "vectordb-connector"
+      ]
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not supplied in the activity input"
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string",
+      "display": {
+        "name": "Collection Name"
+      }
+    },
+    {
+      "name": "filters",
+      "type": "object",
+      "display": {
+        "name": "Filters"
+      }
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "count",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

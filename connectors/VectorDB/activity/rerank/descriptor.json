@@ -1,0 +1,105 @@
+{
+  "name": "tibco-vectordb-rerank",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/rerank",
+  "title": "VectorDB: Rerank Documents",
+  "description": "Re-rank a list of documents by relevance to a query using a cross-encoder API (Cohere, Jina, etc.).",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/rerank.png",
+    "description": "Cross-encoder reranking for RAG precision improvement"
+  },
+  "settings": [
+    {
+      "name": "rerankEndpoint",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "Rerank API Endpoint",
+        "description": "URL of the rerank API (e.g. https://api.cohere.ai/v1/rerank)"
+      }
+    },
+    {
+      "name": "apiKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "API Key",
+        "description": "Bearer token for the rerank API"
+      }
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Model",
+        "description": "Model name (e.g. rerank-english-v3.0)"
+      }
+    },
+    {
+      "name": "topN",
+      "type": "integer",
+      "required": false,
+      "display": {
+        "name": "Top N",
+        "description": "Return top-N documents after reranking"
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 30,
+      "display": {
+        "name": "Timeout (s)"
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "query",
+      "type": "string",
+      "display": {
+        "name": "Query",
+        "description": "The search query"
+      }
+    },
+    {
+      "name": "documents",
+      "type": "array",
+      "display": {
+        "name": "Documents",
+        "description": "Array of documents to rerank; each can be a string or {content, ...} object"
+      }
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "rankedDocuments",
+      "type": "array",
+      "display": {
+        "name": "Ranked Documents",
+        "description": "Documents sorted by relevance_score descending, each with {document, relevance_score, original_index}"
+      }
+    },
+    {
+      "name": "totalCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

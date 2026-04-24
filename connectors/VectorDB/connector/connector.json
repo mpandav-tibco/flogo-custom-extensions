@@ -1,0 +1,169 @@
+{
+    "name": "vectordb-connector",
+    "title": "VectorDB Connector",
+    "version": "1.0.0",
+    "type": "flogo:connector",
+    "ref": "github.com/milindpandav/flogo-extensions/vectordb/connector",
+    "display": {
+        "category": "VectorDB",
+        "visible": true,
+        "smallIcon": "icons/vectordb.png",
+        "description": "Multi-provider vector database connector supporting Qdrant, Weaviate, Chroma, and Milvus"
+    },
+    "keyfield": "name",
+    "settings": [
+        {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Connection Name",
+                "description": "Unique name for this connection (used as registry key)"
+            }
+        },
+        {
+            "name": "dbType",
+            "type": "string",
+            "required": true,
+            "allowed": [
+                "qdrant",
+                "weaviate",
+                "chroma",
+                "milvus"
+            ],
+            "display": {
+                "name": "DB Provider",
+                "description": "Vector database provider: qdrant | weaviate | chroma | milvus",
+                "type": "dropdown",
+                "selection": "single"
+            }
+        },
+        {
+            "name": "host",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Host",
+                "description": "Hostname or IP address of the VectorDB server"
+            }
+        },
+        {
+            "name": "port",
+            "type": "integer",
+            "required": false,
+            "display": {
+                "name": "Port",
+                "description": "TCP port for REST/HTTP traffic (provider default used if 0)"
+            }
+        },
+        {
+            "name": "apiKey",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "API Key",
+                "description": "API key or bearer token for authentication"
+            }
+        },
+        {
+            "name": "useTLS",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "display": {
+                "name": "Use TLS",
+                "description": "Enable TLS/SSL for the connection"
+            }
+        },
+        {
+            "name": "timeoutSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 30,
+            "display": {
+                "name": "Timeout (seconds)",
+                "description": "Per-operation timeout in seconds (default: 30)"
+            }
+        },
+        {
+            "name": "maxRetries",
+            "type": "integer",
+            "required": false,
+            "value": 3,
+            "display": {
+                "name": "Max Retries",
+                "description": "Maximum retries on transient errors (default: 3)"
+            }
+        },
+        {
+            "name": "retryBackoffMs",
+            "type": "integer",
+            "required": false,
+            "value": 500,
+            "display": {
+                "name": "Retry Backoff (ms)",
+                "description": "Milliseconds to wait between retries (default: 500)"
+            }
+        },
+        {
+            "name": "grpcPort",
+            "type": "integer",
+            "required": false,
+            "value": 6334,
+            "display": {
+                "name": "gRPC Port",
+                "description": "gRPC port for Qdrant (default: 6334; ignored for other providers)"
+            }
+        },
+        {
+            "name": "scheme",
+            "type": "string",
+            "required": false,
+            "value": "http",
+            "allowed": [
+                "http",
+                "https"
+            ],
+            "display": {
+                "name": "HTTP Scheme",
+                "description": "HTTP scheme for Weaviate: http | https (default: http)"
+            }
+        },
+        {
+            "name": "username",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Username",
+                "description": "Username for Milvus authentication"
+            }
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Password",
+                "description": "Password for Milvus authentication"
+            }
+        },
+        {
+            "name": "dbName",
+            "type": "string",
+            "required": false,
+            "value": "default",
+            "display": {
+                "name": "Database Name",
+                "description": "Milvus database name (default: default; ignored for other providers)"
+            }
+        }
+    ],
+    "actions": [
+        {
+            "name": "Connect",
+            "display": {
+                "readonly": false
+            }
+        }
+    ]
+}

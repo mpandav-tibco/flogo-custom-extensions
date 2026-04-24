@@ -1,0 +1,84 @@
+{
+  "name": "tibco-vectordb-create-col",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/createCollection",
+  "title": "VectorDB: Create Collection",
+  "description": "Create a new vector collection / index.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/collection.png",
+    "description": "Create a new VectorDB collection"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": [
+        "vectordb-connector"
+      ]
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string",
+      "display": {
+        "name": "Collection Name"
+      }
+    },
+    {
+      "name": "dimensions",
+      "type": "integer",
+      "display": {
+        "name": "Dimensions",
+        "description": "Vector dimensionality (e.g. 1536 for OpenAI ada-002)"
+      }
+    },
+    {
+      "name": "distanceMetric",
+      "type": "string",
+      "display": {
+        "name": "Distance Metric",
+        "description": "cosine | euclidean | dot (default: cosine)"
+      }
+    },
+    {
+      "name": "onDisk",
+      "type": "boolean",
+      "display": {
+        "name": "On-Disk Storage",
+        "description": "Store vectors on disk (Qdrant mmap)"
+      }
+    },
+    {
+      "name": "replicationFactor",
+      "type": "integer",
+      "display": {
+        "name": "Replication Factor",
+        "description": "Number of replicas (distributed providers)"
+      }
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}
