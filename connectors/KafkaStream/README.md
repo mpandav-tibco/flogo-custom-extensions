@@ -92,7 +92,7 @@ connectors/KafkaStream/
 | Dependency | Version | Purpose |
 |------------|---------|---------|
 | `github.com/project-flogo/core` | v1.6.16 | Flogo trigger API |
-| `github.com/IBM/sarama` | v1.46.3 | Kafka client |
+| `github.com/IBM/sarama` | v1.47.0 | Kafka client |
 | `github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka` | v0.0.0 | TIBCO Kafka shared connection |
 | `golang.org/x/time` | v0.15.0 | Rate limiter (token bucket, used by filter trigger) |
 | `github.com/stretchr/testify` | v1.11.1 | Test assertions |
