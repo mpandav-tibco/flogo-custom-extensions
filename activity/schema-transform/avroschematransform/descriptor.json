@@ -3,8 +3,15 @@
   "title": "Avro Schema Transformer",
   "version": "1.0.0",
   "type": "flogo:activity",
+  "image": "icons/avro-schema-transform.svg",
   "description": "Transforms Avro schema to JSON Schema and/or XSD format. Supports conversion to JSON Schema, XSD, or both formats simultaneously.",
   "ref": "github.com/milindpandav/activity/avroschematransform",
+  "display": {
+    "category": "SchemaTransform",
+    "visible": true,
+    "smallIcon": "icons/avro-schema-transform.svg",
+    "description": "Convert Avro schema to JSON Schema or XSD"
+  },
   "settings": [
     {
       "name": "outputFormat",
