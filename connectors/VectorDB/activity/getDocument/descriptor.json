@@ -1,0 +1,70 @@
+{
+  "name": "tibco-vectordb-get-doc",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/getDocument",
+  "title": "Get Document",
+  "image": "icons/get.svg",
+  "description": "Retrieve a single document by its ID.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/get.svg"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": []
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "documentId",
+      "type": "string"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "document",
+      "type": "object",
+      "schema": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Unique document ID\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text\"}, \"vector\": {\"type\": \"array\", \"items\": {\"type\": \"number\"}, \"description\": \"Dense embedding vector\"}, \"payload\": {\"type\": \"object\", \"description\": \"Metadata key-value pairs\"}, \"score\": {\"type\": \"number\", \"description\": \"Similarity score (populated by search)\"}}}"
+    },
+    {
+      "name": "found",
+      "type": "boolean"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

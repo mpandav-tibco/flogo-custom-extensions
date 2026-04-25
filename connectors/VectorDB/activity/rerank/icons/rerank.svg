@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+
+    <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- bars of decreasing size = ranking -->
+  <rect x="8"  y="12" width="8" height="24" rx="2" fill="#5C6BC0"/>
+  <rect x="20" y="18" width="8" height="18" rx="2" fill="#5C6BC0" opacity="0.75"/>
+  <rect x="32" y="24" width="8" height="12" rx="2" fill="#5C6BC0" opacity="0.5"/>
+  <!-- number 1 badge -->
+  <circle cx="12" cy="10" r="4" fill="#43A047"/>
+  <text x="12" y="13" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" font-weight="bold" fill="#E8EAF6">1</text>
+  <text x="24" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#5C6BC0">RERANK</text>
+
+</svg>

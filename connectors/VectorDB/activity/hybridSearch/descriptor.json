@@ -1,0 +1,111 @@
+{
+  "name": "tibco-vectordb-hybrid-search",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/hybridSearch",
+  "title": "Hybrid Search",
+  "image": "icons/hybrid.svg",
+  "description": "Hybrid dense+BM25 search. Alpha=1 is pure vector, Alpha=0 is pure keyword.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/hybrid.svg",
+    "description": "Hybrid dense+sparse search for improved RAG recall"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": []
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultTopK",
+      "type": "integer",
+      "required": false,
+      "value": 10,
+      "display": {
+        "name": "Default Top-K",
+        "description": "Default number of results when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "queryText",
+      "type": "string"
+    },
+    {
+      "name": "queryVector",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"number\"}}"
+    },
+    {
+      "name": "topK",
+      "type": "integer",
+      "value": 0
+    },
+    {
+      "name": "scoreThreshold",
+      "type": "number",
+      "value": 0.0
+    },
+    {
+      "name": "alpha",
+      "type": "number",
+      "value": 0.5
+    },
+    {
+      "name": "filters",
+      "type": "object",
+      "schema": "{\"type\": \"object\", \"description\": \"Key-value filter map. Keys are payload field names. Values can be string, number, boolean, or array (for 'in' match). Example: {\\\"category\\\":\\\"tech\\\",\\\"year\\\":2024,\\\"tags\\\":[\\\"rag\\\",\\\"llm\\\"]}\", \"additionalProperties\": true}"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "results",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Document ID\"}, \"score\": {\"type\": \"number\", \"description\": \"Similarity score (0-1 for cosine)\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text\"}, \"payload\": {\"type\": \"object\", \"description\": \"Metadata key-value pairs\"}}}}"
+    },
+    {
+      "name": "totalCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    },
+    {
+      "name": "fallbackReason",
+      "type": "string"
+    }
+  ]
+}

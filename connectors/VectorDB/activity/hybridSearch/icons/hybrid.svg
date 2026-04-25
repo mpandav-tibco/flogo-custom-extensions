@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+
+    <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- dense circle -->
+  <circle cx="19" cy="22" r="10" fill="#5C6BC0" opacity="0.7"/>
+  <!-- sparse circle -->
+  <circle cx="29" cy="22" r="10" fill="#8E24AA" opacity="0.7"/>
+  <!-- intersection highlight -->
+  <path d="M24 13.5 Q29 18 29 22 Q29 26 24 30.5 Q19 26 19 22 Q19 18 24 13.5 Z" fill="#E8EAF6" opacity="0.3"/>
+  <text x="24" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#5C6BC0">HYBRID</text>
+
+</svg>
