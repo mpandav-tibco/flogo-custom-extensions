@@ -1,0 +1,181 @@
+{
+  "name": "tibco-vectordb-ingest-documents",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments",
+  "title": "Ingest Documents",
+  "image": "icons/ingest.svg",
+  "description": "Embed text documents and store them in VectorDB in one step. Generates embeddings from raw text using your chosen provider, then upserts the resulting vectors and metadata into the target collection.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/ingest.svg",
+    "description": "Embed + store documents in one step \u2014 ideal for RAG ingestion pipelines"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector (Qdrant, Weaviate, Chroma, Milvus) to store the documents",
+        "type": "connection"
+      },
+      "allowed": []
+    },
+    {
+      "name": "useConnectorEmbedding",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Use Connector Embedding Settings",
+        "description": "Inherit the embedding provider, API key, and base URL from the VectorDB connection. Only the model needs to be set below. Requires 'Configure Embedding Provider' to be enabled on the connection.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingProvider",
+      "type": "string",
+      "required": false,
+      "value": "OpenAI",
+      "allowed": [
+        "OpenAI",
+        "Azure OpenAI",
+        "Cohere",
+        "Ollama",
+        "Custom"
+      ],
+      "display": {
+        "name": "Embedding Provider",
+        "description": "API provider used to generate vector embeddings from document text. Leave blank when 'Use Connector Embedding Settings' is enabled.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding API Key",
+        "description": "API key for the embedding provider. Not required for Ollama or private/open models.",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBaseURL",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding Base URL",
+        "description": "Override the default provider URL. OpenAI: https://api.openai.com/v1 | Azure: full deployment URL | Ollama: http://localhost:11434 | Custom: your endpoint.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingModel",
+      "type": "string",
+      "required": true,
+      "value": "text-embedding-3-small",
+      "display": {
+        "name": "Embedding Model",
+        "description": "Model used to generate vectors. Must match the model used at query time. Examples: text-embedding-3-small (OpenAI), embed-english-v3.0 (Cohere), nomic-embed-text (Ollama).",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingDimensions",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Embedding Dimensions",
+        "description": "Output vector size. 0 = model default. Must match the collection's configured vector dimension.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Collection to use when the input does not supply one. Can be overridden at runtime.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "contentField",
+      "type": "string",
+      "required": false,
+      "value": "text",
+      "display": {
+        "name": "Content Field",
+        "description": "Key inside each document object whose value is the text to embed. Defaults to 'text'. Also stored in the payload under this key so retrieval returns the original text.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 60,
+      "display": {
+        "name": "Timeout (s)",
+        "description": "Total operation timeout covering embedding call + VectorDB upsert",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBatchSize",
+      "type": "integer",
+      "required": false,
+      "value": 100,
+      "display": {
+        "name": "Embedding Batch Size",
+        "description": "Number of document texts sent to the embedding API per request. Default 100. Reduce for providers with small payload or strict rate limits (e.g. 20 for free-tier OpenAI).",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "documents",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Optional document ID. Auto-generated UUID if omitted.\"}, \"text\": {\"type\": \"string\", \"description\": \"Text to embed. Field name controlled by the Content Field setting (default: text).\"}, \"metadata\": {\"type\": \"object\", \"description\": \"Optional key-value metadata stored alongside the vector\"}}, \"required\": [\"text\"]}}"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "ingestedCount",
+      "type": "integer"
+    },
+    {
+      "name": "ids",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}"
+    },
+    {
+      "name": "dimensions",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

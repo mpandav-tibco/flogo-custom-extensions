@@ -1,13 +1,14 @@
-module github.com/milindpandav/flogo-extensions/vectordb/activity/vectorSearch
+module github.com/mpandav-tibco/flogo-extensions/vectordb/activity/vectorSearch
 
 go 1.22.2
 
 toolchain go1.24.3
 
 require (
-	github.com/milindpandav/flogo-extensions/vectordb v0.0.0
-	github.com/milindpandav/flogo-extensions/vectordb/connector v0.0.0
+	github.com/mpandav-tibco/flogo-extensions/vectordb v0.0.0
+	github.com/mpandav-tibco/flogo-extensions/vectordb/connector v0.0.0
 	github.com/project-flogo/core v1.6.18
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
@@ -18,6 +19,7 @@ require (
 	github.com/cockroachdb/errors v1.9.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/getsentry/sentry-go v0.29.0 // indirect
 	github.com/go-openapi/analysis v0.21.2 // indirect
 	github.com/go-openapi/errors v0.22.0 // indirect
@@ -41,8 +43,10 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/qdrant/go-client v1.12.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
@@ -64,6 +68,6 @@ require (
 )
 
 replace (
-	github.com/milindpandav/flogo-extensions/vectordb => ../../
-	github.com/milindpandav/flogo-extensions/vectordb/connector => ../../connector
+	github.com/mpandav-tibco/flogo-extensions/vectordb => ../../
+	github.com/mpandav-tibco/flogo-extensions/vectordb/connector => ../../connector
 )

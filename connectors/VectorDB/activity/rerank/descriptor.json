@@ -2,14 +2,15 @@
   "name": "tibco-vectordb-rerank",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/rerank",
-  "title": "VectorDB: Rerank Documents",
-  "description": "Re-rank a list of documents by relevance to a query using a cross-encoder API (Cohere, Jina, etc.).",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/rerank",
+  "title": "Rerank Documents",
+  "image": "icons/rerank.svg",
+  "description": "Re-rank a list of documents by relevance to a query (Cohere, Jina, etc.).",
   "display": {
     "category": "VectorDB",
     "visible": true,
-    "smallIcon": "icons/rerank.png",
-    "description": "Cross-encoder reranking for RAG precision improvement"
+    "smallIcon": "icons/rerank.svg",
+    "description": "Cross-encoder reranking for improved RAG precision"
   },
   "settings": [
     {
@@ -18,7 +19,8 @@
       "required": true,
       "display": {
         "name": "Rerank API Endpoint",
-        "description": "URL of the rerank API (e.g. https://api.cohere.ai/v1/rerank)"
+        "description": "URL of the rerank API (e.g. https://api.cohere.ai/v1/rerank)",
+        "appPropertySupport": true
       }
     },
     {
@@ -27,25 +29,31 @@
       "required": false,
       "display": {
         "name": "API Key",
-        "description": "Bearer token for the rerank API"
+        "description": "Bearer token for the rerank API",
+        "appPropertySupport": true,
+        "type": "password"
       }
     },
     {
       "name": "model",
       "type": "string",
       "required": false,
+      "value": "rerank-english-v3.0",
       "display": {
         "name": "Model",
-        "description": "Model name (e.g. rerank-english-v3.0)"
+        "description": "Model name (e.g. rerank-english-v3.0)",
+        "appPropertySupport": true
       }
     },
     {
       "name": "topN",
       "type": "integer",
       "required": false,
+      "value": 5,
       "display": {
         "name": "Top N",
-        "description": "Return top-N documents after reranking"
+        "description": "Return top-N after reranking",
+        "appPropertySupport": true
       }
     },
     {
@@ -54,26 +62,20 @@
       "required": false,
       "value": 30,
       "display": {
-        "name": "Timeout (s)"
+        "name": "Timeout (s)",
+        "appPropertySupport": true
       }
     }
   ],
   "input": [
     {
       "name": "query",
-      "type": "string",
-      "display": {
-        "name": "Query",
-        "description": "The search query"
-      }
+      "type": "string"
     },
     {
       "name": "documents",
       "type": "array",
-      "display": {
-        "name": "Documents",
-        "description": "Array of documents to rerank; each can be a string or {content, ...} object"
-      }
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\", \"description\": \"Text content to score against the query\"}}, \"required\": [\"text\"], \"description\": \"Each item must have a 'text' field. Additional fields are preserved.\"}}"
     }
   ],
   "output": [
@@ -84,10 +86,7 @@
     {
       "name": "rankedDocuments",
       "type": "array",
-      "display": {
-        "name": "Ranked Documents",
-        "description": "Documents sorted by relevance_score descending, each with {document, relevance_score, original_index}"
-      }
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"index\": {\"type\": \"integer\", \"description\": \"Original position in the input documents array\"}, \"score\": {\"type\": \"number\", \"description\": \"Relevance score assigned by the reranker\"}, \"document\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}}}}}"
     },
     {
       "name": "totalCount",

@@ -2,13 +2,14 @@
   "name": "tibco-vectordb-scroll",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/scrollDocuments",
-  "title": "VectorDB: Scroll Documents",
-  "description": "Paginate through documents in a collection without a query vector. Ideal for agentic memory iteration.",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/scrollDocuments",
+  "title": "Scroll Documents",
+  "image": "icons/scroll.svg",
+  "description": "Paginate through documents without a query vector. Ideal for memory iteration.",
   "display": {
     "category": "VectorDB",
     "visible": true,
-    "smallIcon": "icons/scroll.png"
+    "smallIcon": "icons/scroll.svg"
   },
   "settings": [
     {
@@ -20,9 +21,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "vectordb-connector"
-      ]
+      "allowed": []
     },
     {
       "name": "defaultCollection",
@@ -30,47 +29,35 @@
       "required": false,
       "display": {
         "name": "Default Collection",
-        "description": "Fallback collection name when not supplied in the activity input"
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
       }
     }
   ],
   "input": [
     {
       "name": "collectionName",
-      "type": "string",
-      "display": {
-        "name": "Collection Name"
-      }
+      "type": "string"
     },
     {
       "name": "limit",
       "type": "integer",
-      "display": {
-        "name": "Page Size",
-        "description": "Documents per page (default: 100)"
-      }
+      "value": 100
     },
     {
       "name": "offset",
       "type": "string",
-      "display": {
-        "name": "Offset",
-        "description": "Continuation token from previous page (nextOffset)"
-      }
+      "value": ""
     },
     {
       "name": "filters",
       "type": "object",
-      "display": {
-        "name": "Filters"
-      }
+      "schema": "{\"type\": \"object\", \"description\": \"Key-value filter map. Keys are payload field names. Values can be string, number, boolean, or array (for 'in' match). Example: {\\\"category\\\":\\\"tech\\\",\\\"year\\\":2024,\\\"tags\\\":[\\\"rag\\\",\\\"llm\\\"]}\", \"additionalProperties\": true}"
     },
     {
       "name": "withVectors",
       "type": "boolean",
-      "display": {
-        "name": "Include Vectors"
-      }
+      "value": false
     }
   ],
   "output": [
@@ -80,15 +67,12 @@
     },
     {
       "name": "documents",
-      "type": "array"
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Document ID\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text\"}, \"vector\": {\"type\": \"array\", \"items\": {\"type\": \"number\"}, \"description\": \"Embedding vector (if withVectors=true)\"}, \"payload\": {\"type\": \"object\", \"description\": \"Metadata key-value pairs\"}}}}"
     },
     {
       "name": "nextOffset",
-      "type": "string",
-      "display": {
-        "name": "Next Offset",
-        "description": "Pass to offset input of next call for pagination"
-      }
+      "type": "string"
     },
     {
       "name": "total",

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/milindpandav/flogo-extensions/vectordb"
+	"github.com/mpandav-tibco/flogo-extensions/vectordb"
 	"github.com/project-flogo/core/support/connection"
 )
 
@@ -85,15 +85,19 @@ type Output struct {
 	TotalCount int           `md:"totalCount"`
 	Duration   string        `md:"duration"`
 	Error      string        `md:"error"`
+	// FallbackReason is non-empty when the provider does not support native
+	// hybrid search and the activity fell back to vector-only search.
+	FallbackReason string `md:"fallbackReason"`
 }
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"success":    o.Success,
-		"results":    o.Results,
-		"totalCount": o.TotalCount,
-		"duration":   o.Duration,
-		"error":      o.Error,
+		"success":        o.Success,
+		"results":        o.Results,
+		"totalCount":     o.TotalCount,
+		"duration":       o.Duration,
+		"error":          o.Error,
+		"fallbackReason": o.FallbackReason,
 	}
 }
 

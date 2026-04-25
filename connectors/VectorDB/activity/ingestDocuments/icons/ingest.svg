@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- VectorDB cylinder -->
+  <ellipse cx="32" cy="50" rx="14" ry="5" fill="#4A90D9" opacity="0.85"/>
+  <rect x="18" y="32" width="28" height="18" fill="#4A90D9" opacity="0.85"/>
+  <ellipse cx="32" cy="32" rx="14" ry="5" fill="#5BA3E8"/>
+  <!-- down arrow (ingest) -->
+  <path d="M32 8 L32 24" stroke="#34C759" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="32,28 26,20 38,20" fill="#34C759"/>
+  <!-- document lines -->
+  <rect x="22" y="10" width="12" height="2" rx="1" fill="#FFFFFF" opacity="0.7"/>
+  <rect x="22" y="14" width="8" height="2" rx="1" fill="#FFFFFF" opacity="0.5"/>
+</svg>

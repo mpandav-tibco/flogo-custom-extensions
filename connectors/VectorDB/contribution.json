@@ -1,57 +1,69 @@
 {
-  "name": "VectorDB RAG Connector",
-  "version": "1.0.0",
-  "category": "VectorDB",
-  "description": "Multi-provider vector database connector for RAG and agentic AI use cases. Supports Qdrant, Weaviate, Chroma, and Milvus with a single shared connection definition.",
-  "image": "icons/vectordb.png",
-  "contributions": [
-    {
-      "type": "flogo:connector",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/connector"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/upsertDocuments"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/vectorSearch"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/hybridSearch"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/deleteDocuments"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/createCollection"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/deleteCollection"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/listCollections"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/scrollDocuments"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/getDocument"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/countDocuments"
-    },
-    {
-      "type": "flogo:activity",
-      "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/rerank"
-    }
-  ]
+    "name": "VectorDB RAG Connector",
+    "version": "1.0.0",
+    "category": "VectorDB",
+    "description": "Multi-provider vector database connector for RAG and agentic AI use cases. Supports Qdrant, Weaviate, Chroma, and Milvus with a single shared connection definition.",
+    "image": "connector/icons/vectordb.svg",
+    "contributions": [
+        {
+            "type": "flogo:connector",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/upsertDocuments"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/vectorSearch"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/hybridSearch"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteDocuments"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createCollection"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteCollection"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/listCollections"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/scrollDocuments"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/getDocument"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/countDocuments"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/rerank"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createEmbeddings"
+        },
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery"
+        }
+    ]
 }

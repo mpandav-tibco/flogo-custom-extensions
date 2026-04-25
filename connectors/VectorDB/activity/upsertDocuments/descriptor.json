@@ -2,13 +2,14 @@
   "name": "tibco-vectordb-upsert",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/upsertDocuments",
-  "title": "VectorDB: Upsert Documents",
-  "description": "Insert or update documents (vectors + metadata) in the configured VectorDB collection.",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/upsertDocuments",
+  "title": "Upsert Documents",
+  "image": "icons/upsert.svg",
+  "description": "Insert or update documents (vectors + metadata) in a VectorDB collection.",
   "display": {
     "category": "VectorDB",
     "visible": true,
-    "smallIcon": "icons/upsert.png",
+    "smallIcon": "icons/upsert.svg",
     "description": "Upsert documents into a VectorDB collection"
   },
   "settings": [
@@ -21,9 +22,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "vectordb-connector"
-      ]
+      "allowed": []
     },
     {
       "name": "defaultCollection",
@@ -31,26 +30,20 @@
       "required": false,
       "display": {
         "name": "Default Collection",
-        "description": "Fallback collection name when not supplied in the activity input"
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
       }
     }
   ],
   "input": [
     {
       "name": "collectionName",
-      "type": "string",
-      "display": {
-        "name": "Collection Name",
-        "description": "Target collection; overrides defaultCollection"
-      }
+      "type": "string"
     },
     {
       "name": "documents",
       "type": "array",
-      "display": {
-        "name": "Documents",
-        "description": "Array of {id, vector, content, ...payload} objects"
-      }
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Unique document ID (UUID recommended)\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text of the document\"}, \"vector\": {\"type\": \"array\", \"items\": {\"type\": \"number\"}, \"description\": \"Dense embedding vector\"}, \"payload\": {\"type\": \"object\", \"description\": \"Arbitrary metadata key-value pairs\"}}, \"required\": [\"vector\"]}}"
     }
   ],
   "output": [

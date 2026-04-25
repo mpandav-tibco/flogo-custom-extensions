@@ -1,13 +1,13 @@
-module github.com/milindpandav/flogo-extensions/vectordb/connector
+module github.com/mpandav-tibco/flogo-extensions/vectordb/connector
 
 go 1.22.2
 
 toolchain go1.24.3
 
-replace github.com/milindpandav/flogo-extensions/vectordb => ../
+replace github.com/mpandav-tibco/flogo-extensions/vectordb => ../
 
 require (
-	github.com/milindpandav/flogo-extensions/vectordb v0.0.0-00010101000000-000000000000
+	github.com/mpandav-tibco/flogo-extensions/vectordb v0.0.0-00010101000000-000000000000
 	github.com/project-flogo/core v1.6.18
 )
 

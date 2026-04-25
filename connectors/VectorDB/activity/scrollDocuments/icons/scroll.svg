@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+
+    <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- document lines -->
+  <rect x="10" y="10" width="28" height="26" rx="3" fill="#FB8C00" opacity="0.85"/>
+  <line x1="15" y1="16" x2="33" y2="16" stroke="#1A1F36" stroke-width="1.5"/>
+  <line x1="15" y1="21" x2="33" y2="21" stroke="#1A1F36" stroke-width="1.5"/>
+  <line x1="15" y1="26" x2="28" y2="26" stroke="#1A1F36" stroke-width="1.5"/>
+  <!-- down arrow -->
+  <path d="M24 30 L28 35 L25.5 35 L25.5 39 L22.5 39 L22.5 35 L20 35 Z" fill="#5C6BC0"/>
+  <text x="24" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#FB8C00">SCROLL</text>
+
+</svg>

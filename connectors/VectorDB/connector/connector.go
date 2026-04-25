@@ -11,9 +11,11 @@
 package vectordbconnector
 
 import (
+	"context"
 	"fmt"
+	"sync"
 
-	"github.com/milindpandav/flogo-extensions/vectordb"
+	"github.com/mpandav-tibco/flogo-extensions/vectordb"
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/connection"
 	"github.com/project-flogo/core/support/log"
@@ -22,6 +24,11 @@ import (
 var logger = log.ChildLogger(log.RootLogger(), "vectordb-connector")
 
 var factory = &VectorDBFactory{}
+
+// sealOnce ensures SealRegistry is called exactly once when the first real
+// production connection is established via NewManager.  Tests that bypass
+// NewManager (using NewConnectionForTest) are unaffected.
+var sealOnce sync.Once
 
 func init() {
 	if err := connection.RegisterManagerFactory(factory); err != nil {
@@ -79,23 +86,95 @@ type Settings struct {
 
 	// DBName is the Milvus database name (default: "default").
 	DBName string `md:"dbName"`
+
+	// DefaultMetricType is the distance metric used for Milvus vector searches.
+	// Accepted values: cosine (default), dot, euclidean. Only used when DBType="milvus".
+	DefaultMetricType string `md:"defaultMetricType"`
+
+	// TLSInsecureSkipVerify disables certificate verification (dev/self-signed only).
+	TLSInsecureSkipVerify bool `md:"tlsInsecureSkipVerify"`
+
+	// TLSServerName overrides the TLS SNI server name.
+	TLSServerName string `md:"tlsServerName"`
+
+	// CACert is the CA certificate path or PEM content for server verification.
+	CACert string `md:"caCert"`
+
+	// ClientCert is the client certificate path or PEM content for mTLS.
+	ClientCert string `md:"clientCert"`
+
+	// ClientKey is the client private key path or PEM content for mTLS.
+	ClientKey string `md:"clientKey"`
+
+	// ---------------------------------------------------------------------------
+	// AI Embedding Provider (optional shared configuration)
+	// ---------------------------------------------------------------------------
+
+	// EnableEmbedding opts in to connector-level embedding configuration.
+	// When true, activities (ragQuery, ingestDocuments) can inherit the
+	// embedding provider, API key, and base URL from this connector instead
+	// of repeating them in every activity setting. The API key is stored once
+	// here (with appPropertySupport) so it never needs to appear in flogo.json.
+	EnableEmbedding bool `md:"enableEmbedding"`
+
+	// EmbeddingProvider is the AI embedding service to use.
+	// Accepted values: OpenAI | Azure OpenAI | Cohere | Ollama | Custom.
+	// Only used when EnableEmbedding is true.
+	EmbeddingProvider string `md:"embeddingProvider"`
+
+	// EmbeddingAPIKey is the API key / bearer token for the embedding service.
+	// Use $property[MY_KEY] to inject from an app property at runtime so the
+	// secret never appears in the flogo.json source file.
+	// Only used when EnableEmbedding is true.
+	EmbeddingAPIKey string `md:"embeddingAPIKey"`
+
+	// EmbeddingBaseURL overrides the default endpoint for the embedding provider.
+	// Azure OpenAI: full deployment URL. Ollama: http://localhost:11434. Custom: your endpoint.
+	// Only used when EnableEmbedding is true.
+	EmbeddingBaseURL string `md:"embeddingBaseURL"`
+}
+
+// String returns a log-safe representation of Settings with sensitive fields redacted.
+// Prevents APIKey, Password, ClientKey, and EmbeddingAPIKey from leaking into log files.
+func (s *Settings) String() string {
+	apiKey, password, clientKey, embKey := "", "", "", ""
+	if s.APIKey != "" {
+		apiKey = "[redacted]"
+	}
+	if s.Password != "" {
+		password = "[redacted]"
+	}
+	if s.ClientKey != "" {
+		clientKey = "[redacted]"
+	}
+	if s.EmbeddingAPIKey != "" {
+		embKey = "[redacted]"
+	}
+	return fmt.Sprintf("Settings{Name:%q DBType:%q Host:%q Port:%d Username:%q APIKey:%s Password:%s ClientKey:%s EnableEmbedding:%v EmbeddingProvider:%q EmbeddingAPIKey:%s}",
+		s.Name, s.DBType, s.Host, s.Port, s.Username, apiKey, password, clientKey, s.EnableEmbedding, s.EmbeddingProvider, embKey)
 }
 
 func (s *Settings) toConnectionConfig() vectordb.ConnectionConfig {
 	return vectordb.ConnectionConfig{
-		DBType:         s.DBType,
-		Host:           s.Host,
-		Port:           s.Port,
-		APIKey:         s.APIKey,
-		UseTLS:         s.UseTLS,
-		TimeoutSeconds: s.TimeoutSeconds,
-		MaxRetries:     s.MaxRetries,
-		RetryBackoffMs: s.RetryBackoffMs,
-		GRPCPort:       s.GRPCPort,
-		Scheme:         s.Scheme,
-		Username:       s.Username,
-		Password:       s.Password,
-		DBName:         s.DBName,
+		DBType:                s.DBType,
+		Host:                  s.Host,
+		Port:                  s.Port,
+		APIKey:                s.APIKey,
+		UseTLS:                s.UseTLS,
+		TimeoutSeconds:        s.TimeoutSeconds,
+		MaxRetries:            s.MaxRetries,
+		RetryBackoffMs:        s.RetryBackoffMs,
+		GRPCPort:              s.GRPCPort,
+		Scheme:                s.Scheme,
+		Username:              s.Username,
+		Password:              s.Password,
+		DBName:                s.DBName,
+		DefaultMetricType:     s.DefaultMetricType,
+		TLSInsecureSkipVerify: s.TLSInsecureSkipVerify,
+		TLSServerName:         s.TLSServerName,
+		CACert:                s.CACert,
+		ClientCert:            s.ClientCert,
+		ClientKey:             s.ClientKey,
 	}
 }
 
@@ -129,12 +208,18 @@ func (*VectorDBFactory) NewManager(settings map[string]interface{}) (connection.
 		connRef = fmt.Sprintf("vectordb-%s-%s-%d", s.DBType, s.Host, s.Port)
 	}
 
-	client, err := vectordb.GetOrCreateClient(connRef, s.toConnectionConfig())
+	client, err := vectordb.GetOrCreateClient(context.Background(), connRef, s.toConnectionConfig())
 	if err != nil {
 		return nil, fmt.Errorf("vectordb connector: failed to create client: %w", err)
 	}
 
 	logger.Infof("VectorDB connection established: name=%s provider=%s host=%s", connRef, s.DBType, s.Host)
+
+	// Seal the registry on the first successful production connection.
+	// This prevents ResetRegistry from being called accidentally in long-running
+	// processes. Tests that use NewConnectionForTest bypass this path.
+	sealOnce.Do(func() { vectordb.SealRegistry() })
+
 	return &VectorDBConnection{name: connRef, client: client, settings: s}, nil
 }
 
@@ -170,3 +255,9 @@ func (c *VectorDBConnection) GetName() string { return c.name }
 
 // GetSettings returns the raw connector settings.
 func (c *VectorDBConnection) GetSettings() *Settings { return c.settings }
+
+// NewConnectionForTest constructs a VectorDBConnection from an existing client.
+// This is intended for unit tests only and must not be used in production code.
+func NewConnectionForTest(name string, client vectordb.VectorDBClient, s *Settings) *VectorDBConnection {
+	return &VectorDBConnection{name: name, client: client, settings: s}
+}

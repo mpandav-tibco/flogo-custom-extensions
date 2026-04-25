@@ -2,13 +2,14 @@
   "name": "tibco-vectordb-search",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/milindpandav/flogo-extensions/vectordb/activity/vectorSearch",
-  "title": "VectorDB: Vector Search",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/vectorSearch",
+  "title": "Vector Search",
+  "image": "icons/search.svg",
   "description": "Semantic vector similarity search in a VectorDB collection.",
   "display": {
     "category": "VectorDB",
     "visible": true,
-    "smallIcon": "icons/search.png",
+    "smallIcon": "icons/search.svg",
     "description": "Semantic vector search (dense ANN)"
   },
   "settings": [
@@ -21,9 +22,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "vectordb-connector"
-      ]
+      "allowed": []
     },
     {
       "name": "defaultCollection",
@@ -31,7 +30,8 @@
       "required": false,
       "display": {
         "name": "Default Collection",
-        "description": "Fallback collection name when not supplied in the activity input"
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
       }
     },
     {
@@ -41,57 +41,40 @@
       "value": 10,
       "display": {
         "name": "Default Top-K",
-        "description": "Default number of results when not supplied in the activity input"
+        "description": "Default number of results when not provided in the activity input",
+        "appPropertySupport": true
       }
     }
   ],
   "input": [
     {
       "name": "collectionName",
-      "type": "string",
-      "display": {
-        "name": "Collection Name"
-      }
+      "type": "string"
     },
     {
       "name": "queryVector",
       "type": "array",
-      "display": {
-        "name": "Query Vector",
-        "description": "Float64 embedding vector"
-      }
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"number\"}}"
     },
     {
       "name": "topK",
       "type": "integer",
-      "display": {
-        "name": "Top K",
-        "description": "Number of results (default: defaultTopK or 10)"
-      }
+      "value": 0
     },
     {
       "name": "scoreThreshold",
       "type": "number",
-      "display": {
-        "name": "Score Threshold",
-        "description": "Minimum similarity score (0\u20131)"
-      }
+      "value": 0.0
     },
     {
       "name": "filters",
       "type": "object",
-      "display": {
-        "name": "Filters",
-        "description": "Key-value filter map applied to payload"
-      }
+      "schema": "{\"type\": \"object\", \"description\": \"Key-value filter map. Keys are payload field names. Values can be string, number, boolean, or array (for 'in' match). Example: {\\\"category\\\":\\\"tech\\\",\\\"year\\\":2024,\\\"tags\\\":[\\\"rag\\\",\\\"llm\\\"]}\", \"additionalProperties\": true}"
     },
     {
       "name": "withVectors",
       "type": "boolean",
-      "display": {
-        "name": "Include Vectors",
-        "description": "Return embedding vectors in results"
-      }
+      "value": false
     }
   ],
   "output": [
@@ -102,9 +85,7 @@
     {
       "name": "results",
       "type": "array",
-      "display": {
-        "name": "Search Results"
-      }
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Document ID\"}, \"score\": {\"type\": \"number\", \"description\": \"Similarity score (0-1 for cosine)\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text\"}, \"payload\": {\"type\": \"object\", \"description\": \"Metadata key-value pairs\"}}}}"
     },
     {
       "name": "totalCount",

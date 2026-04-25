@@ -3,9 +3,10 @@ package vectordb
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
-	"time"
 
+	"github.com/google/uuid"
 	qdrant "github.com/qdrant/go-client/qdrant"
 )
 
@@ -16,11 +17,17 @@ type qdrantClient struct {
 }
 
 func newQdrantClient(cfg ConnectionConfig) (VectorDBClient, error) {
+	tlsCfg, err := buildTLSConfig(cfg)
+	if err != nil {
+		return nil, newError(ErrCodeConnectionFailed, "Qdrant: invalid TLS configuration", err)
+	}
+
 	qCfg := &qdrant.Config{
-		Host:   cfg.Host,
-		Port:   cfg.GRPCPort,
-		APIKey: cfg.APIKey,
-		UseTLS: cfg.UseTLS,
+		Host:      cfg.Host,
+		Port:      cfg.GRPCPort,
+		APIKey:    cfg.APIKey,
+		UseTLS:    cfg.UseTLS,
+		TLSConfig: tlsCfg,
 	}
 
 	c, err := qdrant.NewClient(qCfg)
@@ -61,17 +68,23 @@ func (c *qdrantClient) CreateCollection(ctx context.Context, cfg CollectionConfi
 	}
 
 	onDisk := cfg.OnDisk
-	err := c.client.CreateCollection(ctx, &qdrant.CreateCollection{
+	collCfg := &qdrant.CreateCollection{
 		CollectionName: cfg.Name,
 		VectorsConfig: qdrant.NewVectorsConfig(&qdrant.VectorParams{
 			Size:     uint64(cfg.Dimensions),
 			Distance: dist,
 			OnDisk:   &onDisk,
 		}),
-	})
-	if err != nil {
-		if strings.Contains(err.Error(), "already exists") {
-			return newError(ErrCodeCollectionExists, fmt.Sprintf("collection %q already exists", cfg.Name), err)
+	}
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		retryErr := c.client.CreateCollection(ctx, collCfg)
+		if retryErr != nil && strings.Contains(retryErr.Error(), "already exists") {
+			return newError(ErrCodeCollectionExists, fmt.Sprintf("collection %q already exists", cfg.Name), retryErr)
+		}
+		return retryErr
+	}); err != nil {
+		if ve, ok := err.(*VDBError); ok {
+			return ve
 		}
 		return newError(ErrCodeProviderError, "CreateCollection failed", err)
 	}
@@ -79,16 +92,21 @@ func (c *qdrantClient) CreateCollection(ctx context.Context, cfg CollectionConfi
 }
 
 func (c *qdrantClient) DeleteCollection(ctx context.Context, name string) error {
-	err := c.client.DeleteCollection(ctx, name)
-	if err != nil {
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		return c.client.DeleteCollection(ctx, name)
+	}); err != nil {
 		return newError(ErrCodeProviderError, "DeleteCollection failed", err)
 	}
 	return nil
 }
 
 func (c *qdrantClient) ListCollections(ctx context.Context) ([]string, error) {
-	resp, err := c.client.ListCollections(ctx)
-	if err != nil {
+	var resp []string
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		var retryErr error
+		resp, retryErr = c.client.ListCollections(ctx)
+		return retryErr
+	}); err != nil {
 		return nil, newError(ErrCodeProviderError, "ListCollections failed", err)
 	}
 	names := make([]string, len(resp))
@@ -99,22 +117,24 @@ func (c *qdrantClient) ListCollections(ctx context.Context) ([]string, error) {
 }
 
 func (c *qdrantClient) CollectionExists(ctx context.Context, name string) (bool, error) {
-	collections, err := c.ListCollections(ctx)
-	if err != nil {
-		return false, err
+	var exists bool
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		var retryErr error
+		exists, retryErr = c.client.CollectionExists(ctx, name)
+		return retryErr
+	}); err != nil {
+		return false, newError(ErrCodeProviderError, "CollectionExists failed", err)
 	}
-	for _, col := range collections {
-		if col == name {
-			return true, nil
-		}
-	}
-	return false, nil
+	return exists, nil
 }
 
 // --- Document operations ---
 
 func (c *qdrantClient) UpsertDocuments(ctx context.Context, collectionName string, docs []Document) error {
 	if err := validateUpsertDocuments(docs); err != nil {
+		return err
+	}
+	if err := validateBatchSize(len(docs), maxUpsertBatchQdrant, "Qdrant"); err != nil {
 		return err
 	}
 
@@ -124,20 +144,27 @@ func (c *qdrantClient) UpsertDocuments(ctx context.Context, collectionName strin
 		if doc.Content != "" {
 			payload["_content"] = &qdrant.Value{Kind: &qdrant.Value_StringValue{StringValue: doc.Content}}
 		}
+		// Store the original string ID so it can be recovered on reads.
+		// Qdrant only accepts UUID or uint64; arbitrary strings are converted to a
+		// deterministic UUID v5 by qdrantResolveID.
+		payload["_original_id"] = &qdrant.Value{Kind: &qdrant.Value_StringValue{StringValue: doc.ID}}
 		points[i] = &qdrant.PointStruct{
-			Id:      qdrant.NewID(doc.ID),
+			Id:      qdrantResolveID(doc.ID),
 			Vectors: qdrant.NewVectorsDense(toFloat32Slice(doc.Vector)),
 			Payload: payload,
 		}
 	}
 
 	wait := true
-	_, err := c.client.Upsert(ctx, &qdrant.UpsertPoints{
+	upsertReq := &qdrant.UpsertPoints{
 		CollectionName: collectionName,
 		Points:         points,
 		Wait:           &wait,
-	})
-	if err != nil {
+	}
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		_, retryErr := c.client.Upsert(ctx, upsertReq)
+		return retryErr
+	}); err != nil {
 		return newError(ErrCodeProviderError, "UpsertDocuments failed", err)
 	}
 	return nil
@@ -145,19 +172,32 @@ func (c *qdrantClient) UpsertDocuments(ctx context.Context, collectionName strin
 
 func (c *qdrantClient) GetDocument(ctx context.Context, collectionName, id string) (*Document, error) {
 	withPayload := true
-	results, err := c.client.Get(ctx, &qdrant.GetPoints{
+	withVectors := true
+	getReq := &qdrant.GetPoints{
 		CollectionName: collectionName,
-		Ids:            []*qdrant.PointId{qdrant.NewID(id)},
+		Ids:            []*qdrant.PointId{qdrantResolveID(id)},
 		WithPayload:    qdrant.NewWithPayload(withPayload),
-	})
-	if err != nil {
+		WithVectors:    &qdrant.WithVectorsSelector{SelectorOptions: &qdrant.WithVectorsSelector_Enable{Enable: withVectors}},
+	}
+	var doc *Document
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		results, retryErr := c.client.Get(ctx, getReq)
+		if retryErr != nil {
+			return retryErr
+		}
+		if len(results) == 0 {
+			return newError(ErrCodeDocumentNotFound,
+				fmt.Sprintf("document %q not found in collection %q", id, collectionName), nil)
+		}
+		doc = qdrantPointToDocument(results[0])
+		return nil
+	}); err != nil {
+		if ve, ok := err.(*VDBError); ok {
+			return nil, ve
+		}
 		return nil, newError(ErrCodeProviderError, "GetDocument failed", err)
 	}
-	if len(results) == 0 {
-		return nil, newError(ErrCodeDocumentNotFound,
-			fmt.Sprintf("document %q not found in collection %q", id, collectionName), nil)
-	}
-	return qdrantPointToDocument(results[0]), nil
+	return doc, nil
 }
 
 func (c *qdrantClient) DeleteDocuments(ctx context.Context, collectionName string, ids []string) error {
@@ -166,25 +206,26 @@ func (c *qdrantClient) DeleteDocuments(ctx context.Context, collectionName strin
 	}
 	pointIDs := make([]*qdrant.PointId, len(ids))
 	for i, id := range ids {
-		pointIDs[i] = qdrant.NewID(id)
+		pointIDs[i] = qdrantResolveID(id)
 	}
 	wait := true
-	_, err := c.client.Delete(ctx, &qdrant.DeletePoints{
+	delReq := &qdrant.DeletePoints{
 		CollectionName: collectionName,
 		Points:         qdrant.NewPointsSelector(pointIDs...),
 		Wait:           &wait,
-	})
-	if err != nil {
+	}
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		_, retryErr := c.client.Delete(ctx, delReq)
+		return retryErr
+	}); err != nil {
 		return newError(ErrCodeProviderError, "DeleteDocuments failed", err)
 	}
 	return nil
 }
 
 func (c *qdrantClient) DeleteByFilter(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error) {
-	// TODO: translate generic filter map to qdrant.Filter — currently deletes all matching must-conditions.
-	// For now, only simple equality filters are supported via the Qdrant filter DSL.
 	wait := true
-	_, err := c.client.Delete(ctx, &qdrant.DeletePoints{
+	delReq := &qdrant.DeletePoints{
 		CollectionName: collectionName,
 		Points: &qdrant.PointsSelector{
 			PointsSelectorOneOf: &qdrant.PointsSelector_Filter{
@@ -192,8 +233,11 @@ func (c *qdrantClient) DeleteByFilter(ctx context.Context, collectionName string
 			},
 		},
 		Wait: &wait,
-	})
-	if err != nil {
+	}
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		_, retryErr := c.client.Delete(ctx, delReq)
+		return retryErr
+	}); err != nil {
 		return 0, newError(ErrCodeProviderError, "DeleteByFilter failed", err)
 	}
 	return -1, nil // Qdrant does not return delete count in this path
@@ -217,32 +261,52 @@ func (c *qdrantClient) ScrollDocuments(ctx context.Context, req ScrollRequest) (
 		params.Offset = qdrant.NewID(req.Offset)
 	}
 
-	results, err := c.client.Scroll(ctx, params)
-	if err != nil {
+	// Use the raw gRPC Scroll call so we can extract both the result points AND
+	// the next-page offset from a single round-trip.  The high-level
+	// c.client.Scroll() discards NextPageOffset, which would force a second call.
+	var scrollResult *ScrollResult
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		rawResp, retryErr := c.client.GetPointsClient().Scroll(ctx, params)
+		if retryErr != nil {
+			return retryErr
+		}
+		pts := rawResp.GetResult()
+		docs := make([]Document, len(pts))
+		for i, p := range pts {
+			docs[i] = *qdrantPointToDocument(p)
+		}
+		nextOffset := ""
+		if npo := rawResp.GetNextPageOffset(); npo != nil {
+			if uuid := npo.GetUuid(); uuid != "" {
+				nextOffset = uuid
+			} else if num := npo.GetNum(); num != 0 {
+				nextOffset = fmt.Sprintf("%d", num)
+			}
+		}
+		scrollResult = &ScrollResult{Documents: docs, NextOffset: nextOffset, Total: -1}
+		return nil
+	}); err != nil {
 		return nil, newError(ErrCodeProviderError, "ScrollDocuments failed", err)
 	}
-
-	docs := make([]Document, len(results))
-	for i, p := range results {
-		docs[i] = *qdrantPointToDocument(p)
-	}
-
-	nextOffset := ""
-
-	return &ScrollResult{Documents: docs, NextOffset: nextOffset, Total: -1}, nil
+	return scrollResult, nil
 }
 
 func (c *qdrantClient) CountDocuments(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error) {
 	exact := true
-	resp, err := c.client.Count(ctx, &qdrant.CountPoints{
+	countReq := &qdrant.CountPoints{
 		CollectionName: collectionName,
 		Filter:         buildQdrantFilter(filters),
 		Exact:          &exact,
-	})
-	if err != nil {
+	}
+	var count uint64
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		var retryErr error
+		count, retryErr = c.client.Count(ctx, countReq)
+		return retryErr
+	}); err != nil {
 		return 0, newError(ErrCodeProviderError, "CountDocuments failed", err)
 	}
-	return int64(resp), nil
+	return int64(count), nil
 }
 
 // --- Search ---
@@ -253,22 +317,32 @@ func (c *qdrantClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 	}
 
 	limit := uint64(req.TopK)
-	withPayload := true
-	scoreThreshold := float32(req.ScoreThreshold)
+	// SkipPayload=false (zero value) means include payload — the safe default.
+	// Set req.SkipPayload=true for ranking-only passes that don't need metadata.
+	withPayload := !req.SkipPayload
 
-	queryCtx, cancel := context.WithTimeout(ctx, time.Duration(c.cfg.TimeoutSeconds)*time.Second)
-	defer cancel()
-
-	results, err := c.client.Query(queryCtx, &qdrant.QueryPoints{
+	qparams := &qdrant.QueryPoints{
 		CollectionName: req.CollectionName,
 		Query:          qdrant.NewQuery(toFloat32Slice(req.QueryVector)...),
 		Limit:          &limit,
 		WithPayload:    qdrant.NewWithPayload(withPayload),
 		WithVectors:    &qdrant.WithVectorsSelector{SelectorOptions: &qdrant.WithVectorsSelector_Enable{Enable: req.WithVectors}},
-		ScoreThreshold: &scoreThreshold,
 		Filter:         buildQdrantFilter(req.Filters),
-	})
-	if err != nil {
+	}
+	// Only set ScoreThreshold when explicitly requested (> 0).
+	// Passing 0.0 to Qdrant is treated as a literal threshold and would filter
+	// all negative-cosine results even when the caller intends "no threshold".
+	if req.ScoreThreshold > 0 {
+		st := float32(req.ScoreThreshold)
+		qparams.ScoreThreshold = &st
+	}
+
+	var results []*qdrant.ScoredPoint
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		var qErr error
+		results, qErr = c.client.Query(ctx, qparams)
+		return qErr
+	}); err != nil {
 		return nil, newError(ErrCodeProviderError, "VectorSearch failed", err)
 	}
 
@@ -276,10 +350,13 @@ func (c *qdrantClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 }
 
 func (c *qdrantClient) HybridSearch(ctx context.Context, req HybridSearchRequest) ([]SearchResult, error) {
-	// Qdrant supports hybrid search via the Prefetch + Fusion API.
-	// For simplicity, we implement it as weighted vector-only search.
-	// Full sparse+dense hybrid requires sparse vector indexing configured on the collection.
-	// TODO: Implement qdrant.QueryPoints with Prefetch for true hybrid search.
+	// Qdrant supports native hybrid search via Prefetch + Fusion, but that requires
+	// a sparse vector field configured on the collection at creation time.
+	// Until sparse indexing is supported by this connector, we fall back to dense
+	// vector search so callers get best-effort results rather than an error.
+	// TODO: Implement qdrant.QueryPoints with Prefetch for true sparse+dense hybrid.
+	logger.Warnf("Qdrant: HybridSearch falling back to dense vector search — sparse indexing is not configured " +
+		"on this connector; BM25/keyword component is absent. Set alpha=1.0 or use a provider with native hybrid support.")
 	return c.VectorSearch(ctx, SearchRequest{
 		CollectionName: req.CollectionName,
 		QueryVector:    req.QueryVector,
@@ -287,11 +364,30 @@ func (c *qdrantClient) HybridSearch(ctx context.Context, req HybridSearchRequest
 		ScoreThreshold: req.ScoreThreshold,
 		Filters:        req.Filters,
 		WithVectors:    false,
-		WithPayload:    true,
+		SkipPayload:    req.SkipPayload,
 	})
 }
 
 // --- Helpers ---
+
+// qdrantResolveID converts any string ID to a Qdrant-compatible PointId.
+// Qdrant only supports UUID strings and unsigned 64-bit integers as point IDs.
+// For any other string, a deterministic UUID v5 is derived so that the same
+// input always maps to the same Qdrant ID. The original string is stored in
+// the "_original_id" payload field and recovered transparently on reads.
+func qdrantResolveID(id string) *qdrant.PointId {
+	// Try valid UUID first.
+	if _, err := uuid.Parse(id); err == nil {
+		return qdrant.NewID(id)
+	}
+	// Try uint64 — Qdrant supports native numeric IDs.
+	if n, err := strconv.ParseUint(id, 10, 64); err == nil {
+		return qdrant.NewIDNum(n)
+	}
+	// Derive a deterministic UUID v5 from the arbitrary string.
+	derived := uuid.NewSHA1(uuid.NameSpaceDNS, []byte(id))
+	return qdrant.NewID(derived.String())
+}
 
 func qdrantPayload(m map[string]interface{}) map[string]*qdrant.Value {
 	out := make(map[string]*qdrant.Value, len(m))
@@ -314,20 +410,28 @@ func qdrantPayload(m map[string]interface{}) map[string]*qdrant.Value {
 	return out
 }
 
-func qdrantPointToDocument(p *qdrant.RetrievedPoint) *Document {
-	doc := &Document{
-		ID:      p.GetId().GetUuid(),
+// qdrantDecodeDocument reconstructs a Document from the raw Qdrant point components.
+// Shared by qdrantPointToDocument (RetrievedPoint) and qdrantScoredPointsToResults
+// (ScoredPoint) to keep payload/ID/vector extraction logic in one place.
+// vec is the pre-extracted float32 slice from either VectorsOutput or Vectors; nil = no vector.
+func qdrantDecodeDocument(pointID *qdrant.PointId, payload map[string]*qdrant.Value, vec []float32) Document {
+	doc := Document{
+		ID:      pointID.GetUuid(),
 		Payload: make(map[string]interface{}),
 	}
 	if doc.ID == "" {
-		doc.ID = fmt.Sprintf("%d", p.GetId().GetNum())
+		doc.ID = fmt.Sprintf("%d", pointID.GetNum())
 	}
-	for k, v := range p.GetPayload() {
+	for k, v := range payload {
 		switch val := v.GetKind().(type) {
 		case *qdrant.Value_StringValue:
-			if k == "_content" {
+			switch k {
+			case "_content":
 				doc.Content = val.StringValue
-			} else {
+			case "_original_id":
+				// Recover the user-provided string ID.
+				doc.ID = val.StringValue
+			default:
 				doc.Payload[k] = val.StringValue
 			}
 		case *qdrant.Value_IntegerValue:
@@ -338,68 +442,237 @@ func qdrantPointToDocument(p *qdrant.RetrievedPoint) *Document {
 			doc.Payload[k] = val.BoolValue
 		}
 	}
+	if vec != nil {
+		doc.Vector = toFloat64Slice(vec)
+	}
 	return doc
+}
+
+func qdrantPointToDocument(p *qdrant.RetrievedPoint) *Document {
+	var vec []float32
+	if p.GetVectors() != nil {
+		vec = p.GetVectors().GetVector().GetData()
+	}
+	doc := qdrantDecodeDocument(p.GetId(), p.GetPayload(), vec)
+	return &doc
 }
 
 func qdrantScoredPointsToResults(pts []*qdrant.ScoredPoint) []SearchResult {
 	out := make([]SearchResult, len(pts))
 	for i, p := range pts {
-		doc := &Document{
-			ID:      p.GetId().GetUuid(),
-			Payload: make(map[string]interface{}),
+		var vec []float32
+		if p.GetVectors() != nil {
+			vec = p.GetVectors().GetVector().GetData()
 		}
-		if doc.ID == "" {
-			doc.ID = fmt.Sprintf("%d", p.GetId().GetNum())
-		}
-		for k, v := range p.GetPayload() {
-			switch val := v.GetKind().(type) {
-			case *qdrant.Value_StringValue:
-				if k == "_content" {
-					doc.Content = val.StringValue
-				} else {
-					doc.Payload[k] = val.StringValue
-				}
-			case *qdrant.Value_IntegerValue:
-				doc.Payload[k] = val.IntegerValue
-			case *qdrant.Value_DoubleValue:
-				doc.Payload[k] = val.DoubleValue
-			case *qdrant.Value_BoolValue:
-				doc.Payload[k] = val.BoolValue
-			}
-		}
+		doc := qdrantDecodeDocument(p.GetId(), p.GetPayload(), vec)
 		out[i] = SearchResult{
 			ID:      doc.ID,
 			Score:   float64(p.GetScore()),
 			Payload: doc.Payload,
 			Content: doc.Content,
-		}
-		if p.GetVectors() != nil {
-			out[i].Vector = toFloat64Slice(p.GetVectors().GetVector().GetData())
+			Vector:  doc.Vector,
 		}
 	}
 	return out
 }
 
-// buildQdrantFilter builds a minimal Qdrant filter from a generic key=value map.
-// Only equality matches are implemented. Complex filter DSL is left as a TODO.
+// buildQdrantFilter builds a Qdrant gRPC Filter from a generic key/value map.
+//
+// Each map entry can be either a scalar equality or an operator map:
+//
+//	Scalar:   {"field": "foo"}               → keyword match
+//	Operator: {"field": {"$gt": 5.0}}        → numeric range
+//	          {"field": {"$in": ["a","b"]}}   → keyword/integer set match
+//	          {"field": {"$nin": [1,2,3]}}    → except-integers
+//	          {"field": {"$ne": "foo"}}       → except-keywords
+//
+// Multiple top-level entries are ANDed via Must[].
+// Unrecognised operators are silently skipped (log a warning upstream if needed).
 func buildQdrantFilter(filters map[string]interface{}) *qdrant.Filter {
 	if len(filters) == 0 {
 		return nil
 	}
 	conds := make([]*qdrant.Condition, 0, len(filters))
 	for k, v := range filters {
-		conds = append(conds, &qdrant.Condition{
-			ConditionOneOf: &qdrant.Condition_Field{
-				Field: &qdrant.FieldCondition{
-					Key: k,
-					Match: &qdrant.Match{
-						MatchValue: &qdrant.Match_Keyword{
-							Keyword: fmt.Sprintf("%v", v),
-						},
-					},
-				},
-			},
-		})
+		switch val := v.(type) {
+		case map[string]interface{}:
+			// Operator map: {"$gt": 5} etc.
+			if cond := qdrantOperatorCondition(k, val); cond != nil {
+				conds = append(conds, cond)
+			}
+		case bool:
+			conds = append(conds, qdrantMatchCond(k,
+				&qdrant.Match{MatchValue: &qdrant.Match_Boolean{Boolean: val}}))
+		case int:
+			conds = append(conds, qdrantMatchCond(k,
+				&qdrant.Match{MatchValue: &qdrant.Match_Integer{Integer: int64(val)}}))
+		case int64:
+			conds = append(conds, qdrantMatchCond(k,
+				&qdrant.Match{MatchValue: &qdrant.Match_Integer{Integer: val}}))
+		case float64:
+			// Qdrant has no float equality match; fall back to a tight range.
+			conds = append(conds, qdrantRangeCond(k, &qdrant.Range{
+				Gte: float64Ptr(val),
+				Lte: float64Ptr(val),
+			}))
+		default:
+			conds = append(conds, qdrantMatchCond(k,
+				&qdrant.Match{MatchValue: &qdrant.Match_Keyword{Keyword: fmt.Sprintf("%v", v)}}))
+		}
+	}
+	if len(conds) == 0 {
+		return nil
 	}
 	return &qdrant.Filter{Must: conds}
+}
+
+// qdrantOperatorCondition converts a single {"$op": operand} map into a Condition.
+// Returns nil for unsupported operators so the caller can skip gracefully.
+func qdrantOperatorCondition(key string, ops map[string]interface{}) *qdrant.Condition {
+	// Collect range fields first (multiple range ops on one field share one Range struct).
+	r := &qdrant.Range{}
+	hasRange := false
+
+	for op, operand := range ops {
+		switch op {
+		case "$eq":
+			return qdrantEqCondition(key, operand)
+		case "$ne":
+			return qdrantNeCondition(key, operand)
+		case "$in":
+			return qdrantInCondition(key, operand, false)
+		case "$nin":
+			return qdrantInCondition(key, operand, true)
+		case "$gt":
+			if f, ok := toFloat64(operand); ok {
+				r.Gt = float64Ptr(f)
+				hasRange = true
+			}
+		case "$gte":
+			if f, ok := toFloat64(operand); ok {
+				r.Gte = float64Ptr(f)
+				hasRange = true
+			}
+		case "$lt":
+			if f, ok := toFloat64(operand); ok {
+				r.Lt = float64Ptr(f)
+				hasRange = true
+			}
+		case "$lte":
+			if f, ok := toFloat64(operand); ok {
+				r.Lte = float64Ptr(f)
+				hasRange = true
+			}
+		}
+	}
+	if hasRange {
+		return qdrantRangeCond(key, r)
+	}
+	return nil
+}
+
+// qdrantEqCondition builds an equality Condition.
+func qdrantEqCondition(key string, v interface{}) *qdrant.Condition {
+	switch val := v.(type) {
+	case bool:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_Boolean{Boolean: val}})
+	case int:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_Integer{Integer: int64(val)}})
+	case int64:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_Integer{Integer: val}})
+	case float64:
+		return qdrantRangeCond(key, &qdrant.Range{Gte: float64Ptr(val), Lte: float64Ptr(val)})
+	default:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_Keyword{Keyword: fmt.Sprintf("%v", v)}})
+	}
+}
+
+// qdrantNeCondition builds a not-equal Condition using ExceptKeywords / ExceptIntegers.
+func qdrantNeCondition(key string, v interface{}) *qdrant.Condition {
+	switch val := v.(type) {
+	case int:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_ExceptIntegers{
+			ExceptIntegers: &qdrant.RepeatedIntegers{Integers: []int64{int64(val)}}}})
+	case int64:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_ExceptIntegers{
+			ExceptIntegers: &qdrant.RepeatedIntegers{Integers: []int64{val}}}})
+	default:
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_ExceptKeywords{
+			ExceptKeywords: &qdrant.RepeatedStrings{Strings: []string{fmt.Sprintf("%v", v)}}}})
+	}
+}
+
+// qdrantInCondition builds a set-membership Condition (In / Nin).
+func qdrantInCondition(key string, operand interface{}, notIn bool) *qdrant.Condition {
+	items, ok := operand.([]interface{})
+	if !ok || len(items) == 0 {
+		return nil
+	}
+	// Infer type from first element.
+	switch items[0].(type) {
+	case int, int32, int64:
+		ints := make([]int64, 0, len(items))
+		for _, item := range items {
+			switch n := item.(type) {
+			case int:
+				ints = append(ints, int64(n))
+			case int32:
+				ints = append(ints, int64(n))
+			case int64:
+				ints = append(ints, n)
+			}
+		}
+		if notIn {
+			return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_ExceptIntegers{
+				ExceptIntegers: &qdrant.RepeatedIntegers{Integers: ints}}})
+		}
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_Integers{
+			Integers: &qdrant.RepeatedIntegers{Integers: ints}}})
+	default:
+		strs := make([]string, 0, len(items))
+		for _, item := range items {
+			strs = append(strs, fmt.Sprintf("%v", item))
+		}
+		if notIn {
+			return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_ExceptKeywords{
+				ExceptKeywords: &qdrant.RepeatedStrings{Strings: strs}}})
+		}
+		return qdrantMatchCond(key, &qdrant.Match{MatchValue: &qdrant.Match_Keywords{
+			Keywords: &qdrant.RepeatedStrings{Strings: strs}}})
+	}
+}
+
+func qdrantMatchCond(key string, m *qdrant.Match) *qdrant.Condition {
+	return &qdrant.Condition{
+		ConditionOneOf: &qdrant.Condition_Field{
+			Field: &qdrant.FieldCondition{Key: key, Match: m},
+		},
+	}
+}
+
+func qdrantRangeCond(key string, r *qdrant.Range) *qdrant.Condition {
+	return &qdrant.Condition{
+		ConditionOneOf: &qdrant.Condition_Field{
+			Field: &qdrant.FieldCondition{Key: key, Range: r},
+		},
+	}
+}
+
+func float64Ptr(f float64) *float64 { return &f }
+
+// toFloat64 coerces numeric types to float64 for range conditions.
+func toFloat64(v interface{}) (float64, bool) {
+	switch n := v.(type) {
+	case int:
+		return float64(n), true
+	case int32:
+		return float64(n), true
+	case int64:
+		return float64(n), true
+	case float32:
+		return float64(n), true
+	case float64:
+		return n, true
+	}
+	return 0, false
 }

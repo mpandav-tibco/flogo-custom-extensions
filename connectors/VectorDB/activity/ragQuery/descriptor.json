@@ -1,0 +1,246 @@
+{
+  "name": "tibco-vectordb-rag-query",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery",
+  "title": "RAG Query",
+  "image": "icons/rag.svg",
+  "description": "Full RAG pipeline: embed query text \u2192 vector search \u2192 format context for LLM. Combines embedding generation and semantic retrieval in one activity.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/rag.svg",
+    "description": "Retrieval-Augmented Generation: embed \u2192 search \u2192 format context"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use for retrieval",
+        "type": "connection"
+      },
+      "allowed": []
+    },
+    {
+      "name": "useConnectorEmbedding",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Use Connector Embedding Settings",
+        "description": "Inherit the embedding provider, API key, and base URL from the VectorDB connection. Only the model needs to be set below. Requires 'Configure Embedding Provider' to be enabled on the connection.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingProvider",
+      "type": "string",
+      "required": false,
+      "value": "OpenAI",
+      "allowed": [
+        "OpenAI",
+        "Azure OpenAI",
+        "Cohere",
+        "Ollama",
+        "Custom"
+      ],
+      "display": {
+        "name": "Embedding Provider",
+        "description": "API provider used to embed the query text. Leave blank when 'Use Connector Embedding Settings' is enabled.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding API Key",
+        "description": "API key for the embedding provider. Not required for Ollama.",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBaseURL",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding Base URL",
+        "description": "Override the default provider URL. Azure: full deployment URL. Ollama: http://localhost:11434. Custom: your endpoint.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingModel",
+      "type": "string",
+      "required": true,
+      "value": "text-embedding-3-small",
+      "display": {
+        "name": "Embedding Model",
+        "description": "Embedding model used to encode the query. Must match the model used during document ingestion.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingDimensions",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Embedding Dimensions",
+        "description": "Output dimensions (0 = model default). Must match the collection's vector dimension.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultTopK",
+      "type": "integer",
+      "required": false,
+      "value": 5,
+      "display": {
+        "name": "Default Top-K",
+        "description": "Default number of documents to retrieve",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "scoreThreshold",
+      "type": "number",
+      "required": false,
+      "value": 0.0,
+      "display": {
+        "name": "Score Threshold",
+        "description": "Minimum similarity score (0.0 = no filter). Documents below this threshold are excluded.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "contentField",
+      "type": "string",
+      "required": false,
+      "value": "text",
+      "display": {
+        "name": "Content Field",
+        "description": "Payload field name containing the document text. Used when building formattedContext.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "contextFormat",
+      "type": "string",
+      "required": false,
+      "value": "numbered",
+      "allowed": [
+        "numbered",
+        "markdown",
+        "xml",
+        "plain",
+        "json"
+      ],
+      "display": {
+        "name": "Context Format",
+        "description": "Format of formattedContext output: numbered (1. text), markdown (**[1]** text), xml (<document>), plain (raw text), json (JSON array with index/id/score/content/payload)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 30,
+      "display": {
+        "name": "Timeout (s)",
+        "description": "Total timeout covering embedding API + vector search",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "useHybridSearch",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Use Hybrid Search",
+        "description": "Enable hybrid (BM25 + dense vector) search. Only Weaviate supports native hybrid; other providers fall back to dense vector search.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "hybridAlpha",
+      "type": "number",
+      "required": false,
+      "value": 0.5,
+      "display": {
+        "name": "Hybrid Alpha",
+        "description": "Blend weight for hybrid search: 0.0 = pure BM25 keyword, 1.0 = pure dense vector, 0.5 = balanced (default). Only used when useHybridSearch is true.",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "queryText",
+      "type": "string"
+    },
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "topK",
+      "type": "integer",
+      "value": 0
+    },
+    {
+      "name": "filters",
+      "type": "object",
+      "schema": "{\"type\": \"object\", \"description\": \"Key-value filter map. Keys are payload field names. Values can be string, number, boolean, or array (for 'in' match). Example: {\\\"category\\\":\\\"tech\\\",\\\"year\\\":2024,\\\"tags\\\":[\\\"rag\\\",\\\"llm\\\"]}\", \"additionalProperties\": true}"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "formattedContext",
+      "type": "string"
+    },
+    {
+      "name": "sourceDocuments",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Document ID\"}, \"score\": {\"type\": \"number\", \"description\": \"Similarity score\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text\"}, \"payload\": {\"type\": \"object\", \"description\": \"Metadata payload\"}}}}"
+    },
+    {
+      "name": "queryEmbedding",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"number\"}}"
+    },
+    {
+      "name": "totalFound",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

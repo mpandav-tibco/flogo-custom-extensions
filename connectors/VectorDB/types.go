@@ -1,5 +1,7 @@
 package vectordb
 
+import "fmt"
+
 // Document represents a vector database record: an embedding vector plus metadata.
 type Document struct {
 	// ID is the unique identifier. Use UUIDs for Qdrant/Weaviate compatibility.
@@ -14,10 +16,11 @@ type Document struct {
 	Content string
 
 	// Payload holds arbitrary key-value metadata (source, category, timestamps, etc.).
+	// The following keys are reserved for internal connector use and must not be
+	// set by callers — they will be silently overwritten:
+	//   "_original_id", "_content"         (Qdrant)
+	//   "_docId",       "_metadata"         (Weaviate, Chroma, Milvus)
 	Payload map[string]interface{}
-
-	// Score is the similarity score populated by search operations (0–1 for cosine).
-	Score float64
 }
 
 // SearchResult is a ranked result from VectorSearch or HybridSearch.
@@ -71,8 +74,11 @@ type SearchRequest struct {
 	// WithVectors includes the stored vector in each SearchResult.
 	WithVectors bool
 
-	// WithPayload includes payload/metadata in each SearchResult (default: true).
-	WithPayload bool
+	// SkipPayload suppresses payload/metadata in each SearchResult when true.
+	// The zero value (false) is the safe default: payload and content are
+	// included unless explicitly skipped. Set to true only for ranking-only
+	// passes where only the ID and score are needed.
+	SkipPayload bool
 }
 
 // HybridSearchRequest combines dense vector and sparse/keyword (BM25) search.
@@ -91,6 +97,11 @@ type HybridSearchRequest struct {
 
 	// Alpha weights the fusion: 0.0 = sparse/BM25 only, 1.0 = dense only, 0.5 = balanced.
 	Alpha float64
+
+	// SkipPayload suppresses payload/metadata in each SearchResult when true.
+	// The zero value (false) is the safe default: payload is included.
+	// Mirrors SearchRequest.SkipPayload for uniform behaviour across search operations.
+	SkipPayload bool
 }
 
 // ScrollRequest paginates through all documents in a collection.
@@ -114,7 +125,9 @@ type ScrollResult struct {
 	// NextOffset is the cursor for the next page. Empty string means last page.
 	NextOffset string
 
-	// Total is the total count of matching documents. -1 if the provider does not support it.
+	// Total is the total count of matching documents across all pages.
+	// -1 means the provider does not support a count in this operation; it is
+	// NOT an error. Use CountDocuments for an authoritative count.
 	Total int64
 }
 
@@ -159,4 +172,47 @@ type ConnectionConfig struct {
 
 	// DBName is the Milvus database name. Default: "default".
 	DBName string
+
+	// DefaultMetricType is the distance metric used for vector similarity in Milvus searches
+	// ("cosine", "dot", "euclidean"). Defaults to "cosine". Only used when DBType="milvus".
+	DefaultMetricType string
+
+	// --- TLS certificate settings (only used when UseTLS=true) ---
+
+	// TLSInsecureSkipVerify disables certificate verification. Use only for dev/self-signed certs.
+	TLSInsecureSkipVerify bool
+
+	// TLSServerName overrides the server name sent in the TLS SNI extension.
+	TLSServerName string
+
+	// CACert is the path to (or PEM content of) a CA certificate for server verification.
+	CACert string
+
+	// ClientCert is the path to (or PEM content of) the client certificate for mTLS.
+	ClientCert string
+
+	// ClientKey is the path to (or PEM content of) the client private key for mTLS.
+	ClientKey string
+}
+
+// String returns a human-readable representation of the ConnectionConfig with
+// all sensitive fields (APIKey, Password, ClientKey) replaced by "[redacted]".
+// This prevents credentials from leaking into log files or error messages.
+func (c ConnectionConfig) String() string {
+	apiKey := ""
+	if c.APIKey != "" {
+		apiKey = "[redacted]"
+	}
+	password := ""
+	if c.Password != "" {
+		password = "[redacted]"
+	}
+	clientKey := ""
+	if c.ClientKey != "" {
+		clientKey = "[redacted]"
+	}
+	return fmt.Sprintf(
+		"ConnectionConfig{DBType:%q Host:%q Port:%d Username:%q APIKey:%s Password:%s UseTLS:%v ClientKey:%s}",
+		c.DBType, c.Host, c.Port, c.Username, apiKey, password, c.UseTLS, clientKey,
+	)
 }

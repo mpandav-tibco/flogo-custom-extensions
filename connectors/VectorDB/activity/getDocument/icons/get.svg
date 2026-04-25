@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+
+    <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- document -->
+  <path d="M12 8 L30 8 L36 14 L36 38 L12 38 Z" fill="#00897B" opacity="0.85"/>
+  <path d="M30 8 L30 14 L36 14 Z" fill="#00897B" opacity="0.4"/>
+  <!-- eye -->
+  <ellipse cx="24" cy="26" rx="6" ry="4" fill="#E8EAF6" opacity="0.9"/>
+  <circle cx="24" cy="26" r="2.5" fill="#004D40"/>
+  <circle cx="25" cy="25" r="0.8" fill="#E8EAF6"/>
+  <text x="24" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#00897B">GET</text>
+
+</svg>

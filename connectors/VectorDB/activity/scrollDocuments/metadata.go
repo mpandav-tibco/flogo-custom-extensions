@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/milindpandav/flogo-extensions/vectordb"
+	"github.com/mpandav-tibco/flogo-extensions/vectordb"
 	"github.com/project-flogo/core/support/connection"
 )
 
