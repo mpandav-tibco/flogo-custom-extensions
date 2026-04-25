@@ -108,7 +108,7 @@ Add the root package as a single import in your `.flogo` file:
 
 ```json
 "imports": [
-  "github.com/milindpandav/flogo-extensions/function"
+  "github.com/mpandav-tibco/flogo-extensions/function"
 ]
 ```
 
@@ -142,7 +142,7 @@ Example expressions:
 ## Module
 
 ```
-module: github.com/milindpandav/flogo-extensions/function
+module: github.com/mpandav-tibco/flogo-extensions/function
 go:     1.21
 ```
 

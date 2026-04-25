@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/function/number
+module github.com/mpandav-tibco/flogo-extensions/function/number
 
 go 1.21
 

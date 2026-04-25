@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/function/math
+module github.com/mpandav-tibco/flogo-extensions/function/math
 
 go 1.21
 
