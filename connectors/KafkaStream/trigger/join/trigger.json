@@ -3,8 +3,9 @@
     "title": "Join Kafka Streams",
     "version": "1.0.0",
     "type": "flogo:trigger",
+    "image": "icons/kafka-join-trigger.svg",
     "description": "Subscribes to two or more Kafka topics and fires the flow when messages carrying the same joinKeyField value have been received from every configured topic within joinWindowMs milliseconds — a classic stream-join / stream-enrichment pattern. Each topic uses its own consumer group. When the window expires before all topics contribute, an optional timeout handler fires with the partial data.",
-    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/join",
     "display": {
         "category": "KafkaStream",
         "visible": true,

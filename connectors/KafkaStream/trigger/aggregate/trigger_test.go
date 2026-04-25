@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kafkastream "github.com/milindpandav/flogo-extensions/kafkastream"
+	kafkastream "github.com/mpandav-tibco/flogo-extensions/kafkastream"
 )
 
 // ─── helpers ─────────────────────────────────────────────────────────────────

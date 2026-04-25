@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <rect x="7" y="13" width="24" height="18" rx="3" fill="#EEF2FA" stroke="#FF6D00" stroke-width="1.3"/>
+  <polyline points="7,13 19,22 31,13" stroke="#FF6D00" stroke-width="1.3" fill="none" stroke-linejoin="round"/>
+  <line x1="7" y1="31" x2="16" y2="22" stroke="#FF6D00" stroke-width="0.9" opacity="0.5"/>
+  <line x1="31" y1="31" x2="22" y2="22" stroke="#FF6D00" stroke-width="0.9" opacity="0.5"/>
+  <line x1="33" y1="24" x2="43" y2="24" stroke="#7C4DFF" stroke-width="2.2" stroke-linecap="round"/>
+  <polyline points="39,20 44,24 39,28" stroke="#7C4DFF" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="36" cy="24" r="1.5" fill="#FF6D00" opacity="0.8"/>
+  <circle cx="36" cy="34" r="1.2" fill="#FF6D00" opacity="0.5"/>
+  <circle cx="36" cy="39" r="0.9" fill="#FF6D00" opacity="0.3"/>
+  <text x="19" y="46" font-size="4.5" font-family="sans-serif" fill="#5A6082" text-anchor="middle">SSE SEND</text>
+</svg>

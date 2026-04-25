@@ -10,8 +10,8 @@ import (
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
 
-	kafkastream "github.com/milindpandav/flogo-extensions/kafkastream"
-	"github.com/milindpandav/flogo-extensions/kafkastream/window"
+	kafkastream "github.com/mpandav-tibco/flogo-extensions/kafkastream"
+	"github.com/mpandav-tibco/flogo-extensions/kafkastream/window"
 )
 
 var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})

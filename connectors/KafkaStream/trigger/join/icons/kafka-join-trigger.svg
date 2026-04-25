@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Dark background -->
+  <rect width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+
+  <!-- Stream 1: top-left entering from left -->
+  <line x1="4" y1="14" x2="16" y2="14" stroke="#5C6BC0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="4" y1="18" x2="14" y2="18" stroke="#5C6BC0" stroke-width="1.2" stroke-dasharray="2,2" stroke-linecap="round"/>
+
+  <!-- Stream 2: bottom-left entering from left -->
+  <line x1="4" y1="30" x2="16" y2="30" stroke="#7C4DFF" stroke-width="2" stroke-linecap="round"/>
+  <line x1="4" y1="34" x2="14" y2="34" stroke="#7C4DFF" stroke-width="1.2" stroke-dasharray="2,2" stroke-linecap="round"/>
+
+  <!-- Y-merge: stream 1 curves down to center -->
+  <path d="M16,14 Q20,14 22,22" stroke="#5C6BC0" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Y-merge: stream 2 curves up to center -->
+  <path d="M16,30 Q20,30 22,22" stroke="#7C4DFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Kafka lightning bolt at join point -->
+  <polyline points="21,19 19,24 23,24 21,29" stroke="#FF6D00" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Join key indicator: oval -->
+  <ellipse cx="28" cy="24" rx="5" ry="4" fill="#FF6D00" opacity="0.2" stroke="#FF6D00" stroke-width="1"/>
+  <text x="28" y="24" font-size="4.5" font-family="monospace" fill="#FF6D00" text-anchor="middle" dominant-baseline="middle">KEY</text>
+
+  <!-- Output stream to right -->
+  <line x1="33" y1="24" x2="44" y2="24" stroke="#9C59FF" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="44" cy="24" r="2" fill="#9C59FF"/>
+
+  <!-- Label -->
+  <text x="24" y="48" font-size="5" font-family="sans-serif" fill="#5A6082" text-anchor="middle" dominant-baseline="auto">JOIN</text>
+</svg>

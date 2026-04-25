@@ -7,19 +7,19 @@
     "contributions": [
         {
             "type": "flogo:trigger",
-            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter"
+            "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/filter"
         },
         {
             "type": "flogo:trigger",
-            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate"
+            "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/aggregate"
         },
         {
             "type": "flogo:trigger",
-            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/join"
+            "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/join"
         },
         {
             "type": "flogo:trigger",
-            "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/split"
+            "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/split"
         }
     ]
 }

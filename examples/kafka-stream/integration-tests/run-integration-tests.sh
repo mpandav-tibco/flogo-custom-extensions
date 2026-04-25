@@ -1604,7 +1604,7 @@ _make_filter_flogo() {
         "github.com/project-flogo/flow",
         "github.com/project-flogo/contrib/activity/noop",
         "github.com/tibco/flogo-general/src/app/General/activity/log",
-        "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter",
+        "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/filter",
         "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/connector/kafka"
       ],
       "connections": {($conn_id): $conn_obj},

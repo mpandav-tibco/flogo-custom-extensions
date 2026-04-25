@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kafkastream "github.com/milindpandav/flogo-extensions/kafkastream"
-	"github.com/milindpandav/flogo-extensions/kafkastream/window"
+	kafkastream "github.com/mpandav-tibco/flogo-extensions/kafkastream"
+	"github.com/mpandav-tibco/flogo-extensions/kafkastream/window"
 )
 
 func newAct(t *testing.T, s *Settings) *Activity {

@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/kafkastream
+module github.com/mpandav-tibco/flogo-extensions/kafkastream
 
 go 1.25.0
 

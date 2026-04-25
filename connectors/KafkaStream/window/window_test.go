@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/milindpandav/flogo-extensions/kafkastream/window"
+	"github.com/mpandav-tibco/flogo-extensions/kafkastream/window"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

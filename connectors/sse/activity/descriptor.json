@@ -3,9 +3,16 @@
   "type": "flogo:activity",
   "version": "1.0.0",
   "title": "SSE Send",
+  "image": "icons/sse-send.svg",
   "description": "Send Server-Sent Events (SSE) to connected clients",
   "author": "Milind Pandav <milind.pandav@cloud.com>",
-  "homepage": "https://github.com/milindpandav/flogo-extensions",
+  "homepage": "https://github.com/mpandav-tibco/flogo-extensions",
+  "display": {
+    "category": "SSE",
+    "visible": true,
+    "smallIcon": "icons/sse-send.svg",
+    "description": "Send an event to all connected SSE clients"
+  },
   "settings": [
     {
       "name": "sseServerRef",
@@ -18,7 +25,6 @@
         "appPropertySupport": true
       }
     },
-
     {
       "name": "topic",
       "type": "string",
@@ -32,7 +38,20 @@
     {
       "name": "eventType",
       "type": "string",
-      "allowed": ["message", "notification", "update", "alert", "status", "data", "event", "error", "warning", "info", "heartbeat", "custom"],
+      "allowed": [
+        "message",
+        "notification",
+        "update",
+        "alert",
+        "status",
+        "data",
+        "event",
+        "error",
+        "warning",
+        "info",
+        "heartbeat",
+        "custom"
+      ],
       "value": "message",
       "description": "Default type of the event",
       "display": {
@@ -41,7 +60,7 @@
         "appPropertySupport": true
       }
     },
-        {
+    {
       "name": "retry",
       "type": "integer",
       "value": 30000,
@@ -79,7 +98,20 @@
     {
       "name": "eventType",
       "type": "string",
-      "allowed": ["message", "notification", "update", "alert", "status", "data", "event", "error", "warning", "info", "heartbeat", "custom"],
+      "allowed": [
+        "message",
+        "notification",
+        "update",
+        "alert",
+        "status",
+        "data",
+        "event",
+        "error",
+        "warning",
+        "info",
+        "heartbeat",
+        "custom"
+      ],
       "description": "Default type of the event"
     },
     {
@@ -97,7 +129,11 @@
     {
       "name": "format",
       "type": "string",
-      "allowed": ["json", "string", "auto"],
+      "allowed": [
+        "json",
+        "string",
+        "auto"
+      ],
       "value": "auto",
       "description": "Data format - json, string, or auto-detect",
       "display": {
@@ -126,7 +162,7 @@
     },
     {
       "name": "sentCount",
-      "type": "integer", 
+      "type": "integer",
       "description": "Number of clients that received the event"
     },
     {

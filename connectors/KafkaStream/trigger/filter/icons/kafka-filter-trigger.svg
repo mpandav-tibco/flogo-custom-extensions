@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Dark background -->
+  <rect width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+
+  <!-- Kafka lightning bolt (top-left, small) -->
+  <polyline points="8,6 5,13 9,13 6,20" stroke="#FF6D00" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Funnel body: top wide bar -->
+  <polygon points="12,10 36,10 30,20 18,20" fill="#7C4DFF" opacity="0.9"/>
+  <!-- Funnel neck -->
+  <rect x="20" y="20" width="8" height="6" fill="#7C4DFF" opacity="0.9"/>
+  <!-- Funnel spout -->
+  <rect x="22" y="26" width="4" height="5" rx="1" fill="#7C4DFF" opacity="0.9"/>
+
+  <!-- Stream lines entering funnel (left/right) -->
+  <line x1="6" y1="13" x2="12" y2="13" stroke="#5C6BC0" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="6" y1="16" x2="12" y2="16" stroke="#5C6BC0" stroke-width="1.2" stroke-dasharray="2,2" stroke-linecap="round"/>
+  <line x1="42" y1="13" x2="36" y2="13" stroke="#5C6BC0" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="42" y1="16" x2="36" y2="16" stroke="#5C6BC0" stroke-width="1.2" stroke-dasharray="2,2" stroke-linecap="round"/>
+
+  <!-- Filtered output dots (only some pass through) -->
+  <circle cx="24" cy="36" r="2" fill="#7C4DFF"/>
+  <circle cx="24" cy="41" r="1.5" fill="#7C4DFF" opacity="0.6"/>
+
+  <!-- Label -->
+  <text x="24" y="48" font-size="5" font-family="sans-serif" fill="#5A6082" text-anchor="middle" dominant-baseline="auto">FILTER</text>
+</svg>

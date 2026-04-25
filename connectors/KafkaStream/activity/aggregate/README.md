@@ -238,5 +238,5 @@ A missing, corrupt, or permission-denied snapshot file logs a warning and the ap
 ## Go Module
 
 ```
-github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate
+github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/aggregate
 ```
