@@ -10,8 +10,8 @@
         "category": "KafkaStream",
         "visible": true,
         "description": "Route each Kafka message to one or more handler branches based on content-based predicates.",
-        "smallIcon": "icons/consumer_trigger.png",
-        "largeIcon": "icons/consumer_trigger@2x.png",
+        "smallIcon": "icons/kafka-split-trigger.svg",
+        "largeIcon": "icons/kafka-split-trigger.svg",
         "connector": [
             "Kafka/tibco-kafka"
         ],

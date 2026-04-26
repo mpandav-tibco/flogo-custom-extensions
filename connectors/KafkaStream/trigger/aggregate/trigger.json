@@ -10,8 +10,8 @@
         "category": "KafkaStream",
         "visible": true,
         "description": "Fire a flow with an aggregate result when a Kafka stream window closes.",
-        "smallIcon": "icons/consumer_trigger.png",
-        "largeIcon": "icons/consumer_trigger@2x.png",
+        "smallIcon": "icons/kafka-aggregate-trigger.svg",
+        "largeIcon": "icons/kafka-aggregate-trigger.svg",
         "connector": [
             "Kafka/tibco-kafka"
         ],

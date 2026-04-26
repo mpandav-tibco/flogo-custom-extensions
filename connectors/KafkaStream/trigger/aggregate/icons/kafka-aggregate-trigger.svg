@@ -1,28 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-  <!-- Dark background -->
-  <rect width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
-
-  <!-- Kafka lightning bolt -->
-  <polyline points="8,5 5,12 9,12 6,19" stroke="#FF6D00" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-
-  <!-- Bar chart: 3 accumulating bars representing windowed aggregation -->
-  <rect x="11" y="28" width="6" height="10" rx="1" fill="#5C6BC0" opacity="0.8"/>
-  <rect x="20" y="21" width="6" height="17" rx="1" fill="#7C4DFF" opacity="0.85"/>
-  <rect x="29" y="14" width="6" height="24" rx="1" fill="#7C4DFF"/>
-
-  <!-- Baseline -->
-  <line x1="10" y1="38" x2="40" y2="38" stroke="#5C6BC0" stroke-width="1.2"/>
-
-  <!-- Sigma symbol (aggregate function) -->
-  <text x="40" y="16" font-size="11" font-family="serif" fill="#FF6D00" text-anchor="middle" dominant-baseline="auto">Σ</text>
-
-  <!-- Window bracket (top) -->
-  <path d="M10,10 L10,6 L38,6 L38,10" stroke="#5C6BC0" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-
-  <!-- Stream input lines -->
-  <line x1="4" y1="24" x2="10" y2="24" stroke="#5C6BC0" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="4" y1="28" x2="10" y2="28" stroke="#5C6BC0" stroke-width="1" stroke-dasharray="2,2" stroke-linecap="round"/>
-
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- Window timer circle (represents a closing time/count window) -->
+  <circle cx="19" cy="22" r="13" fill="#F0F0FF" stroke="#5C6BC0" stroke-width="1.5"/>
+  <!-- Clock hour hand (12 o'clock) -->
+  <line x1="19" y1="22" x2="19" y2="12" stroke="#5C6BC0" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Clock minute hand at 3 o'clock (window closing = trigger fires) -->
+  <line x1="19" y1="22" x2="29" y2="22" stroke="#FF6D00" stroke-width="2" stroke-linecap="round"/>
+  <!-- Accumulation bars inside lower half of clock -->
+  <rect x="11" y="27" width="3"   height="4" rx="0.5" fill="#7C4DFF" opacity="0.7"/>
+  <rect x="15.5" y="25" width="3" height="6" rx="0.5" fill="#7C4DFF" opacity="0.85"/>
+  <rect x="20" y="23" width="3"   height="8" rx="0.5" fill="#7C4DFF"/>
+  <!-- Kafka bolt (right side, trigger fires on window close) -->
+  <polyline points="36,10 31,20 36,20 31,30" stroke="#FF6D00" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Output trigger arrow -->
+  <line x1="38" y1="25" x2="44" y2="25" stroke="#FF6D00" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="42,22.5 46,25 42,27.5" fill="#FF6D00"/>
   <!-- Label -->
-  <text x="24" y="48" font-size="4.5" font-family="sans-serif" fill="#5A6082" text-anchor="middle" dominant-baseline="auto">AGGREGATE</text>
+  <text x="24" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="4.5" fill="#5C6BC0">AGGREGATE</text>
 </svg>

@@ -3,15 +3,15 @@
     "title": "Aggregate",
     "version": "2.0.0",
     "type": "flogo:activity",
-    "image": "icons/aggregate.png",
+    "image": "icons/aggregate.svg",
     "description": "Aggregates a numeric field from Kafka messages over a streaming window. Emits sum/count/avg/min/max when the window closes. Supports event-time processing, watermarks, late-event routing, overflow policies, MessageID deduplication, idle-timeout auto-close, and keyed sub-windows.",
     "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/aggregate",
     "display": {
         "category": "KafkaStream",
         "visible": true,
         "description": "Aggregate Kafka stream messages over tumbling or sliding windows (sum/count/avg/min/max).",
-        "smallIcon": "icons/aggregate.png",
-        "largeIcon": "icons/aggregate.png"
+        "smallIcon": "icons/aggregate.svg",
+        "largeIcon": "icons/aggregate.svg"
     },
     "settings": [
         {

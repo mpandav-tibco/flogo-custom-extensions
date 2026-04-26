@@ -10,8 +10,8 @@
         "category": "KafkaStream",
         "visible": true,
         "description": "Fire a flow when matching messages arrive from all configured Kafka topics within a time window.",
-        "smallIcon": "icons/consumer_trigger.png",
-        "largeIcon": "icons/consumer_trigger@2x.png",
+        "smallIcon": "icons/kafka-join-trigger.svg",
+        "largeIcon": "icons/kafka-join-trigger.svg",
         "connector": [
             "Kafka/tibco-kafka"
         ],
