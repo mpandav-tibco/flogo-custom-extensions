@@ -29,7 +29,10 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	if s.RerankEndpoint == "" {
 		return nil, fmt.Errorf("vectordb-rerank: rerankEndpoint is required")
 	}
-	conn, _ := s.Connection.GetConnection().(*vectordbconnector.VectorDBConnection)
+	var conn *vectordbconnector.VectorDBConnection
+	if s.Connection != nil {
+		conn, _ = s.Connection.GetConnection().(*vectordbconnector.VectorDBConnection)
+	}
 	if conn != nil {
 		ctx.Logger().Infof("Rerank initialised: endpoint=%s model=%s connection=%s",
 			s.RerankEndpoint, s.Model, conn.GetName())
