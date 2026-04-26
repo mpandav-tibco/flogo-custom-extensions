@@ -1,20 +1,20 @@
-module github.com/milindpandav/flogo-extensions/kafkastream/test/integration
+module github.com/mpandav-tibco/flogo-extensions/kafkastream/test/integration
 
 go 1.24.0
 
 toolchain go1.24.3
 
 replace (
-	github.com/milindpandav/flogo-extensions/kafkastream => ../../../
-	github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate => ../../../
-	github.com/milindpandav/flogo-extensions/kafkastream/activity/filter => ../../../
+	github.com/mpandav-tibco/flogo-extensions/kafkastream => ../../../
+	github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/aggregate => ../../../
+	github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/filter => ../../../
 )
 
 require (
 	github.com/IBM/sarama v1.46.3
-	github.com/milindpandav/flogo-extensions/kafkastream v0.0.0
-	github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate v0.0.0-00010101000000-000000000000
-	github.com/milindpandav/flogo-extensions/kafkastream/activity/filter v0.0.0-00010101000000-000000000000
+	github.com/mpandav-tibco/flogo-extensions/kafkastream v0.0.0
+	github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/aggregate v0.0.0-00010101000000-000000000000
+	github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/filter v0.0.0-00010101000000-000000000000
 	github.com/project-flogo/core v1.6.17
 	github.com/stretchr/testify v1.11.1
 )

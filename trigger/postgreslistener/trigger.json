@@ -4,6 +4,7 @@
   "title": "PostgreSQL Listener",
   "version": "0.2.0",
   "author": "Milind Pandav",
+  "image": "icons/postgres-listener.svg",
   "description": "A PostgreSQL listenertrigger that listens for PostgreSQL NOTIFY messages with enhanced logging, OpenTelemetry tracing, and enterprise-grade connection management",
   "display": {
     "category": "PostgreSQL",

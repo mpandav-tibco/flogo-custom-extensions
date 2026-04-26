@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/function/array
+module github.com/mpandav-tibco/flogo-extensions/function/array
 
 go 1.21
 

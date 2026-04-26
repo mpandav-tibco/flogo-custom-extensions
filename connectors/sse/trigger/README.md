@@ -122,7 +122,7 @@ Send events to connected clients using the companion SSE Send Activity:
 ```json
 {
   "id": "send_notification",
-  "ref": "github.com/milindpandav/flogo-extensions/sse/activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/sse/activity",
   "settings": {
     "sseServerRef": "sse_trigger"
   },

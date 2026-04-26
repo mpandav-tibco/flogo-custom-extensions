@@ -1,13 +1,15 @@
-module github.com/milindpandav/flogo-extensions/kafkastream
+module github.com/mpandav-tibco/flogo-extensions/kafkastream
 
-go 1.25.0
+go 1.24.0
+
+toolchain go1.24.3
 
 require (
-	github.com/IBM/sarama v1.47.0
+	github.com/IBM/sarama v1.46.3
 	github.com/project-flogo/core v1.6.16
 	github.com/stretchr/testify v1.11.1
-	github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka v0.0.0
-	golang.org/x/time v0.15.0
+	github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka v0.0.0-00010101000000-000000000000
+	golang.org/x/time v0.9.0
 )
 
 replace (
@@ -19,8 +21,12 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
+	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
 	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
@@ -40,10 +46,10 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

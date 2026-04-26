@@ -1,7 +1,7 @@
 package sse
 
 import (
-	sharedsse "github.com/milindpandav/flogo-extensions/sse"
+	sharedsse "github.com/mpandav-tibco/flogo-extensions/sse"
 )
 
 // Global registry for SSE servers - now uses shared registry

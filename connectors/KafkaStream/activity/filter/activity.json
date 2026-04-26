@@ -3,14 +3,15 @@
     "title": "Filter",
     "version": "3.0.0",
     "type": "flogo:activity",
+    "image": "icons/filter.svg",
     "description": "Evaluates a predicate (or a multi-predicate AND/OR chain) against a Kafka message. Includes opt-in deduplication (TTL-based event-ID tracking) and rate limiting (token bucket, drop or wait mode).",
-    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/activity/filter",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/filter",
     "display": {
         "category": "KafkaStream",
         "visible": true,
         "description": "Filter Kafka stream messages using single or multi-predicate AND/OR logic, with optional deduplication and rate limiting.",
-        "smallIcon": "icons/filter.png",
-        "largeIcon": "icons/filter.png"
+        "smallIcon": "icons/filter.svg",
+        "largeIcon": "icons/filter.svg"
     },
     "settings": [
         {

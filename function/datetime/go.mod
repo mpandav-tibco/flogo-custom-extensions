@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/function/datetime
+module github.com/mpandav-tibco/flogo-extensions/function/datetime
 
 go 1.21
 

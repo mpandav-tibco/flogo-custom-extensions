@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/function/util
+module github.com/mpandav-tibco/flogo-extensions/function/util
 
 go 1.21
 

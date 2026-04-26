@@ -1,13 +1,13 @@
-module github.com/milindpandav/flogo-extensions/sse/activity
+module github.com/mpandav-tibco/flogo-extensions/sse/activity
 
 go 1.21
 
 require (
 	github.com/project-flogo/core v1.6.12
-	github.com/milindpandav/flogo-extensions/sse v0.0.0
+	github.com/mpandav-tibco/flogo-extensions/sse v0.0.0
 )
 
-replace github.com/milindpandav/flogo-extensions/sse => ../
+replace github.com/mpandav-tibco/flogo-extensions/sse => ../
 
 require (
 	github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195 // indirect

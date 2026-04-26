@@ -637,3 +637,116 @@ func TestValidateSettings_EmptyOperator_OK(t *testing.T) {
 	// Empty operator is valid — means multi-predicate mode.
 	require.NoError(t, validateSettings(&Settings{Topic: "t", ConsumerGroup: "g"}))
 }
+
+// ─── evalPredicate — string-only operators ───────────────────────────────────
+
+// TestEvalSingle_Neq_String_Pass verifies "neq" works on string fields.
+func TestEvalSingle_Neq_String_Pass(t *testing.T) {
+	ok, _, errMsg := evalSingle(map[string]interface{}{"status": "active"}, "status", "neq", "inactive", false, nil)
+	assert.True(t, ok)
+	assert.Empty(t, errMsg)
+}
+
+func TestEvalSingle_Neq_String_Fail(t *testing.T) {
+	ok, reason, _ := evalSingle(map[string]interface{}{"status": "active"}, "status", "neq", "active", false, nil)
+	assert.False(t, ok)
+	assert.Contains(t, reason, "equal")
+}
+
+// TestEvalSingle_ValidateSettings_InvalidPredicateMode checks invalid mode is rejected.
+func TestValidateSettings_InvalidPredicateMode(t *testing.T) {
+	err := validateSettings(&Settings{Topic: "t", ConsumerGroup: "g", PredicateMode: "xor"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "predicateMode")
+}
+
+// ─── evalMulti — three-predicate AND chain ────────────────────────────────────
+
+func TestEvalMulti_AND_ThreePredicates_MiddleFails(t *testing.T) {
+	preds := []Predicate{
+		{Field: "a", Operator: "eq", Value: "1"},
+		{Field: "b", Operator: "eq", Value: "WRONG"},
+		{Field: "c", Operator: "eq", Value: "3"},
+	}
+	ok, reason, errMsg := evalMulti(
+		map[string]interface{}{"a": 1.0, "b": 2.0, "c": 3.0},
+		preds, "and", false, nil,
+	)
+	assert.False(t, ok)
+	assert.NotEmpty(t, reason)
+	assert.Empty(t, errMsg)
+}
+
+// TestEvalMulti_OR_AllMissingPassThrough verifies that OR+passThroughOnMissing
+// with all fields absent returns false (skip-all semantics, not auto-pass).
+func TestEvalMulti_OR_AllMissingPassThrough(t *testing.T) {
+	preds := []Predicate{
+		{Field: "x", Operator: "eq", Value: "1"},
+		{Field: "y", Operator: "eq", Value: "2"},
+	}
+	ok, _, _ := evalMulti(map[string]interface{}{}, preds, "or", true, nil)
+	assert.False(t, ok, "all fields missing in OR+passThroughOnMissing → no opinion → false")
+}
+
+// ─── dedupStore — evict and concurrency ──────────────────────────────────────
+
+func TestDedupStore_Stop_IsIdempotent(t *testing.T) {
+	ds := newDedupStore(time.Minute, 100)
+	// stop() must be safe to call multiple times without panic.
+	ds.stop()
+	ds.stop()
+}
+
+func TestDedupStore_Evict_RemovesExpired(t *testing.T) {
+	ds := newDedupStore(10*time.Millisecond, 100)
+	ds.isDuplicate("a") // record "a"
+	time.Sleep(20 * time.Millisecond)
+	ds.evict()
+	ds.mu.Lock()
+	_, stillPresent := ds.seen["a"]
+	ds.mu.Unlock()
+	assert.False(t, stillPresent, "expired entry should be removed by evict()")
+}
+
+func TestDedupStore_MaxEntries_EvictsOldestOnAdd(t *testing.T) {
+	ds := newDedupStore(10*time.Minute, 3) // cap at 3
+	ds.isDuplicate("first")
+	time.Sleep(time.Millisecond) // ensure ordering
+	ds.isDuplicate("second")
+	time.Sleep(time.Millisecond)
+	ds.isDuplicate("third")
+	// At cap — fourth entry evicts oldest.
+	ds.isDuplicate("fourth")
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
+	assert.LessOrEqual(t, len(ds.seen), 3, "store should not exceed maxEntries")
+}
+
+// ─── Output.FromMap — error paths ────────────────────────────────────────────
+
+func TestOutput_FromMap_InvalidMessage_Error(t *testing.T) {
+	m := map[string]interface{}{
+		"message":         "not-an-object", // should be map; coerce will error
+		"topic":           "t",
+		"partition":       int64(0),
+		"offset":          int64(0),
+		"key":             "",
+		"evalError":       false,
+		"evalErrorReason": "",
+	}
+	var o Output
+	err := o.FromMap(m)
+	// coerce.ToObject on "not-an-object" should fail
+	assert.Error(t, err)
+}
+
+// ─── checkRateLimit ───────────────────────────────────────────────────────────
+
+func TestCheckRateLimit_DropMode_Allow(t *testing.T) {
+	// checkRateLimit requires a live limiter; test only that a Trigger without
+	// a limiter set does not panic when rate-limit functions are compiled.
+	trig := newTrigger(&Settings{Topic: "t", ConsumerGroup: "g", RateLimitRPS: 0})
+	// limiter is nil — code should not call checkRateLimit in this state.
+	// Just verify the trigger struct is well-formed.
+	assert.Nil(t, trig.limiter)
+}

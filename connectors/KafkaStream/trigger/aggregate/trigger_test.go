@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kafkastream "github.com/milindpandav/flogo-extensions/kafkastream"
+	kafkastream "github.com/mpandav-tibco/flogo-extensions/kafkastream"
 )
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -1074,4 +1074,245 @@ func TestProcessPayload_KeyFieldMissing_EmptyKey(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, EventTypeWindowClose, et)
 	assert.Equal(t, 3.0, out.WindowResult.Result)
+}
+
+// ─── Late-event and TumblingTime window paths ─────────────────────────────────
+
+// TestProcessPayload_TumblingTime_LateEvent_Fired verifies that when an event
+// arrives with a timestamp older than (watermark − allowedLateness), processPayload
+// returns EventTypeLateEvent and sets Source.LateEvent=true.
+func TestProcessPayload_TumblingTime_LateEvent_Fired(t *testing.T) {
+	wn := "tt-late-fire"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName:      wn,
+		WindowType:      "TumblingTime",
+		WindowSize:      60000, // 60 s window (large so we don't close it)
+		Function:        "sum",
+		ValueField:      "v",
+		EventTimeField:  "ts",
+		AllowedLateness: 0, // reject ALL late events
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, err := kafkastream.GetOrCreateWindowStore(cfg)
+	require.NoError(t, err)
+
+	now := time.Now()
+	// First event advances watermark.
+	_, _, err = trig.processPayload(
+		context.Background(),
+		map[string]interface{}{"v": 1.0, "ts": now.UnixMilli()},
+		"t", 0, 0,
+	)
+	require.NoError(t, err)
+
+	// Second event is 2 minutes in the past — older than watermark, allowedLateness=0.
+	oldTs := now.Add(-2 * time.Minute)
+	out, et, err := trig.processPayload(
+		context.Background(),
+		map[string]interface{}{"v": 99.0, "ts": oldTs.UnixMilli()},
+		"t", 0, 1,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, EventTypeLateEvent, et)
+	require.NotNil(t, out)
+	assert.True(t, out.Source.LateEvent)
+	assert.NotEmpty(t, out.Source.LateReason)
+}
+
+// TestProcessPayload_TumblingTime_WindowClose verifies a TumblingTime window
+// closes when an event crosses the window boundary.
+func TestProcessPayload_TumblingTime_WindowClose(t *testing.T) {
+	wn := "tt-ttime-close"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName:     wn,
+		WindowType:     "TumblingTime",
+		WindowSize:     1000, // 1 s
+		Function:       "sum",
+		ValueField:     "v",
+		EventTimeField: "ts",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, err := kafkastream.GetOrCreateWindowStore(cfg)
+	require.NoError(t, err)
+
+	base := time.Now()
+	// First event opens the window.
+	_, et, _ := trig.processPayload(
+		context.Background(),
+		map[string]interface{}{"v": 5.0, "ts": base.UnixMilli()},
+		"t", 0, 0,
+	)
+	assert.Empty(t, et)
+
+	// Third event 1.5 s later crosses the 1 s boundary — window closes.
+	later := base.Add(1500 * time.Millisecond)
+	out, et, err := trig.processPayload(
+		context.Background(),
+		map[string]interface{}{"v": 3.0, "ts": later.UnixMilli()},
+		"t", 0, 1,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, EventTypeWindowClose, et)
+	require.NotNil(t, out)
+	assert.True(t, out.WindowResult.WindowClosed)
+	// Only the first event was in the closed window; the trigger event seeds the next.
+	assert.Equal(t, 5.0, out.WindowResult.Result)
+}
+
+// TestProcessPayload_Source_Fields_Populated verifies that Topic/Partition/Offset
+// are correctly plumbed into the Output.Source struct.
+func TestProcessPayload_Source_Fields_Populated(t *testing.T) {
+	wn := "tt-src-fields"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "src-topic", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, err := kafkastream.GetOrCreateWindowStore(cfg)
+	require.NoError(t, err)
+
+	// First event — no output yet.
+	trig.processPayload(context.Background(), map[string]interface{}{"v": 1.0}, "src-topic", 2, 100)
+	// Second event — window closes.
+	out, et, err := trig.processPayload(context.Background(), map[string]interface{}{"v": 1.0}, "src-topic", 2, 101)
+	require.NoError(t, err)
+	require.Equal(t, EventTypeWindowClose, et)
+	assert.Equal(t, "src-topic", out.Source.Topic)
+	assert.Equal(t, int64(2), out.Source.Partition)
+	assert.Equal(t, int64(101), out.Source.Offset)
+}
+
+// TestProcessPayload_TumblingCount_MaxBuffer_DropNewest verifies that when
+// MaxBufferSize is reached with drop_newest policy the incoming event is silently
+// dropped (no error). The window eventually closes because drop_newest does NOT
+// prevent the count from advancing — events are still "seen" in the count window.
+// NOTE: with drop_newest the window closes when WindowSize events have been
+// *accepted into the buffer*. Once the buffer is full no more events are accepted,
+// so with WindowSize > MaxBufferSize the window would never close via drop_newest
+// alone. Use WindowSize == MaxBufferSize to get a clean close.
+func TestProcessPayload_TumblingCount_MaxBuffer_DropNewest(t *testing.T) {
+	wn := "tt-drop-newest"
+	clearWindow(wn)
+	// WindowSize == MaxBufferSize: after 2 accepted events the window closes.
+	// The third event hits drop_newest (no error) and is silently dropped.
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 2,
+		Function: "sum", ValueField: "v",
+		MaxBufferSize:  2,
+		OverflowPolicy: "drop_newest",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, err := kafkastream.GetOrCreateWindowStore(cfg)
+	require.NoError(t, err)
+
+	// Two events fill the buffer and close the window.
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 10.0}, "t", 0, 0)
+	require.NoError(t, err, "first event must succeed")
+
+	out, et, err := trig.processPayload(context.Background(), map[string]interface{}{"v": 20.0}, "t", 0, 1)
+	require.NoError(t, err, "second event must succeed")
+	require.Equal(t, EventTypeWindowClose, et)
+	require.NotNil(t, out)
+	assert.Equal(t, 30.0, out.WindowResult.Result)
+
+	// Third event on the freshly-reset window must also not return an error
+	// even if drop_newest fires.
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 99.0}, "t", 0, 2)
+	require.NoError(t, err, "drop_newest must NOT return an error even when buffer is full")
+}
+
+// TestProcessPayload_TumblingCount_MaxBuffer_Error verifies that the "error"
+// overflow policy causes processPayload to return a non-nil error.
+func TestProcessPayload_TumblingCount_MaxBuffer_Error(t *testing.T) {
+	wn := "tt-overflow-err"
+	clearWindow(wn)
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 5,
+		Function: "sum", ValueField: "v",
+		MaxBufferSize:  2,
+		OverflowPolicy: "error",
+	})
+	cfg := buildWindowConfig(trig.settings, wn)
+	_, err := kafkastream.GetOrCreateWindowStore(cfg)
+	require.NoError(t, err)
+
+	// First two events fill the buffer.
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 1.0}, "t", 0, 0)
+	require.NoError(t, err)
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 2.0}, "t", 0, 1)
+	require.NoError(t, err)
+
+	// Third event should fail with buffer-full error.
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 3.0}, "t", 0, 2)
+	assert.Error(t, err, "overflow policy=error should return a non-nil error when buffer is full")
+}
+
+// TestProcessPayload_MaxKeys_Exceeded_Error verifies that when MaxKeys is reached,
+// a new unique key is rejected with an error.
+// NOTE: MaxKeys is enforced against the global registry size. The test uses a
+// high MaxKeys value relative to the registry so that only the dedicated keyed
+// sub-windows for this test hit the cap.
+func TestProcessPayload_MaxKeys_Exceeded_Error(t *testing.T) {
+	wn := "tt-maxkeys-ex"
+	// Register the base window name and two keyed sub-window names that will be
+	// created by processPayload, then clean them up so the registry is empty for
+	// the controlled names.
+	clearWindow(wn, wn+":A", wn+":B", wn+":C")
+	t.Cleanup(func() { clearWindow(wn, wn+":A", wn+":B", wn+":C") })
+
+	// Count how many windows are currently in the registry (from other tests).
+	snaps := kafkastream.ListSnapshots()
+	baseCount := int64(len(snaps))
+	maxKeys := baseCount + 2 // allow exactly 2 more (for "A" and "B")
+
+	trig := newAggregateTrigger(&Settings{
+		Topic: "t", ConsumerGroup: "g",
+		WindowName: wn, WindowType: "TumblingCount", WindowSize: 10,
+		Function: "sum", ValueField: "v", KeyField: "device",
+		MaxKeys: maxKeys,
+	})
+
+	// Two keys should succeed.
+	_, _, err := trig.processPayload(context.Background(), map[string]interface{}{"v": 1.0, "device": "A"}, "t", 0, 0)
+	require.NoError(t, err, "first key should succeed")
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 2.0, "device": "B"}, "t", 0, 1)
+	require.NoError(t, err, "second key should succeed")
+
+	// Third unique key should fail.
+	_, _, err = trig.processPayload(context.Background(), map[string]interface{}{"v": 3.0, "device": "C"}, "t", 0, 2)
+	assert.Error(t, err, "3rd key when MaxKeys is reached should be rejected")
+}
+
+// TestOutput_RoundTrip_Source verifies FromMap round-trips Source sub-fields
+// including LateEvent / LateReason.
+func TestOutput_RoundTrip_Source(t *testing.T) {
+	orig := &Output{
+		WindowResult: WindowResult{
+			Result: 42.0, Count: 3, WindowName: "w", Key: "k",
+			WindowClosed: true, DroppedCount: 1, LateEventCount: 2,
+		},
+		Source: Source{
+			Topic:      "my-topic",
+			Partition:  1,
+			Offset:     99,
+			LateEvent:  true,
+			LateReason: "event older than watermark - allowedLateness",
+		},
+	}
+	m := orig.ToMap()
+	var restored Output
+	require.NoError(t, restored.FromMap(m))
+	assert.Equal(t, orig.Source.Topic, restored.Source.Topic)
+	assert.Equal(t, orig.Source.LateEvent, restored.Source.LateEvent)
+	assert.Equal(t, orig.Source.LateReason, restored.Source.LateReason)
+	assert.Equal(t, orig.WindowResult.DroppedCount, restored.WindowResult.DroppedCount)
+	assert.Equal(t, orig.WindowResult.LateEventCount, restored.WindowResult.LateEventCount)
 }
