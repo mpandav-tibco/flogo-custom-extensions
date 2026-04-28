@@ -66,8 +66,30 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	if s.TimeoutSeconds <= 0 {
 		s.TimeoutSeconds = 60
 	}
-	ctx.Logger().Infof("IngestDocuments initialised: connection=%s provider=%s embeddingProvider=%s model=%s",
-		conn.GetName(), conn.GetSettings().DBType, s.EmbeddingProvider, s.EmbeddingModel)
+
+	// Resolve and validate chunking defaults at init time so
+	// misconfiguration is caught before the first request arrives.
+	if s.EnableChunking {
+		if s.ChunkStrategy == "" {
+			s.ChunkStrategy = "paragraph"
+		}
+		if s.ChunkSize <= 0 {
+			s.ChunkSize = 1000
+		}
+		if s.ChunkOverlap < 0 {
+			s.ChunkOverlap = 0
+		}
+		cfg := ChunkConfig{
+			Strategy: ChunkStrategy(s.ChunkStrategy),
+			Size:     s.ChunkSize,
+			Overlap:  s.ChunkOverlap,
+		}
+		if err := validateChunkConfig(cfg); err != nil {
+			return nil, fmt.Errorf("vectordb-ingest: chunking config invalid: %w", err)
+		}
+	}
+	ctx.Logger().Infof("IngestDocuments initialised: connection=%s provider=%s embeddingProvider=%s model=%s chunking=%v strategy=%s",
+		conn.GetName(), conn.GetSettings().DBType, s.EmbeddingProvider, s.EmbeddingModel, s.EnableChunking, s.ChunkStrategy)
 	return &Activity{settings: s, conn: conn}, nil
 }
 
@@ -92,7 +114,24 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("vectordb-ingest: %w", err)
 	}
-	l.Debugf("IngestDocuments: collection=%s doc_count=%d", collectionName, len(rawDocs))
+
+	sourceDocCount := len(rawDocs)
+	l.Debugf("IngestDocuments: collection=%s source_doc_count=%d", collectionName, sourceDocCount)
+
+	// ── Optional chunking ────────────────────────────────────────────────────
+	// When enabled, each input document is split into smaller segments before
+	// embedding. The rawDocs slice is replaced with the expanded chunk slice;
+	// all downstream steps (embedding, upsert) are unaware of the split.
+	if a.settings.EnableChunking {
+		cfg := ChunkConfig{
+			Strategy: ChunkStrategy(a.settings.ChunkStrategy),
+			Size:     a.settings.ChunkSize,
+			Overlap:  a.settings.ChunkOverlap,
+		}
+		rawDocs = expandChunks(rawDocs, cfg)
+		l.Debugf("IngestDocuments: chunking strategy=%s source_docs=%d chunks=%d",
+			cfg.Strategy, sourceDocCount, len(rawDocs))
+	}
 
 	// OTel trace tags
 	tc := ctx.GetTracingContext()
@@ -101,7 +140,10 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		tc.SetTag("db.operation", "ingestDocuments")
 		tc.SetTag("db.vectordb.provider", a.conn.GetSettings().DBType)
 		tc.SetTag("db.vectordb.collection", collectionName)
-		tc.SetTag("db.vectordb.doc_count", len(rawDocs))
+		tc.SetTag("db.vectordb.source_doc_count", sourceDocCount)
+		tc.SetTag("db.vectordb.chunk_count", len(rawDocs))
+		tc.SetTag("db.vectordb.chunking_enabled", a.settings.EnableChunking)
+		tc.SetTag("db.vectordb.chunk_strategy", a.settings.ChunkStrategy)
 		tc.SetTag("db.vectordb.embedding_provider", a.settings.EmbeddingProvider)
 		tc.SetTag("db.vectordb.embedding_model", a.settings.EmbeddingModel)
 	}
@@ -237,11 +279,13 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		collectionName, len(docs), embDimensions, duration)
 
 	if err := ctx.SetOutputObject(&Output{
-		Success:       true,
-		IngestedCount: len(docs),
-		IDs:           ids,
-		Dimensions:    embDimensions,
-		Duration:      duration.String(),
+		Success:             true,
+		IngestedCount:       len(docs),
+		IDs:                 ids,
+		Dimensions:          embDimensions,
+		Duration:            duration.String(),
+		SourceDocumentCount: sourceDocCount,
+		ChunksCreated:       len(docs),
 	}); err != nil {
 		l.Errorf("SetOutputObject: %v", err)
 	}

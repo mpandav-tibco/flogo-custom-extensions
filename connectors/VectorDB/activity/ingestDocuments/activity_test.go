@@ -125,6 +125,12 @@ func getOutput(outputs map[string]interface{}) *Output {
 	if v, ok := outputs["ids"].([]string); ok {
 		out.IDs = v
 	}
+	if v, ok := outputs["sourceDocumentCount"].(int); ok {
+		out.SourceDocumentCount = v
+	}
+	if v, ok := outputs["chunksCreated"].(int); ok {
+		out.ChunksCreated = v
+	}
 	return out
 }
 

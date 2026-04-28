@@ -25,6 +25,56 @@
       "allowed": []
     },
     {
+      "name": "enableChunking",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Enable Chunking",
+        "description": "Automatically split each document's text into smaller segments before embedding. Eliminates the need for an upstream text-splitting step. Configure the strategy and size below.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "chunkStrategy",
+      "type": "string",
+      "required": false,
+      "value": "paragraph",
+      "allowed": [
+        "fixed",
+        "sentence",
+        "paragraph",
+        "heading"
+      ],
+      "display": {
+        "name": "Chunk Strategy",
+        "description": "fixed: sliding character window with overlap | sentence: accumulate sentences up to Chunk Size | paragraph: split on blank lines | heading: split on Markdown headings (ideal for Confluence pages)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "chunkSize",
+      "type": "integer",
+      "required": false,
+      "value": 1000,
+      "display": {
+        "name": "Chunk Size (chars)",
+        "description": "Target chunk length in characters. Used by 'fixed' and 'sentence' strategies. Ignored by 'paragraph' and 'heading'.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "chunkOverlap",
+      "type": "integer",
+      "required": false,
+      "value": 200,
+      "display": {
+        "name": "Chunk Overlap (chars)",
+        "description": "Characters shared between consecutive chunks to prevent context loss at boundaries. Only used by 'fixed' strategy. Must be less than Chunk Size.",
+        "appPropertySupport": true
+      }
+    },
+    {
       "name": "useConnectorEmbedding",
       "type": "boolean",
       "required": false,
@@ -176,6 +226,14 @@
     {
       "name": "error",
       "type": "string"
+    },
+    {
+      "name": "sourceDocumentCount",
+      "type": "integer"
+    },
+    {
+      "name": "chunksCreated",
+      "type": "integer"
     }
   ]
 }

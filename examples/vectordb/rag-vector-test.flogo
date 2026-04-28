@@ -1,0 +1,2373 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
+  ],
+  "name": "rag-test",
+  "description": "Enterprise RAG API — ingest documents and query knowledge bases across Qdrant, Weaviate, Chroma and Milvus via REST. Embeddings powered by Ollama (nomic-embed-text).",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "Enterprise RAG REST API on port 9999",
+      "settings": {
+        "port": 9999,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "EnterpriseRAGTrigger",
+      "handlers": [
+        {
+          "description": "Accept documents via POST body, embed with Ollama nomic-embed-text, create collection and ingest into Qdrant",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/qdrant/ingest",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:qdrant_ingest"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "qdrant_ingest"
+        },
+        {
+          "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Qdrant",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/qdrant/query",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:qdrant_query"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "qdrant_query"
+        },
+        {
+          "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Weaviate (collection name must be PascalCase)",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/weaviate/ingest",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_ingest"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "weaviate_ingest"
+        },
+        {
+          "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Weaviate",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/weaviate/query",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_query"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "weaviate_query"
+        },
+        {
+          "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Chroma",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/chroma/ingest",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:chroma_ingest"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "chroma_ingest"
+        },
+        {
+          "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Chroma",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/chroma/query",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:chroma_query"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "chroma_query"
+        },
+        {
+          "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Milvus",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/milvus/ingest",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:milvus_ingest"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "milvus_ingest"
+        },
+        {
+          "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Milvus",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/milvus/query",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:milvus_query"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "milvus_query"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:qdrant_ingest",
+      "data": {
+        "name": "qdrant_ingest",
+        "description": "Accept documents via POST body, embed with Ollama nomic-embed-text, create collection and ingest into Qdrant",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "IngestDocs",
+            "to": "LogResult",
+            "type": "label",
+            "label": "ingested"
+          },
+          {
+            "id": 5,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[qdrant] Ingest request: collection=', coerce.toString($flow.body.collection), ' docCount=', coerce.toString($flow.body.documents))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create RAG collection in Qdrant (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed documents with Ollama and upsert into Qdrant",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 10
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "documents": "=$flow.body.documents"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[qdrant] Ingest COMPLETE collection=', coerce.toString($flow.body.collection), ' ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' duration=', $activity[IngestDocs].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return ingest result to caller",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[IngestDocs]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiQ3JlYXRlQ29sbGVjdGlvbiI6eyJ4Ijo0NTAsInkiOjI1MH0sIkluZ2VzdERvY3MiOnsieCI6NjUwLCJ5IjozNTB9LCJMb2dSZXN1bHQiOnsieCI6ODUwLCJ5Ijo0NTB9LCJSZXR1cm4iOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:qdrant_query",
+      "data": {
+        "name": "qdrant_query",
+        "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Qdrant",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "RAGQuery",
+            "to": "LogResult",
+            "type": "label",
+            "label": "retrieved"
+          },
+          {
+            "id": 4,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[qdrant] Query request: collection=', coerce.toString($flow.body.collection), ' query=', coerce.toString($flow.body.query))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed query text and retrieve top-K semantically similar passages from Qdrant",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://qdrant-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "=$flow.body.query",
+                "collectionName": "=$flow.body.collection",
+                "topK": "=$flow.body.topK"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[qdrant] Query COMPLETE collection=', coerce.toString($flow.body.collection), ' totalFound=', coerce.toString($activity[RAGQuery].totalFound), ' duration=', $activity[RAGQuery].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return RAG context and source documents to caller",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[RAGQuery]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiUkFHUXVlcnkiOnsieCI6NDUwLCJ5IjoyNTB9LCJMb2dSZXN1bHQiOnsieCI6NjUwLCJ5IjozNTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo0NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:weaviate_ingest",
+      "data": {
+        "name": "weaviate_ingest",
+        "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Weaviate (collection name must be PascalCase)",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "IngestDocs",
+            "to": "LogResult",
+            "type": "label",
+            "label": "ingested"
+          },
+          {
+            "id": 5,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate] Ingest request: collection=', coerce.toString($flow.body.collection), ' docCount=', coerce.toString($flow.body.documents))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create RAG collection in Weaviate (768-dim cosine, PascalCase name required)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed documents with Ollama and upsert into Weaviate",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 10
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "documents": "=$flow.body.documents"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate] Ingest COMPLETE collection=', coerce.toString($flow.body.collection), ' ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' duration=', $activity[IngestDocs].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[IngestDocs]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiQ3JlYXRlQ29sbGVjdGlvbiI6eyJ4Ijo0NTAsInkiOjI1MH0sIkluZ2VzdERvY3MiOnsieCI6NjUwLCJ5IjozNTB9LCJMb2dSZXN1bHQiOnsieCI6ODUwLCJ5Ijo0NTB9LCJSZXR1cm4iOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:weaviate_query",
+      "data": {
+        "name": "weaviate_query",
+        "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Weaviate",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "RAGQuery",
+            "to": "LogResult",
+            "type": "label",
+            "label": "retrieved"
+          },
+          {
+            "id": 4,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate] Query request: collection=', coerce.toString($flow.body.collection), ' query=', coerce.toString($flow.body.query))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed query text and retrieve top-K semantically similar passages from Weaviate",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "=$flow.body.query",
+                "collectionName": "=$flow.body.collection",
+                "topK": "=$flow.body.topK"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate] Query COMPLETE collection=', coerce.toString($flow.body.collection), ' totalFound=', coerce.toString($activity[RAGQuery].totalFound), ' duration=', $activity[RAGQuery].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[RAGQuery]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiUkFHUXVlcnkiOnsieCI6NDUwLCJ5IjoyNTB9LCJMb2dSZXN1bHQiOnsieCI6NjUwLCJ5IjozNTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo0NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:chroma_ingest",
+      "data": {
+        "name": "chroma_ingest",
+        "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Chroma",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "IngestDocs",
+            "to": "LogResult",
+            "type": "label",
+            "label": "ingested"
+          },
+          {
+            "id": 5,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[chroma] Ingest request: collection=', coerce.toString($flow.body.collection), ' docCount=', coerce.toString($flow.body.documents))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create RAG collection in Chroma (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed documents with Ollama and upsert into Chroma",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 10
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "documents": "=$flow.body.documents"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[chroma] Ingest COMPLETE collection=', coerce.toString($flow.body.collection), ' ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' duration=', $activity[IngestDocs].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[IngestDocs]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiQ3JlYXRlQ29sbGVjdGlvbiI6eyJ4Ijo0NTAsInkiOjI1MH0sIkluZ2VzdERvY3MiOnsieCI6NjUwLCJ5IjozNTB9LCJMb2dSZXN1bHQiOnsieCI6ODUwLCJ5Ijo0NTB9LCJSZXR1cm4iOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:chroma_query",
+      "data": {
+        "name": "chroma_query",
+        "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Chroma",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "RAGQuery",
+            "to": "LogResult",
+            "type": "label",
+            "label": "retrieved"
+          },
+          {
+            "id": 4,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[chroma] Query request: collection=', coerce.toString($flow.body.collection), ' query=', coerce.toString($flow.body.query))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed query text and retrieve top-K semantically similar passages from Chroma",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://chroma-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "=$flow.body.query",
+                "collectionName": "=$flow.body.collection",
+                "topK": "=$flow.body.topK"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[chroma] Query COMPLETE collection=', coerce.toString($flow.body.collection), ' totalFound=', coerce.toString($activity[RAGQuery].totalFound), ' duration=', $activity[RAGQuery].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[RAGQuery]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiUkFHUXVlcnkiOnsieCI6NDUwLCJ5IjoyNTB9LCJMb2dSZXN1bHQiOnsieCI6NjUwLCJ5IjozNTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo0NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:milvus_ingest",
+      "data": {
+        "name": "milvus_ingest",
+        "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Milvus",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "IngestDocs",
+            "to": "LogResult",
+            "type": "label",
+            "label": "ingested"
+          },
+          {
+            "id": 5,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[milvus] Ingest request: collection=', coerce.toString($flow.body.collection), ' docCount=', coerce.toString($flow.body.documents))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create RAG collection in Milvus (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed documents with Ollama and upsert into Milvus",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 10
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "documents": "=$flow.body.documents"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[milvus] Ingest COMPLETE collection=', coerce.toString($flow.body.collection), ' ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' duration=', $activity[IngestDocs].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[IngestDocs]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiQ3JlYXRlQ29sbGVjdGlvbiI6eyJ4Ijo0NTAsInkiOjI1MH0sIkluZ2VzdERvY3MiOnsieCI6NjUwLCJ5IjozNTB9LCJMb2dSZXN1bHQiOnsieCI6ODUwLCJ5Ijo0NTB9LCJSZXR1cm4iOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{}}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:milvus_query",
+      "data": {
+        "name": "milvus_query",
+        "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Milvus",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "RAGQuery",
+            "to": "LogResult",
+            "type": "label",
+            "label": "retrieved"
+          },
+          {
+            "id": 4,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[milvus] Query request: collection=', coerce.toString($flow.body.collection), ' query=', coerce.toString($flow.body.query))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed query text and retrieve top-K semantically similar passages from Milvus",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "=$flow.body.query",
+                "collectionName": "=$flow.body.collection",
+                "topK": "=$flow.body.topK"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[milvus] Query COMPLETE collection=', coerce.toString($flow.body.collection), ' totalFound=', coerce.toString($activity[RAGQuery].totalFound), ' duration=', $activity[RAGQuery].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[RAGQuery]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI1MCwieSI6MTUwfSwiUkFHUXVlcnkiOnsieCI6NDUwLCJ5IjoyNTB9LCJMb2dSZXN1bHQiOnsieCI6NjUwLCJ5IjozNTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo0NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "EMBED_PROVIDER",
+      "type": "string",
+      "value": "Ollama"
+    },
+    {
+      "name": "EMBED_API_KEY",
+      "type": "string",
+      "value": "SECRET:rBIdZIiNVntIDCQhIJacsqdQNXURy6epwp2aKEI9TyKZy+q+flGtoPB/nY+hyCplPiC068VI5gs6RKDq9NONDsp0KpeD/t3ufQ=="
+    },
+    {
+      "name": "EMBED_BASE_URL",
+      "type": "string",
+      "value": "http://host.docker.internal:11434"
+    },
+    {
+      "name": "EMBED_MODEL",
+      "type": "string",
+      "value": "nomic-embed-text"
+    },
+    {
+      "name": "EMBED_DIMS",
+      "type": "float64",
+      "value": 768
+    },
+    {
+      "name": "RERANK_ENDPOINT",
+      "type": "string",
+      "value": "https://api.cohere.ai/v1/rerank"
+    },
+    {
+      "name": "RERANK_API_KEY",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "RERANK_MODEL",
+      "type": "string",
+      "value": "rerank-english-v3.0"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.QdrantConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.QdrantConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.QdrantConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:r51Fn7kp2KX4kN9UOkcPLrXPp+rgI7i+x66zSZEycMaK5a5MruSLKfIoppSmgkc3T0HC9j9ljxx5FA=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.QdrantConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.QdrantConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.WeaviateConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.WeaviateConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.WeaviateConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:xmGHImG3TJznLVUG6k7V6hn1mwNvv6Kw8v0IvYEYG/7kcBj5mRMhUDj1sN3D4PhHM0LYIuzFaK3eKm4z"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.WeaviateConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.WeaviateConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.ChromaConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.ChromaConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.ChromaConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:g4a6KecB4yeW+GxdVlfigkKYG668nJuhbzsyzBU0i4vteCMPSlp3Xfbv4F1VBzLeYpdl1CejaMO0mg=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.ChromaConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.ChromaConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.MilvusConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.MilvusConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.MilvusConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:Bp85cPUFGJJVWNt6oJo0EzuflYRZxRO/wFfHHRWsWfFihL8zIv45SRI5kzlNj1psNp4hDRy6+UWUww=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.MilvusConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.MilvusConn.Configure_Embedding_Provider\"]"
+    }
+  ],
+  "connections": {
+    "qdrant-conn": {
+      "id": "qdrant-conn",
+      "name": "$property[\"VectorDB.QdrantConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": "$property[\"VectorDB.QdrantConn.gRPC_Port\"]",
+        "scheme": "http",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    },
+    "weaviate-conn": {
+      "id": "weaviate-conn",
+      "name": "$property[\"VectorDB.WeaviateConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": 6334,
+        "scheme": "$property[\"VectorDB.WeaviateConn.HTTP_Scheme\"]",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    },
+    "chroma-conn": {
+      "id": "chroma-conn",
+      "name": "$property[\"VectorDB.ChromaConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": 6334,
+        "scheme": "http",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    },
+    "milvus-conn": {
+      "id": "milvus-conn",
+      "name": "$property[\"VectorDB.MilvusConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": 6334,
+        "scheme": "http",
+        "username": "$property[\"VectorDB.MilvusConn.Username\"]",
+        "password": "SECRET:UosQ3ATTjIV3VjVhr+PL8ktGzWOilAuHJmPXIPQ4Gpf0VOPtb/u3utHsOqMa7EwhNFrsj+ft1ckRm4A=",
+        "dbName": "$property[\"VectorDB.MilvusConn.Database_Name\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9999",
+        "spec": {
+          "name": "rag-test",
+          "version": "1.0.0"
+        },
+        "title": "EnterpriseRAGTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "rag-test",
+            "version": "1.0.0",
+            "description": "Enterprise RAG REST API on port 9999"
+          },
+          "paths": {
+            "/rag/qdrant/ingest": {
+              "post": {
+                "summary": "qdrant_ingest",
+                "operationId": "post_rag_qdrant_ingest",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept documents via POST body, embed with Ollama nomic-embed-text, create collection and ingest into Qdrant",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/qdrant/query": {
+              "post": {
+                "summary": "qdrant_query",
+                "operationId": "post_rag_qdrant_query",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Qdrant",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/weaviate/ingest": {
+              "post": {
+                "summary": "weaviate_ingest",
+                "operationId": "post_rag_weaviate_ingest",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Weaviate (collection name must be PascalCase)",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/weaviate/query": {
+              "post": {
+                "summary": "weaviate_query",
+                "operationId": "post_rag_weaviate_query",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Weaviate",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/chroma/ingest": {
+              "post": {
+                "summary": "chroma_ingest",
+                "operationId": "post_rag_chroma_ingest",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Chroma",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/chroma/query": {
+              "post": {
+                "summary": "chroma_query",
+                "operationId": "post_rag_chroma_query",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Chroma",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/milvus/ingest": {
+              "post": {
+                "summary": "milvus_ingest",
+                "operationId": "post_rag_milvus_ingest",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept documents via POST body, embed with Ollama, create collection and ingest into Milvus",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/milvus/query": {
+              "post": {
+                "summary": "milvus_query",
+                "operationId": "post_rag_milvus_query",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Accept natural language query, embed with Ollama, retrieve top-K context passages from Milvus",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            }
+          },
+          "definitions": {
+            "schema1": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    ],
+    "flogoVersion": "2.26.3"
+  }
+}
