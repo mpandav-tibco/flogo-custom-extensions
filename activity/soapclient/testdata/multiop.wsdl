@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Multi-operation WSDL for testing operation selection logic -->
+<definitions name="MathService"
+             targetNamespace="http://math.example.com/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://math.example.com/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <types>
+    <xs:schema targetNamespace="http://math.example.com/">
+      <xs:element name="SumRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="A" type="xs:double"/>
+            <xs:element name="B" type="xs:double"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SumResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Result" type="xs:double"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PowerRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Base"     type="xs:double"/>
+            <xs:element name="Exponent" type="xs:double"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PowerResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Result" type="xs:double"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SqrtRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Value" type="xs:double"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SqrtResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Result" type="xs:double"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </types>
+
+  <message name="SumReqMsg">   <part name="parameters" element="tns:SumRequest"/>   </message>
+  <message name="SumRspMsg">   <part name="parameters" element="tns:SumResponse"/>  </message>
+  <message name="PowReqMsg">   <part name="parameters" element="tns:PowerRequest"/> </message>
+  <message name="PowRspMsg">   <part name="parameters" element="tns:PowerResponse"/></message>
+  <message name="SqrtReqMsg">  <part name="parameters" element="tns:SqrtRequest"/>  </message>
+  <message name="SqrtRspMsg">  <part name="parameters" element="tns:SqrtResponse"/> </message>
+
+  <portType name="MathPort">
+    <operation name="Sum">
+      <input  message="tns:SumReqMsg"/>
+      <output message="tns:SumRspMsg"/>
+    </operation>
+    <operation name="Power">
+      <input  message="tns:PowReqMsg"/>
+      <output message="tns:PowRspMsg"/>
+    </operation>
+    <operation name="Sqrt">
+      <input  message="tns:SqrtReqMsg"/>
+      <output message="tns:SqrtRspMsg"/>
+    </operation>
+  </portType>
+
+  <binding name="MathBinding" type="tns:MathPort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="Sum">
+      <soap:operation soapAction="http://math.example.com/Sum"/>
+      <input>  <soap:body use="literal"/> </input>
+      <output> <soap:body use="literal"/> </output>
+    </operation>
+    <operation name="Power">
+      <soap:operation soapAction="http://math.example.com/Power"/>
+      <input>  <soap:body use="literal"/> </input>
+      <output> <soap:body use="literal"/> </output>
+    </operation>
+    <operation name="Sqrt">
+      <soap:operation soapAction="http://math.example.com/Sqrt"/>
+      <input>  <soap:body use="literal"/> </input>
+      <output> <soap:body use="literal"/> </output>
+    </operation>
+  </binding>
+
+  <service name="MathService">
+    <port name="MathPort" binding="tns:MathBinding">
+      <soap:address location="http://math.example.com/service"/>
+    </port>
+  </service>
+
+</definitions>

@@ -40,6 +40,26 @@ type Settings struct {
 	// embedding API in a single request. Default 100. Tune down for providers
 	// with small payload or rate limits (e.g. 20 for free-tier OpenAI).
 	EmbeddingBatchSize int `md:"embeddingBatchSize"`
+
+	// ── Chunking ─────────────────────────────────────────────────────────────
+	// EnableChunking, when true, splits each input document's text into smaller
+	// segments before embedding. Removes the need for an upstream splitting step.
+	// Sub-fields below are only used when EnableChunking=true.
+	EnableChunking bool `md:"enableChunking"`
+
+	// ChunkStrategy selects the splitting algorithm.
+	// Allowed values: "fixed", "sentence", "paragraph", "heading".
+	// Default: "paragraph".
+	ChunkStrategy string `md:"chunkStrategy"`
+
+	// ChunkSize is the target chunk length in characters.
+	// Used by "fixed" (hard window) and "sentence" (soft accumulator).
+	// Ignored by "paragraph" and "heading". Default: 1000.
+	ChunkSize int `md:"chunkSize"`
+
+	// ChunkOverlap is the number of characters shared between consecutive
+	// chunks. Only meaningful for "fixed" strategy. Default: 200.
+	ChunkOverlap int `md:"chunkOverlap"`
 }
 
 // Input holds the runtime inputs for an ingest operation.
@@ -135,16 +155,24 @@ type Output struct {
 	Dimensions    int      `md:"dimensions"`
 	Duration      string   `md:"duration"`
 	Error         string   `md:"error"`
+	// SourceDocumentCount is the number of input documents before chunking.
+	// Equal to IngestedCount when chunking is disabled.
+	SourceDocumentCount int `md:"sourceDocumentCount"`
+	// ChunksCreated is the total number of chunks stored in VectorDB.
+	// Equal to IngestedCount when chunking is disabled.
+	ChunksCreated int `md:"chunksCreated"`
 }
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"success":       o.Success,
-		"ingestedCount": o.IngestedCount,
-		"ids":           o.IDs,
-		"dimensions":    o.Dimensions,
-		"duration":      o.Duration,
-		"error":         o.Error,
+		"success":             o.Success,
+		"ingestedCount":       o.IngestedCount,
+		"ids":                 o.IDs,
+		"dimensions":          o.Dimensions,
+		"duration":            o.Duration,
+		"error":               o.Error,
+		"sourceDocumentCount": o.SourceDocumentCount,
+		"chunksCreated":       o.ChunksCreated,
 	}
 }
 
@@ -166,6 +194,12 @@ func (o *Output) FromMap(v map[string]interface{}) error {
 	}
 	if val, ok := v["error"].(string); ok {
 		o.Error = val
+	}
+	if val, ok := v["sourceDocumentCount"].(int); ok {
+		o.SourceDocumentCount = val
+	}
+	if val, ok := v["chunksCreated"].(int); ok {
+		o.ChunksCreated = val
 	}
 	return nil
 }

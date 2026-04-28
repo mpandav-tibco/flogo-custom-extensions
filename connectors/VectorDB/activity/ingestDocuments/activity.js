@@ -9,6 +9,8 @@ var core_1 = require("@angular/core"),
 
     // These fields are hidden when useConnectorEmbedding=true (inherited from connector)
     CONNECTOR_INHERITED_FIELDS = ["embeddingProvider", "embeddingAPIKey", "embeddingBaseURL"],
+    // All chunking sub-fields: hidden when enableChunking=false
+    CHUNKING_SUB_FIELDS = ["chunkStrategy", "chunkSize", "chunkOverlap"],
 
     IngestDocumentsActivityHandler = function (t) {
         function e(e, i) {
@@ -23,6 +25,29 @@ var core_1 = require("@angular/core"),
                 // --- Embedding credential fields: hide when connector-level settings are in use ---
                 if (CONNECTOR_INHERITED_FIELDS.indexOf(fieldName) !== -1) {
                     return wi_contrib_1.ValidationResult.newValidationResult().setVisible(!inherit);
+                }
+
+                // --- Chunking sub-fields: only visible when enableChunking=true ---
+                if (CHUNKING_SUB_FIELDS.indexOf(fieldName) !== -1) {
+                    var enableChunking = n.getContextVar(ctx, "enableChunking");
+                    var chunkingOn = enableChunking === true || enableChunking === "true";
+
+                    // chunkOverlap is only relevant for the "fixed" strategy
+                    if (fieldName === "chunkOverlap") {
+                        var strategy = n.getContextVar(ctx, "chunkStrategy");
+                        return wi_contrib_1.ValidationResult.newValidationResult().setVisible(chunkingOn && strategy === "fixed");
+                    }
+
+                    // chunkSize is relevant for "fixed" and "sentence" only
+                    // (paragraph and heading derive their own split boundaries)
+                    if (fieldName === "chunkSize") {
+                        var strategy = n.getContextVar(ctx, "chunkStrategy");
+                        var sizeRelevant = !strategy || strategy === "fixed" || strategy === "sentence";
+                        return wi_contrib_1.ValidationResult.newValidationResult().setVisible(chunkingOn && sizeRelevant);
+                    }
+
+                    // chunkStrategy is always visible when chunking is on
+                    return wi_contrib_1.ValidationResult.newValidationResult().setVisible(chunkingOn);
                 }
 
                 return null;

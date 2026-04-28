@@ -1,0 +1,171 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-custom-extensions/activity/soapclient",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/trigger/timer",
+    "github.com/project-flogo/contrib/function/coerce"
+  ],
+  "name": "test-soap-rr",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#timer",
+      "name": "tibco-wi-timer",
+      "description": "Simple Timer trigger",
+      "settings": {},
+      "id": "TimerTrigger",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:Test_Soap_Client"
+            }
+          },
+          "name": "Test_Soap_Client"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:Test_Soap_Client",
+      "data": {
+        "name": "Test Soap Client",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "SOAPClient",
+            "type": "label",
+            "label": "StartActivity to SOAPClient"
+          },
+          {
+            "id": 2,
+            "from": "SOAPClient",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "SOAPClient to LogMessage"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPClient",
+            "name": "SOAPClient",
+            "description": "Invoke a SOAP 1.1/1.2 service with optional WSDL-driven operation discovery, auto soapAction injection, and request-body skeleton generation.",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "CalculatorSoapService.wsdl",
+                  "content": "data:application/octet-stream;base64,PHdzZGw6ZGVmaW5pdGlvbnMgeG1sbnM6dG09Imh0dHA6Ly9taWNyb3NvZnQuY29tL3dzZGwvbWltZS90ZXh0TWF0Y2hpbmcvIiB4bWxuczpzb2FwZW5jPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2VuY29kaW5nLyIgeG1sbnM6bWltZT0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9taW1lLyIgeG1sbnM6dG5zPSJodHRwOi8vdGVtcHVyaS5vcmcvIiB4bWxuczpzb2FwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL3NvYXAvIiB4bWxuczpzPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSIgeG1sbnM6c29hcDEyPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL3NvYXAxMi8iIHhtbG5zOmh0dHA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvaHR0cC8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPgo8d3NkbDpkb2N1bWVudGF0aW9uIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj5QZXJmb3JtcyBzaW1wbGUgbWF0aCBvdmVyIHRoZSBXZWI8L3dzZGw6ZG9jdW1lbnRhdGlvbj4KPHdzZGw6dHlwZXM+CjxzOnNjaGVtYSBlbGVtZW50Rm9ybURlZmF1bHQ9InF1YWxpZmllZCIgdGFyZ2V0TmFtZXNwYWNlPSJodHRwOi8vdGVtcHVyaS5vcmcvIj4KPHM6ZWxlbWVudCBuYW1lPSJBZGQiPgo8czpjb21wbGV4VHlwZT4KPHM6c2VxdWVuY2U+CjxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImEiIHR5cGU9InM6aW50Ii8+CjxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImIiIHR5cGU9InM6aW50Ii8+CjwvczpzZXF1ZW5jZT4KPC9zOmNvbXBsZXhUeXBlPgo8L3M6ZWxlbWVudD4KPHM6ZWxlbWVudCBuYW1lPSJBZGRSZXNwb25zZSI+CjxzOmNvbXBsZXhUeXBlPgo8czpzZXF1ZW5jZT4KPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iQWRkUmVzdWx0IiB0eXBlPSJzOmludCIvPgo8L3M6c2VxdWVuY2U+Cjwvczpjb21wbGV4VHlwZT4KPC9zOmVsZW1lbnQ+CjxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPgo8czpjb21wbGV4VHlwZT4KPHM6c2VxdWVuY2U+CjxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImEiIHR5cGU9InM6aW50Ii8+CjxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImIiIHR5cGU9InM6aW50Ii8+CjwvczpzZXF1ZW5jZT4KPC9zOmNvbXBsZXhUeXBlPgo8L3M6ZWxlbWVudD4KPHM6ZWxlbWVudCBuYW1lPSJTdWJ0cmFjdFJlc3BvbnNlIj4KPHM6Y29tcGxleFR5cGU+CjxzOnNlcXVlbmNlPgo8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJTdWJ0cmFjdFJlc3VsdCIgdHlwZT0iczppbnQiLz4KPC9zOnNlcXVlbmNlPgo8L3M6Y29tcGxleFR5cGU+CjwvczplbGVtZW50Pgo8L3M6c2NoZW1hPgo8L3dzZGw6dHlwZXM+Cjx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4KPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6QWRkIi8+Cjwvd3NkbDptZXNzYWdlPgo8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPgo8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGRSZXNwb25zZSIvPgo8L3dzZGw6bWVzc2FnZT4KPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+Cjx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOlN1YnRyYWN0Ii8+Cjwvd3NkbDptZXNzYWdlPgo8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+Cjx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOlN1YnRyYWN0UmVzcG9uc2UiLz4KPC93c2RsOm1lc3NhZ2U+Cjx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JfeDAwMjBfV2ViX3gwMDIwX1NlcnZpY2VTb2FwIj4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+Cjx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkNvbXB1dGVzIHRoZSBzdW0gb2YgdHdvIGludGVnZXJzPC93c2RsOmRvY3VtZW50YXRpb24+Cjx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iLz4KPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwT3V0Ii8+Cjwvd3NkbDpvcGVyYXRpb24+Cjx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+Cjx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkNvbXB1dGVzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gdHdvIGludGVnZXJzPC93c2RsOmRvY3VtZW50YXRpb24+Cjx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBJbiIvPgo8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcE91dCIvPgo8L3dzZGw6b3BlcmF0aW9uPgo8L3dzZGw6cG9ydFR5cGU+Cjx3c2RsOmJpbmRpbmcgbmFtZT0iQ2FsY3VsYXRvcl94MDAyMF9XZWJfeDAwMjBfU2VydmljZVNvYXAiIHR5cGU9InRuczpDYWxjdWxhdG9yX3gwMDIwX1dlYl94MDAyMF9TZXJ2aWNlU29hcCI+Cjxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiLz4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+Cjxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvQWRkIiBzdHlsZT0iZG9jdW1lbnQiLz4KPHdzZGw6aW5wdXQ+Cjxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIi8+Cjwvd3NkbDppbnB1dD4KPHdzZGw6b3V0cHV0Pgo8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6b3V0cHV0Pgo8L3dzZGw6b3BlcmF0aW9uPgo8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPgo8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL1N1YnRyYWN0IiBzdHlsZT0iZG9jdW1lbnQiLz4KPHdzZGw6aW5wdXQ+Cjxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIi8+Cjwvd3NkbDppbnB1dD4KPHdzZGw6b3V0cHV0Pgo8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6b3V0cHV0Pgo8L3dzZGw6b3BlcmF0aW9uPgo8L3dzZGw6YmluZGluZz4KPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yX3gwMDIwX1dlYl94MDAyMF9TZXJ2aWNlU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvcl94MDAyMF9XZWJfeDAwMjBfU2VydmljZVNvYXAiPgo8c29hcDEyOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiLz4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+Cjxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIvPgo8d3NkbDppbnB1dD4KPHNvYXAxMjpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6aW5wdXQ+Cjx3c2RsOm91dHB1dD4KPHNvYXAxMjpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6b3V0cHV0Pgo8L3dzZGw6b3BlcmF0aW9uPgo8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPgo8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIvPgo8d3NkbDppbnB1dD4KPHNvYXAxMjpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6aW5wdXQ+Cjx3c2RsOm91dHB1dD4KPHNvYXAxMjpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6b3V0cHV0Pgo8L3dzZGw6b3BlcmF0aW9uPgo8L3dzZGw6YmluZGluZz4KPHdzZGw6c2VydmljZSBuYW1lPSJDYWxjdWxhdG9yX3gwMDIwX1dlYl94MDAyMF9TZXJ2aWNlIj4KPHdzZGw6ZG9jdW1lbnRhdGlvbiB4bWxuczp3c2RsPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsLyI+UGVyZm9ybXMgc2ltcGxlIG1hdGggb3ZlciB0aGUgV2ViPC93c2RsOmRvY3VtZW50YXRpb24+Cjx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvcl94MDAyMF9XZWJfeDAwMjBfU2VydmljZVNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yX3gwMDIwX1dlYl94MDAyMF9TZXJ2aWNlU29hcCI+Cjxzb2FwOmFkZHJlc3MgbG9jYXRpb249Imh0dHBzOi8vZWNzLnN5ci5lZHUvZmFjdWx0eS9mYXdjZXR0L0hhbmRvdXRzL2NzZTc3NS9jb2RlL2NhbGNXZWJTZXJ2aWNlL0NhbGMuYXNteCIvPgo8L3dzZGw6cG9ydD4KPHdzZGw6cG9ydCBuYW1lPSJDYWxjdWxhdG9yX3gwMDIwX1dlYl94MDAyMF9TZXJ2aWNlU29hcDEyIiBiaW5kaW5nPSJ0bnM6Q2FsY3VsYXRvcl94MDAyMF9XZWJfeDAwMjBfU2VydmljZVNvYXAxMiI+Cjxzb2FwMTI6YWRkcmVzcyBsb2NhdGlvbj0iaHR0cHM6Ly9lY3Muc3lyLmVkdS9mYWN1bHR5L2Zhd2NldHQvSGFuZG91dHMvY3NlNzc1L2NvZGUvY2FsY1dlYlNlcnZpY2UvQ2FsYy5hc214Ii8+Cjwvd3NkbDpwb3J0Pgo8L3dzZGw6c2VydmljZT4KPC93c2RsOmRlZmluaXRpb25zPg=="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Add",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": true,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "authorizationConn": "",
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "http://tempuri.org/Add",
+                "soapRequestBody": "=coerce.toObject(\"<Add xmlns=\\\"http://tempuri.org/\\\"><a>10</a><b>5</b></Add>\")"
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                    "fe_metadata": "{}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                    "fe_metadata": "{}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=coerce.toString($activity[SOAPClient])",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiU09BUENsaWVudCI6eyJ4IjozMjQsInkiOjg3fSwiTG9nTWVzc2FnZSI6eyJ4Ijo1MzcsInkiOjk0fX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlNPQVBDbGllbnQiLCJpZCI6IlNPQVAiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vU09BUCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuYyIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJWZWN0b3JEQiBSQUcgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L1ZlY3RvckRCIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.3"
+  }
+}

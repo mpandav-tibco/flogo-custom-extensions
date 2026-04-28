@@ -1,0 +1,3411 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/upsertDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/vectorSearch",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteCollection",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/hybridSearch",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/rerank",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
+  ],
+  "name": "vdb-test",
+  "description": "VectorDB integration test - Qdrant, Weaviate, Chroma, Milvus",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "REST trigger on port 8888",
+      "settings": {
+        "port": 8888,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "VectorDBTestTrigger",
+      "handlers": [
+        {
+          "description": "VectorDB integration test for qdrant",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/qdrant",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:qdrant_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "qdrant_test"
+        },
+        {
+          "description": "VectorDB integration test for weaviate",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/weaviate",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "weaviate_test"
+        },
+        {
+          "description": "VectorDB integration test for chroma",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/chroma",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:chroma_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "chroma_test"
+        },
+        {
+          "description": "VectorDB integration test for milvus",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/milvus",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:milvus_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "milvus_test"
+        },
+        {
+          "description": "Standalone createEmbeddings test: single text and batch of 3 texts",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/embeddings",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:embeddings_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "embeddings_test"
+        },
+        {
+          "description": "RAG test: embed 8 docs, ragQuery",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/rag/qdrant",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:qdrant_rag_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "qdrant_rag_test"
+        },
+        {
+          "description": "RAG test: embed 8 docs, ragQuery, hybridSearch",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/rag/weaviate",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_rag_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "weaviate_rag_test"
+        },
+        {
+          "description": "RAG test: embed 8 docs, ragQuery",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/rag/chroma",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:chroma_rag_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "chroma_rag_test"
+        },
+        {
+          "description": "RAG test: embed 8 docs, ragQuery",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/rag/milvus",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:milvus_rag_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "milvus_rag_test"
+        },
+        {
+          "description": "Test rerank activity — set RERANK_API_KEY for a Cohere-compatible endpoint",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/test/rerank",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:rerank_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "rerank_test"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:qdrant_test",
+      "data": {
+        "name": "qdrant_test",
+        "description": "VectorDB integration test for qdrant",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListBefore",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "ListBefore",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "listed"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "UpsertDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "UpsertDocs",
+            "to": "CountDocs1",
+            "type": "label",
+            "label": "upserted"
+          },
+          {
+            "id": 5,
+            "from": "CountDocs1",
+            "to": "SearchVec",
+            "type": "label",
+            "label": "counted"
+          },
+          {
+            "id": 6,
+            "from": "SearchVec",
+            "to": "GetDoc",
+            "type": "label",
+            "label": "searched"
+          },
+          {
+            "id": 7,
+            "from": "GetDoc",
+            "to": "ScrollDocs",
+            "type": "label",
+            "label": "got"
+          },
+          {
+            "id": 8,
+            "from": "ScrollDocs",
+            "to": "DeleteDocs",
+            "type": "label",
+            "label": "scrolled"
+          },
+          {
+            "id": 9,
+            "from": "DeleteDocs",
+            "to": "CountDocs2",
+            "type": "label",
+            "label": "deleted"
+          },
+          {
+            "id": 10,
+            "from": "CountDocs2",
+            "to": "DeleteCollection",
+            "type": "label",
+            "label": "counted2"
+          },
+          {
+            "id": 11,
+            "from": "DeleteCollection",
+            "to": "ListAfter",
+            "type": "label",
+            "label": "dropcol"
+          },
+          {
+            "id": 12,
+            "from": "ListAfter",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "listed2"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "Flow start",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListBefore",
+            "name": "ListBefore",
+            "description": "List collections before test",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create collection flogodemo (8 dims, cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "dimensions": 8,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "UpsertDocs",
+            "name": "UpsertDocs",
+            "description": "Upsert 3 documents with 8-dim vectors",
+            "activity": {
+              "ref": "#upsertDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "category": "language",
+                      "content": "The quick brown fox jumps over the lazy dog",
+                      "id": "doc-001",
+                      "vector": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "tech",
+                      "content": "Machine learning enables computers to learn from data",
+                      "id": "doc-002",
+                      "vector": [
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "database",
+                      "content": "Vector databases enable efficient similarity search",
+                      "id": "doc-003",
+                      "vector": [
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs1",
+            "name": "CountDocs1",
+            "description": "Count documents - expect 3",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "SearchVec",
+            "name": "SearchVec",
+            "description": "Vector search [1,0,...,0] topK=3",
+            "activity": {
+              "ref": "#vectorSearch",
+              "settings": {
+                "connection": "conn://qdrant-conn",
+                "defaultTopK": 10
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "withVectors": false,
+                "queryVector": {
+                  "mapping": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "GetDoc",
+            "name": "GetDoc",
+            "description": "Get document doc-001 by ID",
+            "activity": {
+              "ref": "#getDocument",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documentId": "doc-001"
+              }
+            }
+          },
+          {
+            "id": "ScrollDocs",
+            "name": "ScrollDocs",
+            "description": "Scroll all documents in collection",
+            "activity": {
+              "ref": "#scrollDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "limit": 10,
+                "offset": "",
+                "withVectors": false
+              }
+            }
+          },
+          {
+            "id": "DeleteDocs",
+            "name": "DeleteDocs",
+            "description": "Delete doc-003 by ID",
+            "activity": {
+              "ref": "#deleteDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "ids": {
+                  "mapping": [
+                    "doc-003"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs2",
+            "name": "CountDocs2",
+            "description": "Count documents after delete - expect 2",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "DeleteCollection",
+            "name": "DeleteCollection",
+            "description": "Delete the test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "ListAfter",
+            "name": "ListAfter",
+            "description": "List collections after cleanup",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "Log test completion",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "qdrant VectorDB Test Complete (collection=flogodemo) - COMPLETE",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUwfSwiVXBzZXJ0RG9jcyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkNvdW50RG9jczEiOnsieCI6ODUwLCJ5Ijo0NTB9LCJTZWFyY2hWZWMiOnsieCI6MTA1MCwieSI6NTUwfSwiR2V0RG9jIjp7IngiOjEyNTAsInkiOjY1MH0sIlNjcm9sbERvY3MiOnsieCI6MTQ1MCwieSI6NzUwfSwiRGVsZXRlRG9jcyI6eyJ4IjoxNjUwLCJ5Ijo4NTB9LCJDb3VudERvY3MyIjp7IngiOjE4NTAsInkiOjk1MH0sIkRlbGV0ZUNvbGxlY3Rpb24iOnsieCI6MjA1MCwieSI6MTA1MH0sIkxpc3RBZnRlciI6eyJ4IjoyMjUwLCJ5IjoxMTUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoyNDUwLCJ5IjoxMjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:weaviate_test",
+      "data": {
+        "name": "weaviate_test",
+        "description": "VectorDB integration test for weaviate",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListBefore",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "ListBefore",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "listed"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "UpsertDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "UpsertDocs",
+            "to": "CountDocs1",
+            "type": "label",
+            "label": "upserted"
+          },
+          {
+            "id": 5,
+            "from": "CountDocs1",
+            "to": "SearchVec",
+            "type": "label",
+            "label": "counted"
+          },
+          {
+            "id": 6,
+            "from": "SearchVec",
+            "to": "GetDoc",
+            "type": "label",
+            "label": "searched"
+          },
+          {
+            "id": 7,
+            "from": "GetDoc",
+            "to": "ScrollDocs",
+            "type": "label",
+            "label": "got"
+          },
+          {
+            "id": 8,
+            "from": "ScrollDocs",
+            "to": "DeleteDocs",
+            "type": "label",
+            "label": "scrolled"
+          },
+          {
+            "id": 9,
+            "from": "DeleteDocs",
+            "to": "CountDocs2",
+            "type": "label",
+            "label": "deleted"
+          },
+          {
+            "id": 10,
+            "from": "CountDocs2",
+            "to": "DeleteCollection",
+            "type": "label",
+            "label": "counted2"
+          },
+          {
+            "id": 11,
+            "from": "DeleteCollection",
+            "to": "ListAfter",
+            "type": "label",
+            "label": "dropcol"
+          },
+          {
+            "id": 12,
+            "from": "ListAfter",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "listed2"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "Flow start",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListBefore",
+            "name": "ListBefore",
+            "description": "List collections before test",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create collection Flogodemo (8 dims, cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo",
+                "dimensions": 8,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "UpsertDocs",
+            "name": "UpsertDocs",
+            "description": "Upsert 3 documents with 8-dim vectors",
+            "activity": {
+              "ref": "#upsertDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "category": "language",
+                      "content": "The quick brown fox jumps over the lazy dog",
+                      "id": "doc-001",
+                      "vector": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "tech",
+                      "content": "Machine learning enables computers to learn from data",
+                      "id": "doc-002",
+                      "vector": [
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "database",
+                      "content": "Vector databases enable efficient similarity search",
+                      "id": "doc-003",
+                      "vector": [
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs1",
+            "name": "CountDocs1",
+            "description": "Count documents - expect 3",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo"
+              }
+            }
+          },
+          {
+            "id": "SearchVec",
+            "name": "SearchVec",
+            "description": "Vector search [1,0,...,0] topK=3",
+            "activity": {
+              "ref": "#vectorSearch",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "defaultTopK": 10
+              },
+              "input": {
+                "collectionName": "Flogodemo",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "withVectors": false,
+                "queryVector": {
+                  "mapping": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "GetDoc",
+            "name": "GetDoc",
+            "description": "Get document doc-001 by ID",
+            "activity": {
+              "ref": "#getDocument",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo",
+                "documentId": "doc-001"
+              }
+            }
+          },
+          {
+            "id": "ScrollDocs",
+            "name": "ScrollDocs",
+            "description": "Scroll all documents in collection",
+            "activity": {
+              "ref": "#scrollDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo",
+                "limit": 10,
+                "offset": "",
+                "withVectors": false
+              }
+            }
+          },
+          {
+            "id": "DeleteDocs",
+            "name": "DeleteDocs",
+            "description": "Delete doc-003 by ID",
+            "activity": {
+              "ref": "#deleteDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo",
+                "ids": {
+                  "mapping": [
+                    "doc-003"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs2",
+            "name": "CountDocs2",
+            "description": "Count documents after delete - expect 2",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo"
+              }
+            }
+          },
+          {
+            "id": "DeleteCollection",
+            "name": "DeleteCollection",
+            "description": "Delete the test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Flogodemo"
+              }
+            }
+          },
+          {
+            "id": "ListAfter",
+            "name": "ListAfter",
+            "description": "List collections after cleanup",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "Log test completion",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "weaviate VectorDB Test Complete (collection=Flogodemo) - COMPLETE",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUwfSwiVXBzZXJ0RG9jcyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkNvdW50RG9jczEiOnsieCI6ODUwLCJ5Ijo0NTB9LCJTZWFyY2hWZWMiOnsieCI6MTA1MCwieSI6NTUwfSwiR2V0RG9jIjp7IngiOjEyNTAsInkiOjY1MH0sIlNjcm9sbERvY3MiOnsieCI6MTQ1MCwieSI6NzUwfSwiRGVsZXRlRG9jcyI6eyJ4IjoxNjUwLCJ5Ijo4NTB9LCJDb3VudERvY3MyIjp7IngiOjE4NTAsInkiOjk1MH0sIkRlbGV0ZUNvbGxlY3Rpb24iOnsieCI6MjA1MCwieSI6MTA1MH0sIkxpc3RBZnRlciI6eyJ4IjoyMjUwLCJ5IjoxMTUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoyNDUwLCJ5IjoxMjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:chroma_test",
+      "data": {
+        "name": "chroma_test",
+        "description": "VectorDB integration test for chroma",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListBefore",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "ListBefore",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "listed"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "UpsertDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "UpsertDocs",
+            "to": "CountDocs1",
+            "type": "label",
+            "label": "upserted"
+          },
+          {
+            "id": 5,
+            "from": "CountDocs1",
+            "to": "SearchVec",
+            "type": "label",
+            "label": "counted"
+          },
+          {
+            "id": 6,
+            "from": "SearchVec",
+            "to": "GetDoc",
+            "type": "label",
+            "label": "searched"
+          },
+          {
+            "id": 7,
+            "from": "GetDoc",
+            "to": "ScrollDocs",
+            "type": "label",
+            "label": "got"
+          },
+          {
+            "id": 8,
+            "from": "ScrollDocs",
+            "to": "DeleteDocs",
+            "type": "label",
+            "label": "scrolled"
+          },
+          {
+            "id": 9,
+            "from": "DeleteDocs",
+            "to": "CountDocs2",
+            "type": "label",
+            "label": "deleted"
+          },
+          {
+            "id": 10,
+            "from": "CountDocs2",
+            "to": "DeleteCollection",
+            "type": "label",
+            "label": "counted2"
+          },
+          {
+            "id": 11,
+            "from": "DeleteCollection",
+            "to": "ListAfter",
+            "type": "label",
+            "label": "dropcol"
+          },
+          {
+            "id": 12,
+            "from": "ListAfter",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "listed2"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "Flow start",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListBefore",
+            "name": "ListBefore",
+            "description": "List collections before test",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "output": {
+                "success": false
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create collection flogodemo (8 dims, cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "dimensions": 8,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "UpsertDocs",
+            "name": "UpsertDocs",
+            "description": "Upsert 3 documents with 8-dim vectors",
+            "activity": {
+              "ref": "#upsertDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "category": "language",
+                      "content": "The quick brown fox jumps over the lazy dog",
+                      "id": "doc-001",
+                      "vector": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "tech",
+                      "content": "Machine learning enables computers to learn from data",
+                      "id": "doc-002",
+                      "vector": [
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "database",
+                      "content": "Vector databases enable efficient similarity search",
+                      "id": "doc-003",
+                      "vector": [
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs1",
+            "name": "CountDocs1",
+            "description": "Count documents - expect 3",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "SearchVec",
+            "name": "SearchVec",
+            "description": "Vector search [1,0,...,0] topK=3",
+            "activity": {
+              "ref": "#vectorSearch",
+              "settings": {
+                "connection": "conn://chroma-conn",
+                "defaultTopK": 10
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "withVectors": false,
+                "queryVector": {
+                  "mapping": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "GetDoc",
+            "name": "GetDoc",
+            "description": "Get document doc-001 by ID",
+            "activity": {
+              "ref": "#getDocument",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documentId": "doc-001"
+              }
+            }
+          },
+          {
+            "id": "ScrollDocs",
+            "name": "ScrollDocs",
+            "description": "Scroll all documents in collection",
+            "activity": {
+              "ref": "#scrollDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "limit": 10,
+                "offset": "",
+                "withVectors": false
+              }
+            }
+          },
+          {
+            "id": "DeleteDocs",
+            "name": "DeleteDocs",
+            "description": "Delete doc-003 by ID",
+            "activity": {
+              "ref": "#deleteDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "ids": {
+                  "mapping": [
+                    "doc-003"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs2",
+            "name": "CountDocs2",
+            "description": "Count documents after delete - expect 2",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "DeleteCollection",
+            "name": "DeleteCollection",
+            "description": "Delete the test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "ListAfter",
+            "name": "ListAfter",
+            "description": "List collections after cleanup",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "Log test completion",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "chroma VectorDB Test Complete (collection=flogodemo) - COMPLETE",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUxfSwiVXBzZXJ0RG9jcyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkNvdW50RG9jczEiOnsieCI6ODUwLCJ5Ijo0NTB9LCJTZWFyY2hWZWMiOnsieCI6MTA1MCwieSI6NTUwfSwiR2V0RG9jIjp7IngiOjEyNTAsInkiOjY1MH0sIlNjcm9sbERvY3MiOnsieCI6MTQ1MCwieSI6NzUwfSwiRGVsZXRlRG9jcyI6eyJ4IjoxNjUwLCJ5Ijo4NTB9LCJDb3VudERvY3MyIjp7IngiOjE4NTAsInkiOjk1MH0sIkRlbGV0ZUNvbGxlY3Rpb24iOnsieCI6MjA1MCwieSI6MTA1MH0sIkxpc3RBZnRlciI6eyJ4IjoyMjUwLCJ5IjoxMTUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoyNDUwLCJ5IjoxMjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:milvus_test",
+      "data": {
+        "name": "milvus_test",
+        "description": "VectorDB integration test for milvus",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListBefore",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "ListBefore",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "listed"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "UpsertDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "UpsertDocs",
+            "to": "CountDocs1",
+            "type": "label",
+            "label": "upserted"
+          },
+          {
+            "id": 5,
+            "from": "CountDocs1",
+            "to": "SearchVec",
+            "type": "label",
+            "label": "counted"
+          },
+          {
+            "id": 6,
+            "from": "SearchVec",
+            "to": "GetDoc",
+            "type": "label",
+            "label": "searched"
+          },
+          {
+            "id": 7,
+            "from": "GetDoc",
+            "to": "ScrollDocs",
+            "type": "label",
+            "label": "got"
+          },
+          {
+            "id": 8,
+            "from": "ScrollDocs",
+            "to": "DeleteDocs",
+            "type": "label",
+            "label": "scrolled"
+          },
+          {
+            "id": 9,
+            "from": "DeleteDocs",
+            "to": "CountDocs2",
+            "type": "label",
+            "label": "deleted"
+          },
+          {
+            "id": 10,
+            "from": "CountDocs2",
+            "to": "DeleteCollection",
+            "type": "label",
+            "label": "counted2"
+          },
+          {
+            "id": 11,
+            "from": "DeleteCollection",
+            "to": "ListAfter",
+            "type": "label",
+            "label": "dropcol"
+          },
+          {
+            "id": 12,
+            "from": "ListAfter",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "listed2"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "Flow start",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListBefore",
+            "name": "ListBefore",
+            "description": "List collections before test",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create collection flogodemo (8 dims, cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "dimensions": 8,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "UpsertDocs",
+            "name": "UpsertDocs",
+            "description": "Upsert 3 documents with 8-dim vectors",
+            "activity": {
+              "ref": "#upsertDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "category": "language",
+                      "content": "The quick brown fox jumps over the lazy dog",
+                      "id": "doc-001",
+                      "vector": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "tech",
+                      "content": "Machine learning enables computers to learn from data",
+                      "id": "doc-002",
+                      "vector": [
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "category": "database",
+                      "content": "Vector databases enable efficient similarity search",
+                      "id": "doc-003",
+                      "vector": [
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs1",
+            "name": "CountDocs1",
+            "description": "Count documents - expect 3",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "SearchVec",
+            "name": "SearchVec",
+            "description": "Vector search [1,0,...,0] topK=3",
+            "activity": {
+              "ref": "#vectorSearch",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "defaultTopK": 10
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "withVectors": false,
+                "queryVector": {
+                  "mapping": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "GetDoc",
+            "name": "GetDoc",
+            "description": "Get document doc-001 by ID",
+            "activity": {
+              "ref": "#getDocument",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documentId": "doc-001"
+              }
+            }
+          },
+          {
+            "id": "ScrollDocs",
+            "name": "ScrollDocs",
+            "description": "Scroll all documents in collection",
+            "activity": {
+              "ref": "#scrollDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "limit": 10,
+                "offset": "",
+                "withVectors": false
+              }
+            }
+          },
+          {
+            "id": "DeleteDocs",
+            "name": "DeleteDocs",
+            "description": "Delete doc-003 by ID",
+            "activity": {
+              "ref": "#deleteDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "ids": {
+                  "mapping": [
+                    "doc-003"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs2",
+            "name": "CountDocs2",
+            "description": "Count documents after delete - expect 2",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "DeleteCollection",
+            "name": "DeleteCollection",
+            "description": "Delete the test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "ListAfter",
+            "name": "ListAfter",
+            "description": "List collections after cleanup",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "Log test completion",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "milvus VectorDB Test Complete (collection=flogodemo) - COMPLETE",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUwfSwiVXBzZXJ0RG9jcyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkNvdW50RG9jczEiOnsieCI6ODUwLCJ5Ijo0NTB9LCJTZWFyY2hWZWMiOnsieCI6MTA1MCwieSI6NTUwfSwiR2V0RG9jIjp7IngiOjEyNTAsInkiOjY1MH0sIlNjcm9sbERvY3MiOnsieCI6MTQ1MCwieSI6NzUwfSwiRGVsZXRlRG9jcyI6eyJ4IjoxNjUwLCJ5Ijo4NTB9LCJDb3VudERvY3MyIjp7IngiOjE4NTAsInkiOjk1MH0sIkRlbGV0ZUNvbGxlY3Rpb24iOnsieCI6MjA1MCwieSI6MTA1MH0sIkxpc3RBZnRlciI6eyJ4IjoyMjUwLCJ5IjoxMTUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoyNDUwLCJ5IjoxMjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:embeddings_test",
+      "data": {
+        "name": "embeddings_test",
+        "description": "Standalone createEmbeddings test: single text and batch of 3 texts",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateEmbedding1",
+            "type": "label",
+            "label": "StartActivity to CreateEmbedding1"
+          },
+          {
+            "id": 2,
+            "from": "CreateEmbedding1",
+            "to": "CreateEmbeddings2",
+            "type": "label",
+            "label": "CreateEmbedding1 to CreateEmbeddings2"
+          },
+          {
+            "id": 3,
+            "from": "CreateEmbeddings2",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "CreateEmbeddings2 to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateEmbedding1",
+            "name": "CreateEmbedding1",
+            "description": "Embed single text, inspect dimensions and token usage",
+            "activity": {
+              "ref": "#createEmbeddings",
+              "settings": {
+                "useConnectorEmbedding": true,
+                "provider": "=$property[\"EMBED_PROVIDER\"]",
+                "apiKey": "=$property[\"EMBED_API_KEY\"]",
+                "baseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "model": "=$property[\"EMBED_MODEL\"]",
+                "dimensions": 0,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "inputText": "Transformers use self-attention mechanisms to process sequential data in parallel."
+              }
+            }
+          },
+          {
+            "id": "CreateEmbeddings2",
+            "name": "CreateEmbeddings2",
+            "description": "Batch embed 3 texts; verify all embeddings returned",
+            "activity": {
+              "ref": "#createEmbeddings",
+              "settings": {
+                "useConnectorEmbedding": true,
+                "provider": "=$property[\"EMBED_PROVIDER\"]",
+                "apiKey": "=$property[\"EMBED_API_KEY\"]",
+                "baseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "model": "=$property[\"EMBED_MODEL\"]",
+                "dimensions": 0,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "inputTexts": {
+                  "mapping": [
+                    "What is retrieval-augmented generation?",
+                    "How does HNSW indexing work in vector databases?",
+                    "Explain cosine similarity for semantic search."
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('Embeddings Test COMPLETE - dims=', coerce.toString($activity[CreateEmbedding1].dimensions), ' single-tokens=', coerce.toString($activity[CreateEmbedding1].tokensUsed), ' batch-dims=', coerce.toString($activity[CreateEmbeddings2].dimensions), ' batch-count=3')",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZUVtYmVkZGluZzEiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVFbWJlZGRpbmdzMiI6eyJ4Ijo0NTAsInkiOjI1MH0sIkxvZ1N1bW1hcnkiOnsieCI6NjUwLCJ5IjozNTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:qdrant_rag_test",
+      "data": {
+        "name": "qdrant_rag_test",
+        "description": "RAG test: embed 8 docs, ragQuery",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateRAGCol",
+            "type": "label",
+            "label": "StartActivity to CreateRAGCol"
+          },
+          {
+            "id": 2,
+            "from": "CreateRAGCol",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "CreateRAGCol to IngestDocs"
+          },
+          {
+            "id": 3,
+            "from": "IngestDocs",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "IngestDocs to RAGQuery"
+          },
+          {
+            "id": 4,
+            "from": "RAGQuery",
+            "to": "DeleteRAGCol",
+            "type": "label",
+            "label": "RAGQuery to DeleteRAGCol"
+          },
+          {
+            "id": 5,
+            "from": "DeleteRAGCol",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "DeleteRAGCol to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateRAGCol",
+            "name": "CreateRAGCol",
+            "description": "Create ragdemo for RAG (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed 8 AI/ML passages with nomic-embed-text and upsert",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://qdrant-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 60,
+                "embeddingBatchSize": 8
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "rag-001",
+                      "text": "Transformers use self-attention mechanisms to process sequential data in parallel, enabling massive parallelization during training."
+                    },
+                    {
+                      "id": "rag-002",
+                      "text": "BERT is a bidirectional transformer model pre-trained on masked language modeling and next-sentence prediction tasks."
+                    },
+                    {
+                      "id": "rag-003",
+                      "text": "Retrieval-Augmented Generation (RAG) grounds language model responses in external knowledge by retrieving relevant documents at inference time."
+                    },
+                    {
+                      "id": "rag-004",
+                      "text": "Vector databases index high-dimensional embeddings and use approximate nearest neighbor algorithms like HNSW for fast semantic search."
+                    },
+                    {
+                      "id": "rag-005",
+                      "text": "The attention mechanism computes scaled dot-product attention: softmax(QK^T divided by sqrt(d_k)) times V, letting each token attend to all positions."
+                    },
+                    {
+                      "id": "rag-006",
+                      "text": "TIBCO Flogo is an open-source ultralight microservices framework that compiles integration flows into single self-contained executable binaries."
+                    },
+                    {
+                      "id": "rag-007",
+                      "text": "Cosine similarity measures the angle between two embedding vectors and is the standard distance metric for semantic similarity search."
+                    },
+                    {
+                      "id": "rag-008",
+                      "text": "Hybrid search combines dense vector retrieval with sparse BM25 keyword matching, achieving better recall than either approach alone."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed question, retrieve top-3 context passages",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://qdrant-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "How does the attention mechanism work in transformer models?",
+                "collectionName": "ragdemo",
+                "topK": 3
+              }
+            }
+          },
+          {
+            "id": "DeleteRAGCol",
+            "name": "DeleteRAGCol",
+            "description": "Drop RAG test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://qdrant-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('qdrant RAG Test COMPLETE - ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' ragFound=', coerce.toString($activity[RAGQuery].totalFound))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:weaviate_rag_test",
+      "data": {
+        "name": "weaviate_rag_test",
+        "description": "RAG test: embed 8 docs, ragQuery, hybridSearch",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateRAGCol",
+            "type": "label",
+            "label": "StartActivity to CreateRAGCol"
+          },
+          {
+            "id": 2,
+            "from": "CreateRAGCol",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "CreateRAGCol to IngestDocs"
+          },
+          {
+            "id": 3,
+            "from": "IngestDocs",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "IngestDocs to RAGQuery"
+          },
+          {
+            "id": 4,
+            "from": "RAGQuery",
+            "to": "HybridSearch",
+            "type": "label",
+            "label": "RAGQuery to HybridSearch"
+          },
+          {
+            "id": 5,
+            "from": "HybridSearch",
+            "to": "DeleteRAGCol",
+            "type": "label",
+            "label": "HybridSearch to DeleteRAGCol"
+          },
+          {
+            "id": 6,
+            "from": "DeleteRAGCol",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "DeleteRAGCol to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateRAGCol",
+            "name": "CreateRAGCol",
+            "description": "Create Ragdemo for RAG (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Ragdemo",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed 8 AI/ML passages with nomic-embed-text and upsert",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 60,
+                "embeddingBatchSize": 8
+              },
+              "input": {
+                "collectionName": "Ragdemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "rag-001",
+                      "text": "Transformers use self-attention mechanisms to process sequential data in parallel, enabling massive parallelization during training."
+                    },
+                    {
+                      "id": "rag-002",
+                      "text": "BERT is a bidirectional transformer model pre-trained on masked language modeling and next-sentence prediction tasks."
+                    },
+                    {
+                      "id": "rag-003",
+                      "text": "Retrieval-Augmented Generation (RAG) grounds language model responses in external knowledge by retrieving relevant documents at inference time."
+                    },
+                    {
+                      "id": "rag-004",
+                      "text": "Vector databases index high-dimensional embeddings and use approximate nearest neighbor algorithms like HNSW for fast semantic search."
+                    },
+                    {
+                      "id": "rag-005",
+                      "text": "The attention mechanism computes scaled dot-product attention: softmax(QK^T divided by sqrt(d_k)) times V, letting each token attend to all positions."
+                    },
+                    {
+                      "id": "rag-006",
+                      "text": "TIBCO Flogo is an open-source ultralight microservices framework that compiles integration flows into single self-contained executable binaries."
+                    },
+                    {
+                      "id": "rag-007",
+                      "text": "Cosine similarity measures the angle between two embedding vectors and is the standard distance metric for semantic similarity search."
+                    },
+                    {
+                      "id": "rag-008",
+                      "text": "Hybrid search combines dense vector retrieval with sparse BM25 keyword matching, achieving better recall than either approach alone."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed question, retrieve top-3 context passages",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "How does the attention mechanism work in transformer models?",
+                "collectionName": "Ragdemo",
+                "topK": 3
+              }
+            }
+          },
+          {
+            "id": "HybridSearch",
+            "name": "HybridSearch",
+            "description": "BM25+dense hybrid search (Weaviate native) using query embedding from RAGQuery",
+            "activity": {
+              "ref": "#hybridSearch",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "defaultTopK": 3
+              },
+              "input": {
+                "collectionName": "Ragdemo",
+                "queryText": "What is retrieval augmented generation and how does it work",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "alpha": 0.5,
+                "queryVector": "=$activity[RAGQuery].queryEmbedding"
+              }
+            }
+          },
+          {
+            "id": "DeleteRAGCol",
+            "name": "DeleteRAGCol",
+            "description": "Drop RAG test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "Ragdemo"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"weaviate RAG+Hybrid Test COMPLETE - ingested=\", coerce.toString($activity[IngestDocs].ingestedCount), \" dims=\", coerce.toString($activity[IngestDocs].dimensions), \" ragFound=\", coerce.toString($activity[RAGQuery].totalFound), \" hybridCount=\", coerce.toString($activity[HybridSearch].totalCount))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkh5YnJpZFNlYXJjaCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4IjoxMDUwLCJ5Ijo1NTB9LCJMb2dTdW1tYXJ5Ijp7IngiOjEyNTAsInkiOjY1MH19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:chroma_rag_test",
+      "data": {
+        "name": "chroma_rag_test",
+        "description": "RAG test: embed 8 docs, ragQuery",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateRAGCol",
+            "type": "label",
+            "label": "StartActivity to CreateRAGCol"
+          },
+          {
+            "id": 2,
+            "from": "CreateRAGCol",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "CreateRAGCol to IngestDocs"
+          },
+          {
+            "id": 3,
+            "from": "IngestDocs",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "IngestDocs to RAGQuery"
+          },
+          {
+            "id": 4,
+            "from": "RAGQuery",
+            "to": "DeleteRAGCol",
+            "type": "label",
+            "label": "RAGQuery to DeleteRAGCol"
+          },
+          {
+            "id": 5,
+            "from": "DeleteRAGCol",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "DeleteRAGCol to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateRAGCol",
+            "name": "CreateRAGCol",
+            "description": "Create ragdemo for RAG (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed 8 AI/ML passages with nomic-embed-text and upsert",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://chroma-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 60,
+                "embeddingBatchSize": 8
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "rag-001",
+                      "text": "Transformers use self-attention mechanisms to process sequential data in parallel, enabling massive parallelization during training."
+                    },
+                    {
+                      "id": "rag-002",
+                      "text": "BERT is a bidirectional transformer model pre-trained on masked language modeling and next-sentence prediction tasks."
+                    },
+                    {
+                      "id": "rag-003",
+                      "text": "Retrieval-Augmented Generation (RAG) grounds language model responses in external knowledge by retrieving relevant documents at inference time."
+                    },
+                    {
+                      "id": "rag-004",
+                      "text": "Vector databases index high-dimensional embeddings and use approximate nearest neighbor algorithms like HNSW for fast semantic search."
+                    },
+                    {
+                      "id": "rag-005",
+                      "text": "The attention mechanism computes scaled dot-product attention: softmax(QK^T divided by sqrt(d_k)) times V, letting each token attend to all positions."
+                    },
+                    {
+                      "id": "rag-006",
+                      "text": "TIBCO Flogo is an open-source ultralight microservices framework that compiles integration flows into single self-contained executable binaries."
+                    },
+                    {
+                      "id": "rag-007",
+                      "text": "Cosine similarity measures the angle between two embedding vectors and is the standard distance metric for semantic similarity search."
+                    },
+                    {
+                      "id": "rag-008",
+                      "text": "Hybrid search combines dense vector retrieval with sparse BM25 keyword matching, achieving better recall than either approach alone."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed question, retrieve top-3 context passages",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://chroma-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "How does the attention mechanism work in transformer models?",
+                "collectionName": "ragdemo",
+                "topK": 3
+              }
+            }
+          },
+          {
+            "id": "DeleteRAGCol",
+            "name": "DeleteRAGCol",
+            "description": "Drop RAG test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://chroma-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('chroma RAG Test COMPLETE - ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' ragFound=', coerce.toString($activity[RAGQuery].totalFound))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:milvus_rag_test",
+      "data": {
+        "name": "milvus_rag_test",
+        "description": "RAG test: embed 8 docs, ragQuery",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateRAGCol",
+            "type": "label",
+            "label": "StartActivity to CreateRAGCol"
+          },
+          {
+            "id": 2,
+            "from": "CreateRAGCol",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "CreateRAGCol to IngestDocs"
+          },
+          {
+            "id": 3,
+            "from": "IngestDocs",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "IngestDocs to RAGQuery"
+          },
+          {
+            "id": 4,
+            "from": "RAGQuery",
+            "to": "DeleteRAGCol",
+            "type": "label",
+            "label": "RAGQuery to DeleteRAGCol"
+          },
+          {
+            "id": 5,
+            "from": "DeleteRAGCol",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "DeleteRAGCol to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateRAGCol",
+            "name": "CreateRAGCol",
+            "description": "Create ragdemo for RAG (768-dim cosine)",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed 8 AI/ML passages with nomic-embed-text and upsert",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 60,
+                "embeddingBatchSize": 8
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "rag-001",
+                      "text": "Transformers use self-attention mechanisms to process sequential data in parallel, enabling massive parallelization during training."
+                    },
+                    {
+                      "id": "rag-002",
+                      "text": "BERT is a bidirectional transformer model pre-trained on masked language modeling and next-sentence prediction tasks."
+                    },
+                    {
+                      "id": "rag-003",
+                      "text": "Retrieval-Augmented Generation (RAG) grounds language model responses in external knowledge by retrieving relevant documents at inference time."
+                    },
+                    {
+                      "id": "rag-004",
+                      "text": "Vector databases index high-dimensional embeddings and use approximate nearest neighbor algorithms like HNSW for fast semantic search."
+                    },
+                    {
+                      "id": "rag-005",
+                      "text": "The attention mechanism computes scaled dot-product attention: softmax(QK^T divided by sqrt(d_k)) times V, letting each token attend to all positions."
+                    },
+                    {
+                      "id": "rag-006",
+                      "text": "TIBCO Flogo is an open-source ultralight microservices framework that compiles integration flows into single self-contained executable binaries."
+                    },
+                    {
+                      "id": "rag-007",
+                      "text": "Cosine similarity measures the angle between two embedding vectors and is the standard distance metric for semantic similarity search."
+                    },
+                    {
+                      "id": "rag-008",
+                      "text": "Hybrid search combines dense vector retrieval with sparse BM25 keyword matching, achieving better recall than either approach alone."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed question, retrieve top-3 context passages",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "How does the attention mechanism work in transformer models?",
+                "collectionName": "ragdemo",
+                "topK": 3
+              }
+            }
+          },
+          {
+            "id": "DeleteRAGCol",
+            "name": "DeleteRAGCol",
+            "description": "Drop RAG test collection",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('milvus RAG Test COMPLETE - ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' ragFound=', coerce.toString($activity[RAGQuery].totalFound))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:rerank_test",
+      "data": {
+        "name": "rerank_test",
+        "description": "Test rerank activity — set RERANK_API_KEY for a Cohere-compatible endpoint",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "RerankDocs",
+            "type": "label",
+            "label": "StartActivity to RerankDocs"
+          },
+          {
+            "id": 2,
+            "from": "RerankDocs",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "RerankDocs to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "RerankDocs",
+            "name": "RerankDocs",
+            "description": "Rerank 5 candidate passages for relevance to query",
+            "activity": {
+              "ref": "#rerank",
+              "settings": {
+                "rerankEndpoint": "=$property[\"RERANK_ENDPOINT\"]",
+                "apiKey": "=$property[\"RERANK_API_KEY\"]",
+                "model": "=$property[\"RERANK_MODEL\"]",
+                "topN": 3,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "query": "How does transformer self-attention work?",
+                "documents": {
+                  "mapping": [
+                    "The attention mechanism computes scaled dot-product attention over queries, keys and values.",
+                    "BERT uses masked language modeling and next-sentence prediction for pre-training.",
+                    "Vector databases enable fast approximate nearest neighbor search over embeddings.",
+                    "Transformers replaced RNNs by processing all tokens in parallel using self-attention.",
+                    "Cosine similarity is used to compare query embeddings with document embeddings."
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('Rerank Test COMPLETE - totalReranked=', coerce.toString($activity[RerankDocs].totalCount))",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlJlcmFua0RvY3MiOnsieCI6MjUwLCJ5IjoxNTB9LCJMb2dTdW1tYXJ5Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "EMBED_PROVIDER",
+      "type": "string",
+      "value": "Ollama"
+    },
+    {
+      "name": "EMBED_API_KEY",
+      "type": "string",
+      "value": "SECRET:9GGh4B8geb+ulBRWBE7pwmAy6RQ/OnbGgY8Img5EqNIOMmCe5sLRhSuHMv6FVvtUp8Ha9B0f94QTqC8Ugq8YTx8DlJ3//B6ySA=="
+    },
+    {
+      "name": "EMBED_BASE_URL",
+      "type": "string",
+      "value": "http://host.docker.internal:11434"
+    },
+    {
+      "name": "EMBED_MODEL",
+      "type": "string",
+      "value": "nomic-embed-text"
+    },
+    {
+      "name": "EMBED_DIMS",
+      "type": "float64",
+      "value": 768
+    },
+    {
+      "name": "RERANK_ENDPOINT",
+      "type": "string",
+      "value": "https://api.cohere.ai/v1/rerank"
+    },
+    {
+      "name": "RERANK_API_KEY",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "RERANK_MODEL",
+      "type": "string",
+      "value": "rerank-english-v3.0"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.QdrantConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.QdrantConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.QdrantConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:mRbMPD00PcvSI/Lyyr7ckF6l1PtPF4xjXIN1TKti6FiU59S+fWSF8pkMYu7k8zDoOgwgbp0xQdXijQ=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.QdrantConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.QdrantConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.QdrantConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.WeaviateConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.WeaviateConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.WeaviateConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:YX8j9xjLQqBeTgGLQO9iMCsoNEQETwITjkX+CpMa4xqUxnRHEt8YZzGG9GSJFO2MqdpBvxlSCDqkbwk0"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.WeaviateConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.WeaviateConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.WeaviateConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.ChromaConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.ChromaConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.ChromaConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:c9dthyJ4Gy5kIQ6aUwKqesKCjJKAmrch2oU5PJy6gEDS5PoV+AakS6sA/9JsoSZ1bpjrc2cwvOZmgA=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.ChromaConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.ChromaConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.ChromaConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.MilvusConn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.MilvusConn.DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.MilvusConn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:Hw83P8TOW72iSSGOwGE9o6BJqTL5eWvjeePe24687WZVWOjJPvBh/yXeYG0j5pIi63mnhVnoP0s/Xw=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.MilvusConn.Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.MilvusConn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.MilvusConn.Configure_Embedding_Provider\"]"
+    }
+  ],
+  "connections": {
+    "qdrant-conn": {
+      "id": "qdrant-conn",
+      "name": "$property[\"VectorDB.QdrantConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": "$property[\"VectorDB.QdrantConn.gRPC_Port\"]",
+        "scheme": "http",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    },
+    "weaviate-conn": {
+      "id": "weaviate-conn",
+      "name": "$property[\"VectorDB.WeaviateConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": 6334,
+        "scheme": "$property[\"VectorDB.WeaviateConn.HTTP_Scheme\"]",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    },
+    "chroma-conn": {
+      "id": "chroma-conn",
+      "name": "$property[\"VectorDB.ChromaConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": 6334,
+        "scheme": "http",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    },
+    "milvus-conn": {
+      "id": "milvus-conn",
+      "name": "$property[\"VectorDB.MilvusConn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "grpcPort": 6334,
+        "scheme": "http",
+        "username": "$property[\"VectorDB.MilvusConn.Username\"]",
+        "password": "SECRET:KJliNxIsvTBJ3Migj98Lbr6r7HppnmCIslpAqgxSFJKE7p0HXqRvgBanrpvPBio1dCgWyFa6cR9JWbI=",
+        "dbName": "$property[\"VectorDB.MilvusConn.Database_Name\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "8888",
+        "spec": {
+          "name": "vdb-test",
+          "version": "1.0.0"
+        },
+        "title": "VectorDBTestTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "vdb-test",
+            "version": "1.0.0",
+            "description": "REST trigger on port 8888"
+          },
+          "paths": {
+            "/test/qdrant": {
+              "get": {
+                "summary": "qdrant_test",
+                "operationId": "get_test_qdrant",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "VectorDB integration test for qdrant"
+              }
+            },
+            "/test/weaviate": {
+              "get": {
+                "summary": "weaviate_test",
+                "operationId": "get_test_weaviate",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "VectorDB integration test for weaviate"
+              }
+            },
+            "/test/chroma": {
+              "get": {
+                "summary": "chroma_test",
+                "operationId": "get_test_chroma",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "VectorDB integration test for chroma"
+              }
+            },
+            "/test/milvus": {
+              "get": {
+                "summary": "milvus_test",
+                "operationId": "get_test_milvus",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "VectorDB integration test for milvus"
+              }
+            },
+            "/test/embeddings": {
+              "get": {
+                "summary": "embeddings_test",
+                "operationId": "get_test_embeddings",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Standalone createEmbeddings test: single text and batch of 3 texts"
+              }
+            },
+            "/test/rag/qdrant": {
+              "get": {
+                "summary": "qdrant_rag_test",
+                "operationId": "get_test_rag_qdrant",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "RAG test: embed 8 docs, ragQuery"
+              }
+            },
+            "/test/rag/weaviate": {
+              "get": {
+                "summary": "weaviate_rag_test",
+                "operationId": "get_test_rag_weaviate",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "RAG test: embed 8 docs, ragQuery, hybridSearch"
+              }
+            },
+            "/test/rag/chroma": {
+              "get": {
+                "summary": "chroma_rag_test",
+                "operationId": "get_test_rag_chroma",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "RAG test: embed 8 docs, ragQuery"
+              }
+            },
+            "/test/rag/milvus": {
+              "get": {
+                "summary": "milvus_rag_test",
+                "operationId": "get_test_rag_milvus",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "RAG test: embed 8 docs, ragQuery"
+              }
+            },
+            "/test/rerank": {
+              "get": {
+                "summary": "rerank_test",
+                "operationId": "get_test_rerank",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                },
+                "description": "Test rerank activity — set RERANK_API_KEY for a Cohere-compatible endpoint"
+              }
+            }
+          },
+          "definitions": {
+            "schema1": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    ],
+    "flogoVersion": "2.26.3"
+  }
+}
