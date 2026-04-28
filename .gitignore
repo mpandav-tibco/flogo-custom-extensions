@@ -33,5 +33,17 @@ go.work.sum
 activity/.DS_Store
 .DS_Store
 activity/xsdschematransform/.DS_Store
-bin/*
+bin/
 examples/**/build/
+
+# Stray root-level stub folders (not part of repo structure)
+AWS/
+KafkaStream/
+MySQL/
+PostgreSQL/
+SOAP/
+SSE/
+SchemaTransform/
+Utilities/
+VectorDB/
+XML/
