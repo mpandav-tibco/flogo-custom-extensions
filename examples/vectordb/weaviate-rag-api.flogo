@@ -1,0 +1,1089 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
+  ],
+  "name": "weaviate-rag-mcp",
+  "description": "RAG service for Weaviate — exposes document ingest and semantic query as REST endpoints and MCP tools. Embeddings via Ollama nomic-embed-text, storage and retrieval via Weaviate vector database.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "REST trigger exposing /rag/weaviate/ingest and /rag/weaviate/query endpoints on port 9191",
+      "settings": {
+        "port": 9191,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "RAGRestTrigger",
+      "handlers": [
+        {
+          "description": "Accept documents via POST body or MCP arguments, embed with Ollama, create collection and ingest into Weaviate (collection name must be PascalCase)",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/weaviate/ingest",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_ingest"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"documents\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"},\"items\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"},\"properties\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"text\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}}}}}}}}",
+                "fe_metadata": "{\"collection\":{\"type\":\"string\"},\"documents\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"text\":{\"type\":\"string\"}}}}}"
+              }
+            }
+          },
+          "name": "weaviate_ingest"
+        },
+        {
+          "description": "Accept natural language query from REST body or MCP arguments, embed with Ollama, retrieve top-K context passages from Weaviate",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/rag/weaviate/query",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_query"
+            },
+            "input": {
+              "body": "=$.body",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"query\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"topK\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}}",
+                "fe_metadata": "{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}"
+              }
+            }
+          },
+          "name": "weaviate_query"
+        },
+        {
+          "description": "Receive a binary file upload via multipart/form-data, extract text (PDF/DOCX/TXT), embed with Ollama and ingest into Weaviate.",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "multipart/form-data",
+            "Path": "/rag/weaviate/ingest/upload",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:weaviate_ingest_upload"
+            },
+            "input": {
+              "multipartFormData": "=$.multipartFormData",
+              "headers": "=$.headers"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Content-Type\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "multipartFormData": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"filename\":{\"type\":\"string\"},\"file\":{\"type\":\"any\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"filename\":{\"type\":\"string\"},\"file\":{\"type\":\"any\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"required\":{\"type\":\"string\"},\"schema\":{\"type\":\"string\"}},\"required\":[\"name\",\"type\",\"required\"]}}",
+                "fe_metadata": "[{\"name\":\"collection\",\"type\":\"string\",\"required\":\"true\"},{\"name\":\"filename\",\"type\":\"string\",\"required\":\"false\"},{\"name\":\"file\",\"type\":\"filecontent\",\"required\":\"true\",\"schema\":\"\"}]"
+              }
+            }
+          },
+          "name": "weaviate_ingest_upload"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:weaviate_ingest",
+      "data": {
+        "name": "weaviate_ingest",
+        "description": "Accept documents via POST body or MCP arguments, embed with Ollama, create collection and ingest into Weaviate (collection name must be PascalCase)",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "IngestDocs",
+            "to": "LogResult",
+            "type": "label",
+            "label": "ingested"
+          },
+          {
+            "id": 5,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "Simple Log Message Activity",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate-rag-mcp] Ingest request: collection=', coerce.toString($flow.body.collection), ' docCount=', coerce.toString($flow.body.documents))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create RAG collection in Weaviate (768-dim cosine, PascalCase name required). Succeeds silently if already exists.",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Embed documents with Ollama nomic-embed-text and upsert into Weaviate via VectorDB connector",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "enableChunking": true,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultCollection": "",
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 10
+              },
+              "input": {
+                "collectionName": "=$flow.body.collection",
+                "documents": "=$flow.body.documents"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate-rag-mcp] Ingest COMPLETE collection=', coerce.toString($flow.body.collection), ' ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' dims=', coerce.toString($activity[IngestDocs].dimensions), ' duration=', $activity[IngestDocs].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[IngestDocs]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjE5NCwieSI6NDh9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQyNCwieSI6NTB9LCJJbmdlc3REb2NzIjp7IngiOjYxNSwieSI6NDl9LCJMb2dSZXN1bHQiOnsieCI6ODI1LCJ5Ijo1M30sIlJldHVybiI6eyJ4IjoxMDMzLCJ5Ijo0N319",
+        "metadata": {
+          "input": [
+            {
+              "name": "headers",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}}"
+              }
+            },
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"documents\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"},\"items\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"},\"properties\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"text\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}}}}}}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"RAGRestTrigger\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"documents\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"},\"items\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"},\"properties\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"text\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}}}}}}}},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}},\"required\":[]}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:weaviate_query",
+      "data": {
+        "name": "weaviate_query",
+        "description": "Accept natural language query from REST body or MCP arguments, embed with Ollama, retrieve top-K context passages from Weaviate",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "RAGQuery",
+            "to": "LogResult",
+            "type": "label",
+            "label": "retrieved"
+          },
+          {
+            "id": 4,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate-rag-mcp] Query request: collection=', coerce.toString($flow.body.collection), ' query=', coerce.toString($flow.body.query), ' topK=', coerce.toString($flow.body.topK))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "Embed query text with Ollama and retrieve top-K semantically similar passages from Weaviate via VectorDB ragQuery connector",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultCollection": "",
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5
+              },
+              "input": {
+                "queryText": "=$flow.body.query",
+                "collectionName": "=$flow.body.collection",
+                "topK": "=$flow.body.topK"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate-rag-mcp] Query COMPLETE collection=', coerce.toString($flow.body.collection), ' totalFound=', coerce.toString($activity[RAGQuery].totalFound), ' duration=', $activity[RAGQuery].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[RAGQuery]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dSZXF1ZXN0Ijp7IngiOjI0NywieSI6NDd9LCJSQUdRdWVyeSI6eyJ4Ijo0NjQsInkiOjQ3fSwiTG9nUmVzdWx0Ijp7IngiOjY2MSwieSI6NDl9LCJSZXR1cm4iOnsieCI6ODY5LCJ5Ijo0OX19",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"topK\":{\"type\":\"number\"}}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:weaviate_ingest_upload",
+      "data": {
+        "name": "weaviate_ingest_upload",
+        "description": "Receive a binary file upload via multipart/form-data, extract text (PDF/DOCX/TXT), embed with Ollama and ingest into Weaviate.",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "LogUpload",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogUpload",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "log"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestFile",
+            "type": "label",
+            "label": "created"
+          },
+          {
+            "id": 4,
+            "from": "IngestFile",
+            "to": "LogResult",
+            "type": "label",
+            "label": "ingested"
+          },
+          {
+            "id": 5,
+            "from": "LogResult",
+            "to": "Return",
+            "type": "label",
+            "label": "done"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogUpload",
+            "name": "LogUpload",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate-rag-mcp] File upload: collection=', coerce.toString($flow.multipartFormData.collection), ' filename=', coerce.toString($flow.multipartFormData.filename))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "Create RAG collection (no-op if already exists via error link).",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://weaviate-conn"
+              },
+              "input": {
+                "collectionName": "=$flow.multipartFormData.collection",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestFile",
+            "name": "IngestFile",
+            "description": "Extract text from uploaded file (PDF/DOCX/TXT) and ingest into VectorDB.",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://weaviate-conn",
+                "enableChunking": true,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultCollection": "",
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 10
+              },
+              "input": {
+                "collectionName": "=$flow.multipartFormData.collection",
+                "fileName": "=$flow.multipartFormData.filename",
+                "documents": {
+                  "mapping": []
+                },
+                "fileContent": "=$flow.multipartFormData.file"
+              }
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat('[weaviate-rag-mcp] Upload COMPLETE collection=', coerce.toString($flow.multipartFormData.collection), ' ingested=', coerce.toString($activity[IngestFile].ingestedCount), ' dims=', coerce.toString($activity[IngestFile].dimensions), ' duration=', $activity[IngestFile].duration)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[IngestFile]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dVcGxvYWQiOnsieCI6MTk0LCJ5Ijo0OH0sIkNyZWF0ZUNvbGxlY3Rpb24iOnsieCI6NDI0LCJ5Ijo1MH0sIkluZ2VzdEZpbGUiOnsieCI6NjE1LCJ5Ijo0OH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo4MjUsInkiOjUzfSwiUmV0dXJuIjp7IngiOjEwMzMsInkiOjQ3fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "headers",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Content-Type\":{\"type\":\"string\",\"visible\":false}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"collection\":{\"type\":\"string\"},\"filename\":{\"type\":\"string\"},\"file\":{\"type\":\"any\"}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"RAGRestTrigger\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Content-Type\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"multipartFormData\":{\"type\":\"object\",\"properties\":{\"collection\":{\"type\":\"string\"},\"filename\":{\"type\":\"string\"},\"file\":{\"type\":\"any\"}}},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}},\"required\":[]}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "EMBED_PROVIDER",
+      "type": "string",
+      "value": "Ollama"
+    },
+    {
+      "name": "EMBED_API_KEY",
+      "type": "string",
+      "value": "SECRET:NAz+wFrJPvJZVu1KMlHJG3g="
+    },
+    {
+      "name": "EMBED_BASE_URL",
+      "type": "string",
+      "value": "http://localhost:11434"
+    },
+    {
+      "name": "EMBED_MODEL",
+      "type": "string",
+      "value": "nomic-embed-text"
+    },
+    {
+      "name": "EMBED_DIMS",
+      "type": "float64",
+      "value": 768
+    },
+    {
+      "name": "VectorDB.WeaviateConn.Timeout_seconds",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "VectorDB.WeaviateConn.Retry_Backoff_ms",
+      "type": "float64",
+      "value": 1000
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "WeaviateConn"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "weaviate"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": 18080
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": false
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": 1000
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].HTTP_Scheme",
+      "type": "string",
+      "value": "http"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": false
+    }
+  ],
+  "connections": {
+    "weaviate-conn": {
+      "id": "weaviate-conn",
+      "name": "WeaviateConn",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"VectorDB.WeaviateConn.Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.WeaviateConn.DB_Provider\"]",
+        "host": "=$property[\"VectorDB.WeaviateConn.Host\"]",
+        "port": "=$property[\"VectorDB.WeaviateConn.Port\"]",
+        "apiKey": "=$property[\"VectorDB.WeaviateConn.API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.WeaviateConn.Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "timeoutSeconds": "=$property[\"VectorDB.WeaviateConn.Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.WeaviateConn.Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.WeaviateConn.Retry_Backoff_(ms)\"]",
+        "grpcPort": 0,
+        "scheme": "=$property[\"VectorDB.WeaviateConn.HTTP_Scheme\"]",
+        "dbName": "default",
+        "enableEmbedding": "=$property[\"VectorDB.WeaviateConn.Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI"
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9191",
+        "spec": {
+          "name": "weaviate-rag-mcp",
+          "version": "1.0.0"
+        },
+        "title": "RAGRestTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "weaviate-rag-mcp",
+            "version": "1.0.0",
+            "description": "REST trigger exposing /rag/weaviate/ingest and /rag/weaviate/query endpoints on port 9191"
+          },
+          "paths": {
+            "/rag/weaviate/ingest": {
+              "post": {
+                "summary": "weaviate_ingest",
+                "operationId": "post_rag_weaviate_ingest",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
+                "description": "Accept documents via POST body or MCP arguments, embed with Ollama, create collection and ingest into Weaviate (collection name must be PascalCase)",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/weaviate/query": {
+              "post": {
+                "summary": "weaviate_query",
+                "operationId": "post_rag_weaviate_query",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema3"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
+                "description": "Accept natural language query from REST body or MCP arguments, embed with Ollama, retrieve top-K context passages from Weaviate",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/rag/weaviate/ingest/upload": {
+              "post": {
+                "summary": "weaviate_ingest_upload",
+                "operationId": "post_rag_weaviate_ingest_upload",
+                "parameters": [
+                  {
+                    "name": "collection",
+                    "in": "formData",
+                    "description": "Form Data Parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "filename",
+                    "in": "formData",
+                    "description": "Form Data Parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "file",
+                    "in": "formData",
+                    "description": "Form Data Parameter",
+                    "required": false,
+                    "type": "file"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
+                "description": "Receive a binary file upload via multipart/form-data, extract text (PDF/DOCX/TXT), embed with Ollama and ingest into Weaviate.",
+                "consumes": [
+                  "multipart/form-data"
+                ]
+              }
+            }
+          },
+          "definitions": {
+            "schema1": {
+              "type": "object",
+              "properties": {
+                "collection": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "documents": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "text": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "schema2": {
+              "type": "object",
+              "properties": {}
+            },
+            "schema3": {
+              "type": "object",
+              "properties": {
+                "collection": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "topK": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "flogoVersion": "2.26.3"
+  }
+}
