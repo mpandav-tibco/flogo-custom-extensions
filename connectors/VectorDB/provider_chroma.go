@@ -17,6 +17,9 @@ type chromaClient struct {
 	cfg    ConnectionConfig
 }
 
+// Compile-time proof that chromaClient satisfies the full VectorDBClient interface.
+var _ VectorDBClient = (*chromaClient)(nil)
+
 func newChromaClient(cfg ConnectionConfig) (VectorDBClient, error) {
 	tlsCfg, err := buildTLSConfig(cfg)
 	if err != nil {
@@ -270,6 +273,11 @@ func (c *chromaClient) DeleteDocuments(ctx context.Context, collectionName strin
 }
 
 func (c *chromaClient) DeleteByFilter(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error) {
+	if len(filters) == 0 {
+		// An empty filter would delete ALL documents in the collection.
+		// Require at least one filter to prevent accidental data loss.
+		return 0, newError(ErrCodeProviderError, "DeleteByFilter requires at least one filter", nil)
+	}
 	col, err := c.getCollection(ctx, collectionName)
 	if err != nil {
 		return 0, err
@@ -420,7 +428,10 @@ func (c *chromaClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(c.cfg.TimeoutSeconds)*time.Second)
 	defer cancel()
 
-	include := []chromago.Include{chromago.IncludeDocuments, chromago.IncludeMetadatas, chromago.IncludeDistances}
+	include := []chromago.Include{chromago.IncludeDistances}
+	if !req.SkipPayload {
+		include = append(include, chromago.IncludeDocuments, chromago.IncludeMetadatas)
+	}
 	if req.WithVectors {
 		include = append(include, chromago.IncludeEmbeddings)
 	}
@@ -446,7 +457,7 @@ func (c *chromaClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 }
 
 func (c *chromaClient) HybridSearch(ctx context.Context, req HybridSearchRequest) ([]SearchResult, error) {
-	logger.Warnf("Chroma does not support hybrid search; falling back to vector-only search")
+	logger.Debugf("Chroma does not support hybrid search; falling back to vector-only search")
 	return c.VectorSearch(ctx, SearchRequest{
 		CollectionName: req.CollectionName,
 		QueryVector:    req.QueryVector,

@@ -407,18 +407,25 @@ func TestFormatContext_Plain(t *testing.T) {
 	assert.NotContains(t, out, "**")
 }
 
-func TestExtractContent_FieldPresent(t *testing.T) {
-	payload := map[string]interface{}{"text": "hello world", "other": "ignore"}
-	assert.Equal(t, "hello world", extractContent(payload, "text"))
+func TestExtractContent_UsesContentField(t *testing.T) {
+	// r.Content (first-class field) takes priority over payload key.
+	r := vectordb.SearchResult{Content: "top-level content", Payload: map[string]interface{}{"text": "ignored"}}
+	assert.Equal(t, "top-level content", extractContent(r, "text"))
 }
 
-func TestExtractContent_NilPayload(t *testing.T) {
-	assert.Equal(t, "", extractContent(nil, "text"))
+func TestExtractContent_FallsBackToPayloadField(t *testing.T) {
+	// r.Content empty — fall back to payload[contentField].
+	r := vectordb.SearchResult{Content: "", Payload: map[string]interface{}{"text": "hello world", "other": "ignore"}}
+	assert.Equal(t, "hello world", extractContent(r, "text"))
+}
+
+func TestExtractContent_EmptyResult(t *testing.T) {
+	assert.Equal(t, "", extractContent(vectordb.SearchResult{}, "text"))
 }
 
 func TestExtractContent_FieldMissing_FallbackJoin(t *testing.T) {
-	payload := map[string]interface{}{"description": "fallback value"}
-	out := extractContent(payload, "text")
+	r := vectordb.SearchResult{Payload: map[string]interface{}{"description": "fallback value"}}
+	out := extractContent(r, "text")
 	assert.Contains(t, out, "fallback value")
 }
 
@@ -429,7 +436,7 @@ func TestSearchResultsToInterface_Empty(t *testing.T) {
 
 func TestSearchResultsToInterface_Fields(t *testing.T) {
 	results := []vectordb.SearchResult{
-		{ID: "doc-1", Score: 0.95, Payload: map[string]interface{}{"tag": "test"}},
+		{ID: "doc-1", Score: 0.95, Content: "the document text", Payload: map[string]interface{}{"tag": "test"}},
 	}
 	out := searchResultsToInterface(results)
 	require.Len(t, out, 1)
@@ -437,6 +444,7 @@ func TestSearchResultsToInterface_Fields(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, "doc-1", m["id"])
 	assert.InDelta(t, 0.95, m["score"], 0.0001)
+	assert.Equal(t, "the document text", m["content"])
 	assert.NotNil(t, m["payload"])
 }
 

@@ -96,7 +96,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		ScoreThreshold: input.ScoreThreshold,
 		Filters:        input.Filters,
 		WithVectors:    input.WithVectors,
-		// SkipPayload defaults to false (zero value) = include payload.
+		SkipPayload:    input.SkipPayload,
 	})
 	if searchErr != nil {
 		l.Errorf("VectorSearch: collection=%s error=%v", collectionName, searchErr)

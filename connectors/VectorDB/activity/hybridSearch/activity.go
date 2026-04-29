@@ -70,6 +70,11 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	// alpha is used as-is; descriptor default is 0.5.
 	// 0.0 = pure sparse/BM25, 1.0 = pure dense vector, 0.5 = equal blend.
 	alpha := input.Alpha
+	if alpha < 0 || alpha > 1 {
+		return false, vectordb.NewError(vectordb.ErrCodeInvalidAlpha,
+			fmt.Sprintf("alpha %.4f is out of range [0, 1]: 0.0 = sparse/BM25 only, 1.0 = dense vector only, 0.5 = balanced", alpha),
+			nil)
+	}
 
 	l.Debugf("HybridSearch: collection=%s topK=%d alpha=%.2f hasText=%v hasDense=%v hasFilters=%v",
 		collectionName, topK, alpha, input.QueryText != "", len(input.QueryVector) > 0, len(input.Filters) > 0)
@@ -112,7 +117,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		ScoreThreshold: input.ScoreThreshold,
 		Filters:        input.Filters,
 		Alpha:          alpha,
-		// SkipPayload defaults to false (zero value) = include payload.
+		SkipPayload:    input.SkipPayload,
 	})
 	if searchErr != nil {
 		l.Errorf("HybridSearch: collection=%s error=%v", collectionName, searchErr)

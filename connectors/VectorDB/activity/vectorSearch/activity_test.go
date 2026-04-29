@@ -25,21 +25,33 @@ func (f *fakeActivityContext) ActivityHost() activity.Host        { return nil }
 func (f *fakeActivityContext) Name() string                       { return "test" }
 func (f *fakeActivityContext) GetSetting(name string) interface{} { return nil }
 func (f *fakeActivityContext) GetInput(name string) interface{} {
-	if f.inputs == nil { return nil }
+	if f.inputs == nil {
+		return nil
+	}
 	return f.inputs[name]
 }
 func (f *fakeActivityContext) SetOutput(name string, value interface{}) error {
-	if f.outputs == nil { f.outputs = make(map[string]interface{}) }
-	f.outputs[name] = value; return nil
+	if f.outputs == nil {
+		f.outputs = make(map[string]interface{})
+	}
+	f.outputs[name] = value
+	return nil
 }
-func (f *fakeActivityContext) GetInputObject(obj data.StructValue) error { return obj.FromMap(f.inputs) }
+func (f *fakeActivityContext) GetInputObject(obj data.StructValue) error {
+	return obj.FromMap(f.inputs)
+}
 func (f *fakeActivityContext) SetOutputObject(obj data.StructValue) error {
-	if f.outputs == nil { f.outputs = make(map[string]interface{}) }
-	for k, v := range obj.ToMap() { f.outputs[k] = v }; return nil
+	if f.outputs == nil {
+		f.outputs = make(map[string]interface{})
+	}
+	for k, v := range obj.ToMap() {
+		f.outputs[k] = v
+	}
+	return nil
 }
 func (f *fakeActivityContext) GetSharedTempData() map[string]interface{} { return nil }
 func (f *fakeActivityContext) Logger() log.Logger                        { return log.RootLogger() }
-func (f *fakeActivityContext) GetTracingContext() trace.TracingContext    { return nil }
+func (f *fakeActivityContext) GetTracingContext() trace.TracingContext   { return nil }
 func (f *fakeActivityContext) GoContext() context.Context                { return context.Background() }
 
 func newTestConn(client vectordb.VectorDBClient) *vectordbconnector.VectorDBConnection {
@@ -139,5 +151,24 @@ func TestVectorSearch_FallbackTopK(t *testing.T) {
 		"topK":           0,
 	}}
 	a.Eval(ctx) //nolint
+	mc.AssertExpectations(t)
+}
+
+func TestVectorSearch_SkipPayload_Forwarded(t *testing.T) {
+	mc := &mockclient.VectorDBClient{}
+	mc.On("VectorSearch", mock.Anything, mock.MatchedBy(func(r vectordb.SearchRequest) bool {
+		return r.SkipPayload == true
+	})).Return([]vectordb.SearchResult{{ID: "1", Score: 0.9}}, nil)
+
+	a := &Activity{conn: newTestConn(mc), settings: &Settings{}}
+	ctx := &fakeActivityContext{inputs: map[string]interface{}{
+		"collectionName": "col",
+		"queryVector":    []interface{}{0.1},
+		"topK":           3,
+		"skipPayload":    true,
+	}}
+	ok, err := a.Eval(ctx)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 	mc.AssertExpectations(t)
 }

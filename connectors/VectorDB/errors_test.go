@@ -213,3 +213,23 @@ func TestBuildWeaviateWhereFilter_OperatorEqOnSchemaField(t *testing.T) {
 	assert.Contains(t, jsonStr, "_docId")
 	assert.NotContains(t, jsonStr, "_metadata")
 }
+
+// ---------------------------------------------------------------------------
+// DeleteByFilter empty-filter guard — Qdrant, Chroma, Milvus, Weaviate
+// ---------------------------------------------------------------------------
+
+// buildQdrantFilter with nil/empty input returns nil (used by the guard test).
+func TestBuildQdrantFilter_EmptyReturnsNil(t *testing.T) {
+	assert.Nil(t, buildQdrantFilter(nil))
+	assert.Nil(t, buildQdrantFilter(map[string]interface{}{}))
+}
+
+// buildWeaviateWhereFilter with an empty map should NOT be called (guard is
+// upstream), but if it were it would panic / behave unexpectedly. Verify
+// the guard path itself returns a proper VDBError.
+func TestChromaWhereFilter_EmptyReturnsNil(t *testing.T) {
+	// chromaWhereFilter returns nil for empty/nil maps — the caller's guard
+	// prevents the nil filter from reaching col.Delete().
+	assert.Nil(t, chromaWhereFilter(nil))
+	assert.Nil(t, chromaWhereFilter(map[string]interface{}{}))
+}

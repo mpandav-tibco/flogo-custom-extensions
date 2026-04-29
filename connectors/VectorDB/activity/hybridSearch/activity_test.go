@@ -156,3 +156,60 @@ func TestHybridSearch_ClientError(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, false, ctx.outputs["success"])
 }
+
+func TestHybridSearch_SkipPayload_Forwarded(t *testing.T) {
+	mc := &mockclient.VectorDBClient{}
+	mc.On("HybridSearch", mock.Anything, mock.MatchedBy(func(r vectordb.HybridSearchRequest) bool {
+		return r.SkipPayload == true
+	})).Return([]vectordb.SearchResult{{ID: "1", Score: 0.9}}, nil)
+
+	a := &Activity{conn: newTestConn(mc), settings: &Settings{}}
+	ctx := &fakeActivityContext{inputs: map[string]interface{}{
+		"collectionName": "col",
+		"queryText":      "find me",
+		"queryVector":    []interface{}{0.1},
+		"topK":           3,
+		"skipPayload":    true,
+	}}
+	ok, err := a.Eval(ctx)
+	assert.True(t, ok)
+	assert.NoError(t, err)
+	mc.AssertExpectations(t)
+}
+
+func TestHybridSearch_AlphaOutOfRange(t *testing.T) {
+	a := &Activity{conn: newTestConn(&mockclient.VectorDBClient{}), settings: &Settings{}}
+	for _, alpha := range []float64{-0.1, 1.1, 2.0, -1.0} {
+		ctx := &fakeActivityContext{inputs: map[string]interface{}{
+			"collectionName": "col",
+			"queryText":      "test",
+			"alpha":          alpha,
+		}}
+		_, err := a.Eval(ctx)
+		assert.Error(t, err, "alpha %.2f should be rejected", alpha)
+		assert.Contains(t, err.Error(), "out of range [0, 1]")
+		// Must be a typed VDBError with the correct code
+		var vdbErr *vectordb.VDBError
+		assert.ErrorAs(t, err, &vdbErr, "alpha error must be a VDBError")
+		assert.Equal(t, vectordb.ErrCodeInvalidAlpha, vdbErr.Code)
+	}
+}
+
+func TestHybridSearch_AlphaBoundaryValid(t *testing.T) {
+	mc := &mockclient.VectorDBClient{}
+	mc.On("HybridSearch", mock.Anything, mock.Anything).
+		Return([]vectordb.SearchResult{}, nil)
+
+	a := &Activity{conn: newTestConn(mc), settings: &Settings{}}
+	for _, alpha := range []float64{0.0, 1.0} {
+		ctx := &fakeActivityContext{inputs: map[string]interface{}{
+			"collectionName": "col",
+			"queryText":      "test",
+			"topK":           3,
+			"alpha":          alpha,
+		}}
+		ok, err := a.Eval(ctx)
+		assert.True(t, ok, "alpha %.1f should be accepted", alpha)
+		assert.NoError(t, err)
+	}
+}

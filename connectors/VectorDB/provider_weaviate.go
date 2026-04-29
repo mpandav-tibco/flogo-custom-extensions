@@ -23,6 +23,9 @@ type weaviateClient struct {
 	cfg    ConnectionConfig
 }
 
+// Compile-time proof that weaviateClient satisfies the full VectorDBClient interface.
+var _ VectorDBClient = (*weaviateClient)(nil)
+
 func newWeaviateClient(cfg ConnectionConfig) (VectorDBClient, error) {
 	tlsCfg, err := buildTLSConfig(cfg)
 	if err != nil {
@@ -89,6 +92,26 @@ func weaviateClassName(name string) string {
 		return name
 	}
 	return strings.ToUpper(name[:1]) + name[1:]
+}
+
+// weaviateSearchFields builds the GraphQL field list for search operations.
+// scoreField must be the _additional clause appropriate for the query type:
+//   - VectorSearch:   "_additional { id certainty distance }"
+//   - HybridSearch:   "_additional { id score }"
+//
+// When skipPayload is false (the zero-value safe default), the content, _docId
+// and _metadata fields are appended so callers receive full document payloads.
+// Set skipPayload=true for ranking-only passes where only ID and score are needed.
+func weaviateSearchFields(skipPayload bool, scoreField string) []graphql.Field {
+	fields := []graphql.Field{{Name: scoreField}}
+	if !skipPayload {
+		fields = append(fields,
+			graphql.Field{Name: "content"},
+			graphql.Field{Name: "_docId"},
+			graphql.Field{Name: "_metadata"},
+		)
+	}
+	return fields
 }
 
 func (c *weaviateClient) CreateCollection(ctx context.Context, cfg CollectionConfig) error {
@@ -324,7 +347,7 @@ func (c *weaviateClient) DeleteDocuments(ctx context.Context, collectionName str
 
 func (c *weaviateClient) DeleteByFilter(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error) {
 	if len(filters) == 0 {
-		return -1, newError(ErrCodeProviderError, "DeleteByFilter: filter map must not be empty", nil)
+		return 0, newError(ErrCodeProviderError, "DeleteByFilter: filter map must not be empty", nil)
 	}
 	className := weaviateClassName(collectionName)
 
@@ -498,15 +521,10 @@ func (c *weaviateClient) VectorSearch(ctx context.Context, req SearchRequest) ([
 		nearVector = nearVector.WithDistance(distanceThreshold)
 	}
 
-	fields := []graphql.Field{
-		{Name: "_additional { id certainty distance }"},
-		{Name: "content"},
-		{Name: "_docId"},
-		{Name: "_metadata"},
-	}
+	fields := weaviateSearchFields(req.SkipPayload, "_additional { id certainty distance }")
 
 	var result *models.GraphQLResponse
-	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+	if err := withRetry(tCtx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
 		var gqlErr error
 		q := c.client.GraphQL().Get().
 			WithClassName(className).
@@ -541,12 +559,10 @@ func (c *weaviateClient) HybridSearch(ctx context.Context, req HybridSearchReque
 
 	className := weaviateClassName(req.CollectionName)
 
-	fields := []graphql.Field{
-		{Name: "_additional { id score }"},
-		{Name: "content"},
-		{Name: "_docId"},
-		{Name: "_metadata"},
-	}
+	fields := weaviateSearchFields(req.SkipPayload, "_additional { id score }")
+
+	tCtx, cancel := context.WithTimeout(ctx, time.Duration(c.cfg.TimeoutSeconds)*time.Second)
+	defer cancel()
 
 	// Weaviate hybrid search uses the Hybrid operator (BM25 + vector fusion)
 	hybrid := c.client.GraphQL().HybridArgumentBuilder().
@@ -555,14 +571,22 @@ func (c *weaviateClient) HybridSearch(ctx context.Context, req HybridSearchReque
 		WithAlpha(float32(req.Alpha))
 
 	var result *models.GraphQLResponse
-	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+	if err := withRetry(tCtx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
 		var gqlErr error
-		result, gqlErr = c.client.GraphQL().Get().
+		q := c.client.GraphQL().Get().
 			WithClassName(className).
 			WithFields(fields...).
 			WithHybrid(hybrid).
-			WithLimit(req.TopK).
-			Do(ctx)
+			WithLimit(req.TopK)
+		if len(req.Filters) > 0 {
+			wf, buildErr := buildWeaviateWhereFilter(req.Filters)
+			if buildErr != nil {
+				gqlErr = newError(ErrCodeProviderError, fmt.Sprintf("HybridSearch: cannot build filter: %s", buildErr), nil)
+				return gqlErr
+			}
+			q = q.WithWhere(wf)
+		}
+		result, gqlErr = q.Do(tCtx)
 		return gqlErr
 	}); err != nil {
 		return nil, newError(ErrCodeProviderError, "HybridSearch failed", err)

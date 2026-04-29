@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	qdrant "github.com/qdrant/go-client/qdrant"
@@ -15,6 +16,9 @@ type qdrantClient struct {
 	client *qdrant.Client
 	cfg    ConnectionConfig
 }
+
+// Compile-time proof that qdrantClient satisfies the full VectorDBClient interface.
+var _ VectorDBClient = (*qdrantClient)(nil)
 
 func newQdrantClient(cfg ConnectionConfig) (VectorDBClient, error) {
 	tlsCfg, err := buildTLSConfig(cfg)
@@ -224,6 +228,11 @@ func (c *qdrantClient) DeleteDocuments(ctx context.Context, collectionName strin
 }
 
 func (c *qdrantClient) DeleteByFilter(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error) {
+	if len(filters) == 0 {
+		// An empty filter would delete ALL documents in the collection.
+		// Require at least one filter to prevent accidental data loss.
+		return 0, newError(ErrCodeProviderError, "DeleteByFilter requires at least one filter", nil)
+	}
 	wait := true
 	delReq := &qdrant.DeletePoints{
 		CollectionName: collectionName,
@@ -316,6 +325,9 @@ func (c *qdrantClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 		return nil, err
 	}
 
+	tCtx, cancel := context.WithTimeout(ctx, time.Duration(c.cfg.TimeoutSeconds)*time.Second)
+	defer cancel()
+
 	limit := uint64(req.TopK)
 	// SkipPayload=false (zero value) means include payload — the safe default.
 	// Set req.SkipPayload=true for ranking-only passes that don't need metadata.
@@ -338,9 +350,9 @@ func (c *qdrantClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 	}
 
 	var results []*qdrant.ScoredPoint
-	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+	if err := withRetry(tCtx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
 		var qErr error
-		results, qErr = c.client.Query(ctx, qparams)
+		results, qErr = c.client.Query(tCtx, qparams)
 		return qErr
 	}); err != nil {
 		return nil, newError(ErrCodeProviderError, "VectorSearch failed", err)

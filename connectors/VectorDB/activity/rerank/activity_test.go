@@ -7,8 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
-	mockclient "github.com/mpandav-tibco/flogo-extensions/vectordb/testutil/mock"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data"
 	"github.com/project-flogo/core/support/log"
@@ -63,11 +61,6 @@ func makeRerankServer(results []rerankResult, statusCode int) *httptest.Server {
 	}))
 }
 
-func newTestConn() *vectordbconnector.VectorDBConnection {
-	s := &vectordbconnector.Settings{DBType: "qdrant", Host: "localhost", TimeoutSeconds: 5}
-	mc := &mockclient.VectorDBClient{}
-	return vectordbconnector.NewConnectionForTest("test-conn", mc, s)
-}
 
 func TestRerank_HappyPath(t *testing.T) {
 	server := makeRerankServer([]rerankResult{
@@ -77,7 +70,6 @@ func TestRerank_HappyPath(t *testing.T) {
 	defer server.Close()
 
 	a := &Activity{
-		conn:     newTestConn(),
 		settings: &Settings{RerankEndpoint: server.URL, Model: "rerank-v3", TopN: 2, TimeoutSeconds: 5},
 	}
 	ctx := &fakeActivityContext{inputs: map[string]interface{}{
@@ -93,7 +85,6 @@ func TestRerank_HappyPath(t *testing.T) {
 
 func TestRerank_EmptyDocuments(t *testing.T) {
 	a := &Activity{
-		conn:     newTestConn(),
 		settings: &Settings{RerankEndpoint: "http://example.com", TimeoutSeconds: 5},
 	}
 	ctx := &fakeActivityContext{inputs: map[string]interface{}{
@@ -107,7 +98,6 @@ func TestRerank_EmptyDocuments(t *testing.T) {
 
 func TestRerank_EmptyQuery(t *testing.T) {
 	a := &Activity{
-		conn:     newTestConn(),
 		settings: &Settings{RerankEndpoint: "http://example.com", TimeoutSeconds: 5},
 	}
 	ctx := &fakeActivityContext{inputs: map[string]interface{}{
@@ -124,7 +114,6 @@ func TestRerank_ServerError(t *testing.T) {
 	defer server.Close()
 
 	a := &Activity{
-		conn:     newTestConn(),
 		settings: &Settings{RerankEndpoint: server.URL, TimeoutSeconds: 5},
 	}
 	ctx := &fakeActivityContext{inputs: map[string]interface{}{
@@ -146,7 +135,6 @@ func TestRerank_TopNDefault(t *testing.T) {
 
 	// TopN=0 should default to len(documents)
 	a := &Activity{
-		conn:     newTestConn(),
 		settings: &Settings{RerankEndpoint: server.URL, TopN: 0, TimeoutSeconds: 5},
 	}
 	ctx := &fakeActivityContext{inputs: map[string]interface{}{
