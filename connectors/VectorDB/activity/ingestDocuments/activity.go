@@ -3,6 +3,8 @@ package ingestDocuments
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -113,6 +115,29 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	rawDocs, err := parseDocuments(input.Documents, a.settings.ContentField)
 	if err != nil {
 		return false, fmt.Errorf("vectordb-ingest: %w", err)
+	}
+
+	// Build a files slice from the scalar FileName+FileContent inputs.
+	// These are populated by the multipart REST upload flow.
+	var fileEntries []interface{}
+	if input.FileName != "" && input.FileContent != nil {
+		fileEntries = []interface{}{
+			map[string]interface{}{
+				"name":    input.FileName,
+				"content": input.FileContent,
+			},
+		}
+	}
+
+	// Process binary file uploads (PDF, DOCX, TXT, MD).
+	fileDocs, err := parseFiles(fileEntries, l)
+	if err != nil {
+		return false, fmt.Errorf("vectordb-ingest: %w", err)
+	}
+	rawDocs = append(rawDocs, fileDocs...)
+
+	if len(rawDocs) == 0 {
+		return false, fmt.Errorf("vectordb-ingest: at least one document or file is required")
 	}
 
 	sourceDocCount := len(rawDocs)
@@ -290,4 +315,74 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		l.Errorf("SetOutputObject: %v", err)
 	}
 	return true, nil
+}
+
+// parseFiles converts a files[]interface{} input array into RawDocument slice by
+// extracting text from binary documents (PDF, DOCX, TXT, MD).
+// Each item must have "name" (string) and "content" (base64 string or []byte).
+func parseFiles(files []interface{}, l interface{ Debugf(string, ...interface{}) }) ([]RawDocument, error) {
+	if len(files) == 0 {
+		return nil, nil
+	}
+	docs := make([]RawDocument, 0, len(files))
+	for idx, item := range files {
+		m, ok := toStringMap(item)
+		if !ok {
+			return nil, fmt.Errorf("files[%d]: must be an object with 'name' and 'content' fields", idx)
+		}
+
+		name, _ := m["name"].(string)
+		if name == "" {
+			name = fmt.Sprintf("file-%d.bin", idx)
+		}
+
+		contentRaw, hasContent := m["content"]
+		if !hasContent || contentRaw == nil {
+			return nil, fmt.Errorf("files[%d] (%s): 'content' field is required", idx, name)
+		}
+
+		data, err := fileContentToBytes(contentRaw)
+		if err != nil {
+			return nil, fmt.Errorf("files[%d] (%s): cannot decode content: %w", idx, name, err)
+		}
+
+		text, err := ExtractTextFromBytes(data, name)
+		if err != nil {
+			return nil, fmt.Errorf("files[%d] (%s): text extraction failed: %w", idx, name, err)
+		}
+		if text == "" {
+			return nil, fmt.Errorf("files[%d] (%s): no text could be extracted — is this a scanned/image PDF?", idx, name)
+		}
+
+		l.Debugf("parseFiles: extracted %d chars from %s", len(text), name)
+
+		doc := RawDocument{
+			Text: text,
+			// Default metadata: source filename and type; caller may override via "metadata" field.
+			Metadata: map[string]interface{}{
+				"source": name,
+				"type":   strings.TrimPrefix(filepath.Ext(name), "."),
+			},
+		}
+		if id, ok := m["id"]; ok && id != nil {
+			doc.ID = fmt.Sprintf("%v", id)
+		}
+		if meta, ok := m["metadata"]; ok {
+			if mm, ok := meta.(map[string]interface{}); ok {
+				for k, v := range mm {
+					doc.Metadata[k] = v
+				}
+			}
+		}
+		docs = append(docs, doc)
+	}
+	return docs, nil
+}
+
+// toStringMap converts an interface{} to map[string]interface{} if possible.
+func toStringMap(v interface{}) (map[string]interface{}, bool) {
+	if m, ok := v.(map[string]interface{}); ok {
+		return m, true
+	}
+	return nil, false
 }

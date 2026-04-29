@@ -198,7 +198,15 @@
     {
       "name": "documents",
       "type": "array",
-      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Optional document ID. Auto-generated UUID if omitted.\"}, \"text\": {\"type\": \"string\", \"description\": \"Text to embed. Field name controlled by the Content Field setting (default: text).\"}, \"metadata\": {\"type\": \"object\", \"description\": \"Optional key-value metadata stored alongside the vector\"}}, \"required\": [\"text\"]}}"
+      "schema": "{\"$schema\": \"http:\/\/json-schema.org\/draft-04\/schema#\", \"definitions\": {}, \"type\": \"array\", \"items\": {\"id\": \"\/items\", \"type\": \"object\", \"properties\": {\"id\": {\"id\": \"\/items\/properties\/id\", \"type\": \"string\"}, \"text\": {\"id\": \"\/items\/properties\/text\", \"type\": \"string\"}, \"metadata\": {\"id\": \"\/items\/properties\/metadata\", \"type\": \"object\"}}}}"
+    },
+    {
+      "name": "fileName",
+      "type": "string"
+    },
+    {
+      "name": "fileContent",
+      "type": "any"
     }
   ],
   "output": [

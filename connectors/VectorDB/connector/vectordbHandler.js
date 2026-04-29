@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: !0 }), exports.vectordbHan
 var core_1 = require("@angular/core"),
     http_1 = require("@angular/http"),
     wi_contrib_1 = require("wi-studio/app/contrib/wi-contrib"),
+    contrib_1 = require("wi-studio/common/models/contrib"),
+    rxjs_extensions_1 = require("wi-studio/common/rxjs-extensions"),
+    validation_1 = require("wi-studio/common/models/validation"),
 
     // Fields that are only visible when useTLS=true
     TLS_FIELDS = ["tlsInsecureSkipVerify", "tlsServerName", "caCert", "clientCert", "clientKey"],
@@ -53,7 +56,56 @@ var core_1 = require("@angular/core"),
 
                 return null;
             };
-            n.action = function (t, e) { return null };
+            // Converts the settings array [{name, value}, ...] to a plain object
+            n.toSettingsObj = function (settingsArr) {
+                return rxjs_extensions_1.Observable.from(settingsArr)
+                    .reduce(function (acc, field) { acc[field.name] = field.value; return acc; }, {});
+            };
+
+            n.action = function (actionName, connCtx) {
+                if (actionName !== "Connect") { return null; }
+
+                return n.toSettingsObj(connCtx.settings).switchMap(function (s) {
+                    var host = s.host || "localhost";
+                    var port = parseInt(s.port, 10) || 0;
+                    var dbType = (s.dbType || "").toLowerCase();
+                    var useTLS = s.useTLS === true || s.useTLS === "true";
+                    var scheme = s.scheme || (useTLS ? "https" : "http");
+
+                    // Provider default ports when port is 0
+                    if (port <= 0) {
+                        var defaults = { "weaviate": 8080, "qdrant": 6333, "chroma": 8000, "milvus": 19530 };
+                        port = defaults[dbType] || 8080;
+                    }
+
+                    // Health endpoint per provider
+                    var paths = { "weaviate": "/v1/.well-known/ready", "qdrant": "/healthz", "chroma": "/api/v1/heartbeat", "milvus": "/healthz" };
+                    var url = scheme + "://" + host + ":" + port + (paths[dbType] || "/healthz");
+
+                    // Use native fetch with mode:"no-cors" so Weaviate's missing CORS headers
+                    // don't block the request in VS Code's webview/Electron context.
+                    // An opaque response = server reachable; TypeError = server down.
+                    return new rxjs_extensions_1.Observable(function (observer) {
+                        window.fetch(url, { method: "GET", mode: "no-cors", cache: "no-cache" })
+                            .then(function (_resp) {
+                                observer.next(
+                                    contrib_1.ActionResult.newActionResult()
+                                        .setResult({ context: connCtx, authType: wi_contrib_1.AUTHENTICATION_TYPE.BASIC, authData: {} })
+                                );
+                                observer.complete();
+                            })
+                            .catch(function (err) {
+                                var msg = (err && err.message) ? err.message : ("unreachable: " + url);
+                                observer.next(
+                                    contrib_1.ActionResult.newActionResult()
+                                        .setSuccess(false)
+                                        .setResult(new validation_1.ValidationError("VDB-1001", "Connection failed: " + msg))
+                                );
+                                observer.complete();
+                            });
+                    });
+                });
+            };
             return n;
         }
         __extends(e, t);
