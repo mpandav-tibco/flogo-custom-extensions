@@ -3,6 +3,7 @@ package createCollection
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mpandav-tibco/flogo-extensions/vectordb"
@@ -89,6 +90,16 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		ReplicationFactor: input.ReplicationFactor,
 	}
 	if createErr := a.conn.GetClient().CreateCollection(opCtx, cfg); createErr != nil {
+		// Treat "already exists" as success — idempotent create
+		errMsg := createErr.Error()
+		if strings.Contains(errMsg, "already exists") || strings.Contains(errMsg, "VDB-COL-2002") {
+			l.Infof("CreateCollection: collection=%s already exists, skipping", input.CollectionName)
+			duration := time.Since(start)
+			if err := ctx.SetOutputObject(&Output{Success: true, Duration: duration.String()}); err != nil {
+				l.Errorf("SetOutputObject: %v", err)
+			}
+			return true, nil
+		}
 		l.Errorf("CreateCollection: name=%s error=%v", input.CollectionName, createErr)
 		if tc != nil {
 			tc.SetTag("error", true)

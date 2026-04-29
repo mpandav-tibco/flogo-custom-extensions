@@ -29,7 +29,10 @@ require (
 	google.golang.org/grpc v1.79.3
 )
 
-require github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195 // indirect
+require (
+	github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195 // indirect
+	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728 // indirect
+)
 
 require (
 	github.com/amikos-tech/chroma-go-local v0.3.3 // indirect

@@ -1,322 +1,319 @@
 {
-    "name": "vectordb-connector",
-    "title": "VectorDB Connector",
-    "version": "1.0.0",
-    "type": "flogo:connector",
-    "image": "icons/vectordb.svg",
-    "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/connector",
-    "display": {
-        "category": "VectorDB",
-        "visible": true,
-        "connectionsupport": true,
-        "smallIcon": "icons/vectordb.svg",
-        "description": "Multi-provider vector database connector supporting Qdrant, Weaviate, Chroma, and Milvus"
+  "name": "vectordb-connector",
+  "title": "VectorDB Connector",
+  "version": "1.0.0",
+  "type": "flogo:connector",
+  "image": "icons/vectordb.svg",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/connector",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "connectionsupport": true,
+    "smallIcon": "icons/vectordb.svg",
+    "description": "Multi-provider vector database connector supporting Qdrant, Weaviate, Chroma, and Milvus"
+  },
+  "keyfield": "name",
+  "settings": [
+    {
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "Connection Name",
+        "description": "Unique name for this connection (used as registry key)",
+        "appPropertySupport": true
+      }
     },
-    "keyfield": "name",
-    "settings": [
-        {
-            "name": "name",
-            "type": "string",
-            "required": true,
-            "display": {
-                "name": "Connection Name",
-                "description": "Unique name for this connection (used as registry key)",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "dbType",
-            "type": "string",
-            "required": true,
-            "allowed": [
-                "qdrant",
-                "weaviate",
-                "chroma",
-                "milvus"
-            ],
-            "display": {
-                "name": "DB Provider",
-                "description": "Vector database provider",
-                "type": "dropdown",
-                "selection": "single",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "host",
-            "type": "string",
-            "required": true,
-            "display": {
-                "name": "Host",
-                "description": "Hostname or IP address of the VectorDB server",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "port",
-            "type": "integer",
-            "required": false,
-            "value": 0,
-            "display": {
-                "name": "Port",
-                "description": "TCP port for REST/HTTP traffic (provider default used if 0)",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "apiKey",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "API Key",
-                "description": "API key or bearer token for authentication",
-                "type": "password",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "useTLS",
-            "type": "boolean",
-            "required": false,
-            "value": false,
-            "display": {
-                "name": "Secure Connection",
-                "description": "Enable TLS/SSL for the connection",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "tlsInsecureSkipVerify",
-            "type": "boolean",
-            "required": false,
-            "value": false,
-            "display": {
-                "name": "Skip TLS Verification",
-                "description": "Disable certificate verification — insecure, for development/self-signed certs only",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "tlsServerName",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "TLS Server Name",
-                "description": "Override the server name for SNI (leave blank to use Host)",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "caCert",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "CA Certificate",
-                "description": "PEM-encoded CA certificate used to verify the server's certificate",
-                "type": "fileselector",
-                "fileExtensions": [
-                    ".pem",
-                    ".crt",
-                    ".cer"
-                ],
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "clientCert",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "Client Certificate",
-                "description": "PEM-encoded client certificate for mutual TLS (mTLS)",
-                "type": "fileselector",
-                "fileExtensions": [
-                    ".pem",
-                    ".crt",
-                    ".cer"
-                ],
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "clientKey",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "Client Key",
-                "description": "PEM-encoded client private key for mutual TLS (mTLS)",
-                "type": "fileselector",
-                "fileExtensions": [
-                    ".pem",
-                    ".key"
-                ],
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "timeoutSeconds",
-            "type": "integer",
-            "required": false,
-            "value": 30,
-            "display": {
-                "name": "Timeout (seconds)",
-                "description": "Per-operation timeout in seconds (default: 30)",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "maxRetries",
-            "type": "integer",
-            "required": false,
-            "value": 3,
-            "display": {
-                "name": "Max Retries",
-                "description": "Maximum retries on transient errors (default: 3)",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "retryBackoffMs",
-            "type": "integer",
-            "required": false,
-            "value": 500,
-            "display": {
-                "name": "Retry Backoff (ms)",
-                "description": "Milliseconds to wait between retries (default: 500)",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "grpcPort",
-            "type": "integer",
-            "required": false,
-            "value": 6334,
-            "display": {
-                "name": "gRPC Port",
-                "description": "gRPC port (default: 6334)",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "scheme",
-            "type": "string",
-            "required": false,
-            "value": "http",
-            "allowed": [
-                "http",
-                "https"
-            ],
-            "display": {
-                "name": "HTTP Scheme",
-                "description": "HTTP scheme: http | https (default: http)",
-                "type": "dropdown",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "username",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "Username",
-                "description": "Username for authentication",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "password",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "Password",
-                "description": "Password for authentication",
-                "type": "password",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "dbName",
-            "type": "string",
-            "required": false,
-            "value": "default",
-            "display": {
-                "name": "Database Name",
-                "description": "Milvus database name (default: default)",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "enableEmbedding",
-            "type": "boolean",
-            "required": false,
-            "value": false,
-            "display": {
-                "name": "Configure Embedding Provider",
-                "description": "Enable shared AI embedding configuration for this connection. When checked, activities (RAG Query, Ingest Documents) can inherit the provider, API key, and base URL from here — so you only set the secret once.",
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "embeddingProvider",
-            "type": "string",
-            "required": false,
-            "value": "OpenAI",
-            "allowed": [
-                "OpenAI",
-                "Azure OpenAI",
-                "Cohere",
-                "Ollama",
-                "Custom"
-            ],
-            "display": {
-                "name": "Embedding Provider",
-                "description": "AI service used to generate vector embeddings",
-                "type": "dropdown",
-                "selection": "single",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "embeddingAPIKey",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "Embedding API Key",
-                "description": "API key for the embedding service. Use $property[MY_KEY] to inject from an app property at runtime — the secret never appears in flogo.json.",
-                "type": "password",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        },
-        {
-            "name": "embeddingBaseURL",
-            "type": "string",
-            "required": false,
-            "display": {
-                "name": "Embedding Base URL",
-                "description": "Override the default provider endpoint. Azure: full deployment URL. Ollama: http://localhost:11434. Custom: your endpoint. Leave blank for default OpenAI / Cohere endpoints.",
-                "visible": false,
-                "appPropertySupport": true
-            }
-        }
-    ],
-    "actions": [
-        {
-            "name": "Connect",
-            "display": {
-                "readonly": false
-            }
-        }
-    ]
+    {
+      "name": "dbType",
+      "type": "string",
+      "required": true,
+      "allowed": [
+        "qdrant",
+        "weaviate",
+        "chroma",
+        "milvus"
+      ],
+      "display": {
+        "name": "DB Provider",
+        "description": "Vector database provider",
+        "type": "dropdown",
+        "selection": "single",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "host",
+      "type": "string",
+      "required": true,
+      "display": {
+        "name": "Host",
+        "description": "Hostname or IP address of the VectorDB server",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "port",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Port",
+        "description": "TCP port for REST/HTTP traffic (provider default used if 0)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "apiKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "API Key",
+        "description": "API key or bearer token for authentication",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "useTLS",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Secure Connection",
+        "description": "Enable TLS/SSL for the connection",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "tlsInsecureSkipVerify",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Skip TLS Verification",
+        "description": "Disable certificate verification \u2014 insecure, for development/self-signed certs only",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "tlsServerName",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "TLS Server Name",
+        "description": "Override the server name for SNI (leave blank to use Host)",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "caCert",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "CA Certificate",
+        "description": "PEM-encoded CA certificate used to verify the server's certificate",
+        "type": "fileselector",
+        "fileExtensions": [
+          ".pem",
+          ".crt",
+          ".cer"
+        ],
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "clientCert",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Client Certificate",
+        "description": "PEM-encoded client certificate for mutual TLS (mTLS)",
+        "type": "fileselector",
+        "fileExtensions": [
+          ".pem",
+          ".crt",
+          ".cer"
+        ],
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "clientKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Client Key",
+        "description": "PEM-encoded client private key for mutual TLS (mTLS)",
+        "type": "fileselector",
+        "fileExtensions": [
+          ".pem",
+          ".key"
+        ],
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 30,
+      "display": {
+        "name": "Timeout (seconds)",
+        "description": "Per-operation timeout in seconds (default: 30)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "maxRetries",
+      "type": "integer",
+      "required": false,
+      "value": 3,
+      "display": {
+        "name": "Max Retries",
+        "description": "Maximum retries on transient errors (default: 3)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "retryBackoffMs",
+      "type": "integer",
+      "required": false,
+      "value": 500,
+      "display": {
+        "name": "Retry Backoff (ms)",
+        "description": "Milliseconds to wait between retries (default: 500)",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "grpcPort",
+      "type": "integer",
+      "required": false,
+      "value": 6334,
+      "display": {
+        "name": "gRPC Port",
+        "description": "gRPC port (default: 6334)",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "scheme",
+      "type": "string",
+      "required": false,
+      "value": "http",
+      "allowed": [
+        "http",
+        "https"
+      ],
+      "display": {
+        "name": "HTTP Scheme",
+        "description": "HTTP scheme: http | https (default: http)",
+        "type": "dropdown",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "username",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Username",
+        "description": "Username for authentication",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Password",
+        "description": "Password for authentication",
+        "type": "password",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "dbName",
+      "type": "string",
+      "required": false,
+      "value": "default",
+      "display": {
+        "name": "Database Name",
+        "description": "Milvus database name (default: default)",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "enableEmbedding",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Configure Embedding Provider",
+        "description": "Enable shared AI embedding configuration for this connection. When checked, activities (RAG Query, Ingest Documents) can inherit the provider, API key, and base URL from here \u2014 so you only set the secret once.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingProvider",
+      "type": "string",
+      "required": false,
+      "value": "OpenAI",
+      "allowed": [
+        "OpenAI",
+        "Azure OpenAI",
+        "Cohere",
+        "Ollama",
+        "Custom"
+      ],
+      "display": {
+        "name": "Embedding Provider",
+        "description": "AI service used to generate vector embeddings",
+        "type": "dropdown",
+        "selection": "single",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding API Key",
+        "description": "API key for the embedding service. Use $property[MY_KEY] to inject from an app property at runtime \u2014 the secret never appears in flogo.json.",
+        "type": "password",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBaseURL",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding Base URL",
+        "description": "Override the default provider endpoint. Azure: full deployment URL. Ollama: http://localhost:11434. Custom: your endpoint. Leave blank for default OpenAI / Cohere endpoints.",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "actions": [
+    {
+      "name": "Connect"
+    }
+  ]
 }

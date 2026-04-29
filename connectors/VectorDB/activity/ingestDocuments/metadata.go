@@ -71,12 +71,21 @@ type Input struct {
 	// (default key: "text"). Optional fields: "id", "metadata" (object).
 	// Example: [{"id":"doc1","text":"hello world","metadata":{"source":"web"}}]
 	Documents []interface{} `md:"documents"`
+
+	// FileName and FileContent are the multipart REST upload inputs. Map:
+	//   fileName    = =$flow.multipartFormData.filename
+	//   fileContent = =$flow.multipartFormData.file[0]
+	// The activity synthesises a file entry from them internally.
+	FileName    string      `md:"fileName"`
+	FileContent interface{} `md:"fileContent"`
 }
 
 func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"collectionName": i.CollectionName,
 		"documents":      i.Documents,
+		"fileName":       i.FileName,
+		"fileContent":    i.FileContent,
 	}
 }
 
@@ -84,12 +93,18 @@ func (i *Input) FromMap(v map[string]interface{}) error {
 	if val, ok := v["collectionName"]; ok {
 		i.CollectionName = fmt.Sprintf("%v", val)
 	}
-	if val, ok := v["documents"]; ok {
+	if val, ok := v["documents"]; ok && val != nil {
 		if arr, ok := val.([]interface{}); ok {
 			i.Documents = arr
 		} else {
 			return fmt.Errorf("vectordb-ingest: 'documents' must be an array")
 		}
+	}
+	if val, ok := v["fileName"]; ok && val != nil {
+		i.FileName = fmt.Sprintf("%v", val)
+	}
+	if val, ok := v["fileContent"]; ok && val != nil {
+		i.FileContent = val
 	}
 	return nil
 }
@@ -102,9 +117,11 @@ type RawDocument struct {
 }
 
 // parseDocuments converts []interface{} input into typed RawDocument slice.
+// Returns an empty slice (not an error) when raw is nil or empty — callers
+// must ensure at least one source (documents or files) is provided.
 func parseDocuments(raw []interface{}, contentField string) ([]RawDocument, error) {
 	if len(raw) == 0 {
-		return nil, fmt.Errorf("at least one document is required")
+		return nil, nil
 	}
 	if contentField == "" {
 		contentField = "text"

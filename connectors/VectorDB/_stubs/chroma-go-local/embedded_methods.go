@@ -4,10 +4,10 @@ package chromalocal
 // already return an error before an *Embedded can be obtained.
 
 func (e *Embedded) Heartbeat() (uint64, error)    { return 0, errNotSupported }
-func (e *Embedded) MaxBatchSize() (uint32, error)  { return 0, errNotSupported }
-func (e *Embedded) Reset() error                   { return errNotSupported }
-func (e *Embedded) Stop() error                    { return errNotSupported }
-func (e *Embedded) Close() error                   { return errNotSupported }
+func (e *Embedded) MaxBatchSize() (uint32, error) { return 0, errNotSupported }
+func (e *Embedded) Reset() error                  { return errNotSupported }
+func (e *Embedded) Stop() error                   { return errNotSupported }
+func (e *Embedded) Close() error                  { return errNotSupported }
 
 func (e *Embedded) Healthcheck() (*EmbeddedHealthCheckResponse, error) {
 	return nil, errNotSupported
@@ -16,7 +16,7 @@ func (e *Embedded) IndexingStatus(_ EmbeddedIndexingStatusRequest) (*EmbeddedInd
 	return nil, errNotSupported
 }
 
-func (e *Embedded) CreateTenant(_ EmbeddedCreateTenantRequest) error  { return errNotSupported }
+func (e *Embedded) CreateTenant(_ EmbeddedCreateTenantRequest) error { return errNotSupported }
 func (e *Embedded) GetTenant(_ EmbeddedGetTenantRequest) (*EmbeddedTenant, error) {
 	return nil, errNotSupported
 }
@@ -49,7 +49,7 @@ func (e *Embedded) ForkCollection(_ EmbeddedForkCollectionRequest) (*EmbeddedCol
 	return nil, errNotSupported
 }
 
-func (e *Embedded) Add(_ EmbeddedAddRequest) error                { return errNotSupported }
+func (e *Embedded) Add(_ EmbeddedAddRequest) error                     { return errNotSupported }
 func (e *Embedded) UpsertRecords(_ EmbeddedUpsertRecordsRequest) error { return errNotSupported }
 func (e *Embedded) UpdateRecords(_ EmbeddedUpdateRecordsRequest) error { return errNotSupported }
 func (e *Embedded) DeleteRecords(_ EmbeddedDeleteRecordsRequest) error { return errNotSupported }
