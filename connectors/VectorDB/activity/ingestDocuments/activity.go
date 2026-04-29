@@ -97,7 +97,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	l := ctx.Logger()
-	l.Debugf("IngestDocuments: starting eval")
+	l.Infof("IngestDocuments: starting eval")
 
 	input := &Input{}
 	if err := ctx.GetInputObject(input); err != nil {
@@ -141,7 +141,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	}
 
 	sourceDocCount := len(rawDocs)
-	l.Debugf("IngestDocuments: collection=%s source_doc_count=%d", collectionName, sourceDocCount)
+	l.Debugf("IngestDocuments: collection=%s source_doc_count=%d fileName=%s", collectionName, sourceDocCount, input.FileName)
 
 	// ── Optional chunking ────────────────────────────────────────────────────
 	// When enabled, each input document is split into smaller segments before
@@ -237,8 +237,8 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		}
 	}
 
-	l.Debugf("IngestDocuments: embedded %d texts in %s dimensions=%d tokens=%d",
-		len(rawDocs), time.Since(start), embDimensions, totalTokens)
+	l.Debugf("IngestDocuments: embedded %d texts dimensions=%d tokens=%d elapsed=%s",
+		len(rawDocs), embDimensions, totalTokens, time.Since(start))
 
 	// -----------------------------------------------------------------------
 	// Step 2: Build vectordb.Document slice — assign IDs and attach vectors.
@@ -300,7 +300,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	}
 
 	duration := time.Since(start)
-	l.Debugf("IngestDocuments: success collection=%s ingested=%d dimensions=%d duration=%s",
+	l.Infof("IngestDocuments: success collection=%s ingested=%d dimensions=%d duration=%s",
 		collectionName, len(docs), embDimensions, duration)
 
 	if err := ctx.SetOutputObject(&Output{
@@ -320,7 +320,10 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 // parseFiles converts a files[]interface{} input array into RawDocument slice by
 // extracting text from binary documents (PDF, DOCX, TXT, MD).
 // Each item must have "name" (string) and "content" (base64 string or []byte).
-func parseFiles(files []interface{}, l interface{ Debugf(string, ...interface{}) }) ([]RawDocument, error) {
+func parseFiles(files []interface{}, l interface {
+	Debugf(string, ...interface{})
+	Infof(string, ...interface{})
+}) ([]RawDocument, error) {
 	if len(files) == 0 {
 		return nil, nil
 	}
@@ -354,7 +357,7 @@ func parseFiles(files []interface{}, l interface{ Debugf(string, ...interface{})
 			return nil, fmt.Errorf("files[%d] (%s): no text could be extracted — is this a scanned/image PDF?", idx, name)
 		}
 
-		l.Debugf("parseFiles: extracted %d chars from %s", len(text), name)
+		l.Debugf("parseFiles: extracted %d chars from file=%s", len(text), name)
 
 		doc := RawDocument{
 			Text: text,
