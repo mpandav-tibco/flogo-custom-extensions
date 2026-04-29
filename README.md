@@ -23,6 +23,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [datetime](function/datetime/) | `isBefore`, `isAfter`, `toEpoch`, `fromEpoch`, `isWeekend`, `isWeekday`, `addBusinessDays`, `startOfDay`, `quarter` | Datetime comparison, epoch conversion, business-day detection, day normalisation, calendar quarter |
 | [number](function/number/) | `randomInt` | Cryptographically random integer in an inclusive range |
 | [json](function/json/) | `removeKey`, `merge` | Delete a top-level key from an object, shallow-merge two or more objects |
+| [text](function/text/) | `cleanText` | Remove Apache Tika extraction artifacts (HTML entities, image alt-text, control characters, orphaned table-cell fragments, excessive blank lines) from plain text before embedding or indexing |
 
 
 ### ⚡ Activities

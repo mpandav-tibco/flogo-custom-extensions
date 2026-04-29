@@ -89,6 +89,14 @@ All datetime functions accept any format supported by Flogo's `coerce.ToDateTime
 | `json.removeKey` | `removeKey(obj object, key string) object` | Copy of the object with `key` deleted. OOTB `json.set(obj,key,nil)` sets to null — it does not remove the key. |
 | `json.merge` | `merge(base object, overlays ...object) object` | Shallow-merge two or more objects. Later-argument keys win. OOTB `array.merge` is array-concat only; `json.set` is one-key-at-a-time. |
 
+### `text` — Text processing helpers
+
+Purpose-built for cleaning plain text extracted by Apache Tika (MHTML, PDF, DOC, DOCX) before embedding or indexing.
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `text.cleanText` | `cleanText(text string) string` | Removes Tika extraction artifacts in 8 ordered steps: (1) decode HTML named entities (`&amp;` → `&`, `&nbsp;` → space, etc.), (2) strip numeric HTML entities (`&#NNN;`), (3) remove null and non-printable control characters, (4) remove `[image: ...]` alt-text tokens (MHTML/Word checkboxes), (5) trim leading/trailing whitespace from every line, (6) join short orphaned fragments ≤ 20 chars separated by a blank line (fixes table cells split across paragraphs by Tika), (7) collapse 3+ consecutive blank lines into one, (8) trim overall result. Returns `""` unchanged for empty input. |
+
 ---
 
 ## Debug Logging
@@ -135,6 +143,8 @@ Example expressions:
 
 =json.removeKey($flow.payload, "internalToken")
 =json.merge($flow.defaults, $flow.overrides)
+
+=text.cleanText($activity[TikaExtract].responseBody.data)
 ```
 
 ---
@@ -156,3 +166,5 @@ go test ./...
 ```
 
 291 unit tests across all packages — all passing.
+
+> The `text` package is a separate Go module (`github.com/mpandav-tibco/flogo-extensions/function/text`) with its own `go.mod`. Import it independently in your `.flogo` file alongside the main function bundle.
