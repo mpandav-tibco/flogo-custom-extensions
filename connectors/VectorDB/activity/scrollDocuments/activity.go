@@ -97,7 +97,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		if err := ctx.SetOutputObject(&Output{Success: false, Error: scrollErr.Error(), Duration: time.Since(start).String()}); err != nil {
 			l.Errorf("SetOutputObject: %v", err)
 		}
-		return false, fmt.Errorf("vectordb-scroll: %w", scrollErr)
+		return true, nil
 	}
 
 	duration := time.Since(start)

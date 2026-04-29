@@ -90,14 +90,15 @@ func TestCreateCollection_MissingName(t *testing.T) {
 func TestCreateCollection_ClientError(t *testing.T) {
 	mc := &mockclient.VectorDBClient{}
 	mc.On("CreateCollection", mock.Anything, mock.Anything).
-		Return(fmt.Errorf("already exists"))
+		Return(fmt.Errorf("connection refused"))
 
 	a := &Activity{conn: newTestConn(mc), settings: &Settings{}}
 	ctx := &fakeActivityContext{inputs: map[string]interface{}{
 		"collectionName": "col",
 	}}
 	ok, err := a.Eval(ctx)
-	assert.True(t, ok); assert.NoError(t, err)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 	assert.Equal(t, false, ctx.outputs["success"])
-	assert.Contains(t, ctx.outputs["error"].(string), "already exists")
+	assert.Contains(t, ctx.outputs["error"].(string), "connection refused")
 }
