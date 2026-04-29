@@ -75,6 +75,15 @@
       "name": "withVectors",
       "type": "boolean",
       "value": false
+    },
+    {
+      "name": "skipPayload",
+      "type": "boolean",
+      "value": false,
+      "display": {
+        "name": "Skip Payload",
+        "description": "When true, omits document payload and content from results. Use for ranking-only passes where only ID and score are needed \u2014 reduces network I/O."
+      }
     }
   ],
   "output": [

@@ -19,6 +19,9 @@ type milvusClient struct {
 	cfg    ConnectionConfig
 }
 
+// Compile-time proof that milvusClient satisfies the full VectorDBClient interface.
+var _ VectorDBClient = (*milvusClient)(nil)
+
 // milvusMaxVarCharLen is the maximum VarChar field length configured for
 // the content and _metadata schema fields. Documents exceeding this limit
 // will be silently truncated by Milvus — we enforce it here to fail fast
@@ -128,7 +131,15 @@ func (c *milvusClient) CreateCollection(ctx context.Context, cfg CollectionConfi
 	// Milvus 2.4 does not return an error when a collection with the same name
 	// already exists — it silently succeeds. We check explicitly so callers
 	// can distinguish between a fresh creation and a pre-existing one.
-	if exists, _ := c.client.HasCollection(ctx, cfg.Name); exists {
+	var exists bool
+	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
+		var retryErr error
+		exists, retryErr = c.client.HasCollection(ctx, cfg.Name)
+		return retryErr
+	}); err != nil {
+		return newError(ErrCodeProviderError, "CreateCollection: failed to check existence", err)
+	}
+	if exists {
 		return newError(ErrCodeCollectionExists, fmt.Sprintf("collection %q already exists", cfg.Name), nil)
 	}
 
@@ -331,7 +342,7 @@ func (c *milvusClient) DeleteDocuments(ctx context.Context, collectionName strin
 func (c *milvusClient) DeleteByFilter(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error) {
 	expr := buildMilvusExpr(filters)
 	if expr == "" {
-		return 0, newError(ErrCodeInvalidQueryVector, "DeleteByFilter requires at least one filter", nil)
+		return 0, newError(ErrCodeProviderError, "DeleteByFilter requires at least one filter", nil)
 	}
 	if err := withRetry(ctx, c.cfg.MaxRetries, c.cfg.RetryBackoffMs, func() error {
 		return c.client.Delete(ctx, collectionName, "", expr)
@@ -420,7 +431,10 @@ func (c *milvusClient) VectorSearch(ctx context.Context, req SearchRequest) ([]S
 	}
 
 	queryVector := entity.FloatVector(toFloat32Slice(req.QueryVector))
-	outputFields := []string{"_id", "content", "_metadata"}
+	outputFields := []string{"_id"}
+	if !req.SkipPayload {
+		outputFields = append(outputFields, "content", "_metadata")
+	}
 
 	expr := buildMilvusExpr(req.Filters)
 

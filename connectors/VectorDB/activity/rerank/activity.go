@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )
@@ -16,7 +15,6 @@ func init() { _ = activity.Register(&Activity{}, New) }
 
 type Activity struct {
 	settings *Settings
-	conn     *vectordbconnector.VectorDBConnection
 }
 
 func (a *Activity) Metadata() *activity.Metadata { return activityMd }
@@ -29,18 +27,9 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	if s.RerankEndpoint == "" {
 		return nil, fmt.Errorf("vectordb-rerank: rerankEndpoint is required")
 	}
-	var conn *vectordbconnector.VectorDBConnection
-	if s.Connection != nil {
-		conn, _ = s.Connection.GetConnection().(*vectordbconnector.VectorDBConnection)
-	}
-	if conn != nil {
-		ctx.Logger().Infof("Rerank initialised: endpoint=%s model=%s connection=%s",
-			s.RerankEndpoint, s.Model, conn.GetName())
-	} else {
-		ctx.Logger().Infof("Rerank initialised: endpoint=%s model=%s (standalone)",
-			s.RerankEndpoint, s.Model)
-	}
-	return &Activity{settings: s, conn: conn}, nil
+	ctx.Logger().Infof("Rerank initialised: endpoint=%s model=%s",
+		s.RerankEndpoint, s.Model)
+	return &Activity{settings: s}, nil
 }
 
 func (a *Activity) Eval(ctx activity.Context) (bool, error) {

@@ -22,6 +22,7 @@ type Input struct {
 	ScoreThreshold float64                `md:"scoreThreshold"`
 	Alpha          float64                `md:"alpha"`
 	Filters        map[string]interface{} `md:"filters"`
+	SkipPayload    bool                   `md:"skipPayload"`
 }
 
 func (i *Input) ToMap() map[string]interface{} {
@@ -33,6 +34,7 @@ func (i *Input) ToMap() map[string]interface{} {
 		"scoreThreshold": i.ScoreThreshold,
 		"alpha":          i.Alpha,
 		"filters":        i.Filters,
+		"skipPayload":    i.SkipPayload,
 	}
 }
 
@@ -75,6 +77,9 @@ func (i *Input) FromMap(v map[string]interface{}) error {
 		if m, ok := val.(map[string]interface{}); ok {
 			i.Filters = m
 		}
+	}
+	if val, ok := v["skipPayload"]; ok {
+		i.SkipPayload, _ = val.(bool)
 	}
 	return nil
 }

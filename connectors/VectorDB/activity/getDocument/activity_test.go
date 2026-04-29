@@ -14,6 +14,7 @@ import (
 	"github.com/project-flogo/core/support/trace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type fakeActivityContext struct {
@@ -74,7 +75,11 @@ func TestGetDocument_Found(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, ctx.outputs["success"])
 	assert.Equal(t, true, ctx.outputs["found"])
-	assert.NotNil(t, ctx.outputs["document"])
+	doc, ok2 := ctx.outputs["document"].(map[string]interface{})
+	require.True(t, ok2, "document output must be a map")
+	// Verify JSON-tag lowercase contract: descriptor.json declares 'id' and 'content'.
+	assert.Equal(t, "doc-1", doc["id"])
+	assert.Equal(t, "hello", doc["content"])
 }
 
 func TestGetDocument_NotFound(t *testing.T) {

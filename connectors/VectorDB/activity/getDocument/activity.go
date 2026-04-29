@@ -98,7 +98,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		if err := ctx.SetOutputObject(&Output{Success: false, Error: getErr.Error(), Duration: time.Since(start).String()}); err != nil {
 			l.Errorf("SetOutputObject: %v", err)
 		}
-		return false, fmt.Errorf("vectordb-get: %w", getErr)
+		return true, nil
 	}
 
 	duration := time.Since(start)

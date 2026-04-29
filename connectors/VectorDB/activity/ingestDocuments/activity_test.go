@@ -370,7 +370,7 @@ func TestIngestDocuments_EmptyDocuments(t *testing.T) {
 	}}
 	_, err := act.Eval(ctx)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "at least one document is required")
+	assert.Contains(t, err.Error(), "at least one document or file is required")
 }
 
 // ---------------------------------------------------------------------------
@@ -393,9 +393,9 @@ func TestParseDocuments_HappyPath(t *testing.T) {
 }
 
 func TestParseDocuments_Empty(t *testing.T) {
-	_, err := parseDocuments([]interface{}{}, "text")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "at least one document is required")
+	docs, err := parseDocuments([]interface{}{}, "text")
+	require.NoError(t, err)
+	assert.Nil(t, docs)
 }
 
 func TestParseDocuments_MissingTextField(t *testing.T) {

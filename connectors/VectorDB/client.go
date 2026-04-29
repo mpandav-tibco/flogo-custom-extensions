@@ -34,7 +34,7 @@ type VectorDBClient interface {
 
 	// DeleteByFilter removes all documents matching the metadata filter.
 	// Returns the number of documents deleted, or -1 if the provider does not
-	// report a count (Qdrant, Chroma, Milvus). Callers must not treat -1 as an
+	// report a count (Qdrant, Weaviate, Chroma, Milvus). Callers must not treat -1 as an
 	// error; use CountDocuments before/after if an exact count is required.
 	DeleteByFilter(ctx context.Context, collectionName string, filters map[string]interface{}) (int64, error)
 

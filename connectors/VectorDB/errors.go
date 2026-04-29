@@ -91,6 +91,13 @@ func (e *VDBError) Error() string {
 
 func (e *VDBError) Unwrap() error { return e.Cause }
 
+// NewError creates a VDBError with a structured error code. Use this in activity
+// packages when you need a typed, code-bearing error (e.g. ErrCodeInvalidAlpha).
+// Pass msg="" to use the standard message for the given code.
+func NewError(code, msg string, cause error) *VDBError {
+	return newError(code, msg, cause)
+}
+
 // newError creates a VDBError, using the standard message for known codes when msg is empty.
 func newError(code, msg string, cause error) *VDBError {
 	if msg == "" {

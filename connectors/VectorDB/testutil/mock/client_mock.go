@@ -9,6 +9,9 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// Compile-time check: VectorDBClient must implement vectordb.VectorDBClient.
+var _ vectordb.VectorDBClient = (*VectorDBClient)(nil)
+
 // VectorDBClient is a mock for vectordb.VectorDBClient.
 type VectorDBClient struct {
 	mock.Mock

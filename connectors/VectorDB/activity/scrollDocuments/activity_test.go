@@ -14,30 +14,45 @@ import (
 	"github.com/project-flogo/core/support/trace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type fakeActivityContext struct {
 	inputs  map[string]interface{}
 	outputs map[string]interface{}
 }
+
 func (f *fakeActivityContext) ActivityHost() activity.Host        { return nil }
 func (f *fakeActivityContext) Name() string                       { return "test" }
 func (f *fakeActivityContext) GetSetting(name string) interface{} { return nil }
 func (f *fakeActivityContext) GetInput(name string) interface{} {
-	if f.inputs == nil { return nil }; return f.inputs[name]
+	if f.inputs == nil {
+		return nil
+	}
+	return f.inputs[name]
 }
 func (f *fakeActivityContext) SetOutput(name string, value interface{}) error {
-	if f.outputs == nil { f.outputs = make(map[string]interface{}) }
-	f.outputs[name] = value; return nil
+	if f.outputs == nil {
+		f.outputs = make(map[string]interface{})
+	}
+	f.outputs[name] = value
+	return nil
 }
-func (f *fakeActivityContext) GetInputObject(obj data.StructValue) error { return obj.FromMap(f.inputs) }
+func (f *fakeActivityContext) GetInputObject(obj data.StructValue) error {
+	return obj.FromMap(f.inputs)
+}
 func (f *fakeActivityContext) SetOutputObject(obj data.StructValue) error {
-	if f.outputs == nil { f.outputs = make(map[string]interface{}) }
-	for k, v := range obj.ToMap() { f.outputs[k] = v }; return nil
+	if f.outputs == nil {
+		f.outputs = make(map[string]interface{})
+	}
+	for k, v := range obj.ToMap() {
+		f.outputs[k] = v
+	}
+	return nil
 }
 func (f *fakeActivityContext) GetSharedTempData() map[string]interface{} { return nil }
 func (f *fakeActivityContext) Logger() log.Logger                        { return log.RootLogger() }
-func (f *fakeActivityContext) GetTracingContext() trace.TracingContext    { return nil }
+func (f *fakeActivityContext) GetTracingContext() trace.TracingContext   { return nil }
 func (f *fakeActivityContext) GoContext() context.Context                { return context.Background() }
 
 func newTestConn(client vectordb.VectorDBClient) *vectordbconnector.VectorDBConnection {
@@ -61,10 +76,18 @@ func TestScrollDocuments_FirstPage(t *testing.T) {
 		"limit":          50,
 	}}
 	ok, err := a.Eval(ctx)
-	assert.True(t, ok); assert.NoError(t, err)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 	assert.Equal(t, true, ctx.outputs["success"])
 	assert.Equal(t, "cursor-2", ctx.outputs["nextOffset"])
 	assert.Equal(t, int64(100), ctx.outputs["total"])
+	docs, ok2 := ctx.outputs["documents"].([]interface{})
+	require.True(t, ok2, "documents output must be []interface{}")
+	require.Len(t, docs, 2)
+	// Verify JSON-tag lowercase contract: descriptor.json declares 'id' inside each document.
+	doc0, ok3 := docs[0].(map[string]interface{})
+	require.True(t, ok3)
+	assert.Equal(t, "1", doc0["id"])
 }
 
 func TestScrollDocuments_DefaultLimit(t *testing.T) {
@@ -99,6 +122,7 @@ func TestScrollDocuments_ClientError(t *testing.T) {
 		"collectionName": "col", "limit": 10,
 	}}
 	ok, err := a.Eval(ctx)
-	assert.True(t, ok); assert.NoError(t, err)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 	assert.Equal(t, false, ctx.outputs["success"])
 }

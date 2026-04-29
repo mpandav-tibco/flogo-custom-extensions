@@ -2,21 +2,16 @@ package rerank
 
 import (
 	"fmt"
-
-	"github.com/project-flogo/core/support/connection"
 )
 
-// Settings for the rerank activity.
-// The VectorDB connection is optional here – rerank is HTTP-based.
-// However we still accept a connection so the activity fits the connector
-// model; connection may be nil when used standalone.
+// Settings for the rerank activity. Rerank is HTTP-based and standalone —
+// no VectorDB connection is required.
 type Settings struct {
-	Connection     connection.Manager `md:"connection"`
-	RerankEndpoint string             `md:"rerankEndpoint,required"`
-	APIKey         string             `md:"apiKey"`
-	Model          string             `md:"model"`
-	TopN           int                `md:"topN"`
-	TimeoutSeconds int                `md:"timeoutSeconds"`
+	RerankEndpoint string `md:"rerankEndpoint,required"`
+	APIKey         string `md:"apiKey"`
+	Model          string `md:"model"`
+	TopN           int    `md:"topN"`
+	TimeoutSeconds int    `md:"timeoutSeconds"`
 }
 
 type Input struct {
@@ -41,11 +36,11 @@ func (i *Input) FromMap(v map[string]interface{}) error {
 }
 
 type Output struct {
-	Success           bool          `md:"success"`
-	RankedDocuments   []interface{} `md:"rankedDocuments"`
-	TotalCount        int           `md:"totalCount"`
-	Duration          string        `md:"duration"`
-	Error             string        `md:"error"`
+	Success         bool          `md:"success"`
+	RankedDocuments []interface{} `md:"rankedDocuments"`
+	TotalCount      int           `md:"totalCount"`
+	Duration        string        `md:"duration"`
+	Error           string        `md:"error"`
 }
 
 func (o *Output) ToMap() map[string]interface{} {

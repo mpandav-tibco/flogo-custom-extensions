@@ -250,7 +250,7 @@ func formatContext(results []vectordb.SearchResult, contentField, format string)
 	}
 	var sb strings.Builder
 	for i, r := range results {
-		content := extractContent(r.Payload, contentField)
+		content := extractContent(r, contentField)
 		switch format {
 		case "markdown":
 			fmt.Fprintf(&sb, "**[%d]** *(score: %.4f)*\n\n%s\n\n---\n\n", i+1, r.Score, content)
@@ -288,7 +288,7 @@ func formatContextJSON(results []vectordb.SearchResult, contentField string) str
 			Index:   i + 1,
 			ID:      r.ID,
 			Score:   r.Score,
-			Content: extractContent(payload, contentField),
+			Content: extractContent(r, contentField),
 			Payload: payload,
 		}
 	}
@@ -299,17 +299,22 @@ func formatContextJSON(results []vectordb.SearchResult, contentField string) str
 	return string(b)
 }
 
-// extractContent pulls the text content from a document payload.
-func extractContent(payload map[string]interface{}, contentField string) string {
-	if payload == nil {
-		return ""
+// extractContent pulls the text content from a SearchResult.
+// Priority: (1) r.Content (the first-class field populated by all providers),
+// (2) r.Payload[contentField] (custom key), (3) fallback — join all payload strings.
+func extractContent(r vectordb.SearchResult, contentField string) string {
+	// First-class Content field is always populated by all VectorDB providers.
+	if r.Content != "" {
+		return r.Content
 	}
-	if val, ok := payload[contentField]; ok && val != nil {
-		return fmt.Sprintf("%v", val)
+	if r.Payload != nil {
+		if val, ok := r.Payload[contentField]; ok && val != nil {
+			return fmt.Sprintf("%v", val)
+		}
 	}
-	// Fallback: join all string values
+	// Last resort: join all non-empty string payload values.
 	var parts []string
-	for k, v := range payload {
+	for k, v := range r.Payload {
 		if s, ok := v.(string); ok && s != "" {
 			parts = append(parts, fmt.Sprintf("%s: %s", k, s))
 		}
@@ -324,6 +329,7 @@ func searchResultsToInterface(results []vectordb.SearchResult) []interface{} {
 		out[i] = map[string]interface{}{
 			"id":      r.ID,
 			"score":   r.Score,
+			"content": r.Content,
 			"payload": r.Payload,
 		}
 	}

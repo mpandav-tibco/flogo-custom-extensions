@@ -34,6 +34,11 @@ func ExtractTextFromBytes(data []byte, filename string) (string, error) {
 		return extractDOCX(data)
 	case ".txt", ".md", ".text", ".markdown":
 		return strings.TrimSpace(string(data)), nil
+	case ".doc":
+		// Legacy binary Word format (.doc) is not extractable without a
+		// specialised parser. Please convert to .docx (File → Save As in Word)
+		// or export as PDF before ingesting.
+		return "", fmt.Errorf("unsupported file type %q: legacy binary .doc format cannot be read — convert to .docx or .pdf first", ext)
 	default:
 		// Graceful fallback: if the content looks like UTF-8 text, return it as-is.
 		if looksLikeText(data) {

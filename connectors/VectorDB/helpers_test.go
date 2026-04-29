@@ -285,3 +285,46 @@ func TestConnectionConfigString_EmptyCredentialsNotRedacted(t *testing.T) {
 	// No credentials — [redacted] should not appear, no panic.
 	assert.NotContains(t, s, "[redacted]")
 }
+
+// ---------------------------------------------------------------------------
+// weaviateSearchFields
+// ---------------------------------------------------------------------------
+
+func TestWeaviateSearchFields_IncludesPayloadByDefault(t *testing.T) {
+	fields := weaviateSearchFields(false, "_additional { id score }")
+	require.Len(t, fields, 4)
+	assert.Equal(t, "_additional { id score }", fields[0].Name)
+	assert.Equal(t, "content", fields[1].Name)
+	assert.Equal(t, "_docId", fields[2].Name)
+	assert.Equal(t, "_metadata", fields[3].Name)
+}
+
+func TestWeaviateSearchFields_SkipPayload_OnlyScoreField(t *testing.T) {
+	fields := weaviateSearchFields(true, "_additional { id score }")
+	require.Len(t, fields, 1)
+	assert.Equal(t, "_additional { id score }", fields[0].Name)
+}
+
+func TestWeaviateSearchFields_VectorSearch_ScoreField(t *testing.T) {
+	fields := weaviateSearchFields(false, "_additional { id certainty distance }")
+	require.Len(t, fields, 4)
+	assert.Equal(t, "_additional { id certainty distance }", fields[0].Name)
+}
+
+func TestWeaviateSearchFields_SkipPayload_VectorSearch(t *testing.T) {
+	fields := weaviateSearchFields(true, "_additional { id certainty distance }")
+	require.Len(t, fields, 1)
+	assert.Equal(t, "_additional { id certainty distance }", fields[0].Name)
+}
+
+// ---------------------------------------------------------------------------
+// buildMilvusExpr — empty filter returns empty string (DeleteByFilter guard)
+// ---------------------------------------------------------------------------
+
+func TestBuildMilvusExpr_NilFilter_ReturnsEmpty(t *testing.T) {
+	assert.Equal(t, "", buildMilvusExpr(nil))
+}
+
+func TestBuildMilvusExpr_EmptyMap_ReturnsEmpty(t *testing.T) {
+	assert.Equal(t, "", buildMilvusExpr(map[string]interface{}{}))
+}

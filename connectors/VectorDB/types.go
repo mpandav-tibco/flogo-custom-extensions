@@ -6,31 +6,31 @@ import "fmt"
 type Document struct {
 	// ID is the unique identifier. Use UUIDs for Qdrant/Weaviate compatibility.
 	// Chroma accepts any string. Milvus maps to the primary-key field.
-	ID string
+	ID string `json:"id"`
 
 	// Vector is the dense embedding (float64 for precision; converted per provider).
 	// Required for upsert; may be nil on retrieval unless WithVectors=true.
-	Vector []float64
+	Vector []float64 `json:"vector,omitempty"`
 
 	// Content is the source text that was embedded — stored for reference retrieval.
-	Content string
+	Content string `json:"content,omitempty"`
 
 	// Payload holds arbitrary key-value metadata (source, category, timestamps, etc.).
 	// The following keys are reserved for internal connector use and must not be
 	// set by callers — they will be silently overwritten:
 	//   "_original_id", "_content"         (Qdrant)
 	//   "_docId",       "_metadata"         (Weaviate, Chroma, Milvus)
-	Payload map[string]interface{}
+	Payload map[string]interface{} `json:"payload,omitempty"`
 }
 
 // SearchResult is a ranked result from VectorSearch or HybridSearch.
 type SearchResult struct {
-	ID      string
-	Score   float64
-	Payload map[string]interface{}
-	Content string
+	ID      string                 `json:"id"`
+	Score   float64                `json:"score"`
+	Payload map[string]interface{} `json:"payload,omitempty"`
+	Content string                 `json:"content,omitempty"`
 	// Vector is populated only when SearchRequest.WithVectors is true.
-	Vector []float64
+	Vector []float64 `json:"vector,omitempty"`
 }
 
 // CollectionConfig defines the schema for a new vector collection/index.

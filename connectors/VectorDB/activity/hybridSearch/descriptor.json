@@ -73,12 +73,25 @@
     {
       "name": "alpha",
       "type": "number",
-      "value": 0.5
+      "value": 0.5,
+      "display": {
+        "name": "Alpha (Fusion Weight)",
+        "description": "Fusion weight between dense and sparse search. Range: 0.0 (BM25/keyword only) to 1.0 (dense vector only). 0.5 = equal blend. Must be between 0 and 1."
+      }
     },
     {
       "name": "filters",
       "type": "object",
       "schema": "{\"type\": \"object\", \"description\": \"Key-value filter map. Keys are payload field names. Values can be string, number, boolean, or array (for 'in' match). Example: {\\\"category\\\":\\\"tech\\\",\\\"year\\\":2024,\\\"tags\\\":[\\\"rag\\\",\\\"llm\\\"]}\", \"additionalProperties\": true}"
+    },
+    {
+      "name": "skipPayload",
+      "type": "boolean",
+      "value": false,
+      "display": {
+        "name": "Skip Payload",
+        "description": "When true, omits document payload and content from results. Use for ranking-only passes where only ID and score are needed \u2014 reduces network I/O."
+      }
     }
   ],
   "output": [

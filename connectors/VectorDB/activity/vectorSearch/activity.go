@@ -96,7 +96,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		ScoreThreshold: input.ScoreThreshold,
 		Filters:        input.Filters,
 		WithVectors:    input.WithVectors,
-		// SkipPayload defaults to false (zero value) = include payload.
+		SkipPayload:    input.SkipPayload,
 	})
 	if searchErr != nil {
 		l.Errorf("VectorSearch: collection=%s error=%v", collectionName, searchErr)
@@ -107,7 +107,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		if err := ctx.SetOutputObject(&Output{Success: false, Error: searchErr.Error(), Duration: time.Since(start).String()}); err != nil {
 			l.Errorf("SetOutputObject: %v", err)
 		}
-		return false, fmt.Errorf("vectordb-search: %w", searchErr)
+		return true, nil
 	}
 
 	duration := time.Since(start)

@@ -64,6 +64,13 @@ func validateChunkConfig(cfg ChunkConfig) error {
 	return nil
 }
 
+// maxEmbeddingInputChars is a hard upper-bound applied to every chunk after
+// the primary splitting strategy runs. Any chunk that exceeds this limit is
+// further split using the fixed strategy with no overlap.
+// 8 000 characters ≈ 2 000 tokens for typical English text, which is safely
+// below the 8 192-token context window of models such as nomic-embed-text.
+const maxEmbeddingInputChars = 8000
+
 // expandChunks takes the parsed input documents and, for each document, splits
 // its Text field according to cfg. The returned slice replaces the input slice:
 // each chunk becomes an independent RawDocument inheriting the parent's metadata
@@ -75,6 +82,20 @@ func expandChunks(docs []RawDocument, cfg ChunkConfig) []RawDocument {
 	var result []RawDocument
 	for _, doc := range docs {
 		chunks := chunkText(doc.Text, cfg)
+
+		// Safety cap: sub-split any chunk that exceeds the embedding model's
+		// effective context length. This guards against strategies like
+		// paragraph/heading producing oversized segments (e.g. tables with no
+		// blank-line breaks, large PDF sections, binary-fallback content).
+		var capped []string
+		for _, c := range chunks {
+			if len([]rune(c)) > maxEmbeddingInputChars {
+				capped = append(capped, chunkFixed(c, maxEmbeddingInputChars, 0)...)
+			} else {
+				capped = append(capped, c)
+			}
+		}
+		chunks = capped
 		total := len(chunks)
 		for i, chunk := range chunks {
 			// Build chunk ID: "<parent-id>-chunk-<i>" or leave blank for UUID assignment.
