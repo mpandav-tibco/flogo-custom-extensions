@@ -1,13 +1,27 @@
 module github.com/mpandav-tibco/flogo-extensions/vectordb
 
-go 1.24
+go 1.25
+
+// Replace chroma-go-local with a no-CGo stub. chroma-go/pkg/api/v2 imports this
+// package for its in-process (PersistentClient) code path, which we never use.
+// The real chroma-go-local pulls in ebitengine/purego → runtime/cgo, breaking
+// gopls and CGO_ENABLED=0 builds. The stub provides the same compile-time API
+// surface without any C dependencies.
+replace github.com/amikos-tech/chroma-go-local => ./_stubs/chroma-go-local
+
+// Replace pure-onnx with a no-CGo stub. chroma-go/pkg/embeddings/default_ef imports
+// pure-onnx/ort and pure-onnx/embeddings/minilm unconditionally. pure-onnx pulls in
+// ebitengine/purego → runtime/cgo, breaking gopls and CGO_ENABLED=0 builds.
+replace github.com/amikos-tech/pure-onnx => ./_stubs/pure-onnx
+
+toolchain go1.25.9
 
 require (
-	github.com/amikos-tech/chroma-go v0.4.1
+	github.com/amikos-tech/chroma-go v0.4.0
 	github.com/go-openapi/strfmt v0.25.0
 	github.com/google/uuid v1.6.0
 	github.com/milvus-io/milvus-sdk-go/v2 v2.4.2
-	github.com/project-flogo/core v1.6.13
+	github.com/project-flogo/core v1.6.18
 	github.com/qdrant/go-client v1.17.1
 	github.com/stretchr/testify v1.11.1
 	github.com/weaviate/weaviate v1.36.0
@@ -15,18 +29,17 @@ require (
 	google.golang.org/grpc v1.79.3
 )
 
+require github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195 // indirect
+
 require (
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
-	github.com/amikos-tech/chroma-go-local v0.3.4 // indirect
+	github.com/amikos-tech/chroma-go-local v0.3.3 // indirect
 	github.com/amikos-tech/pure-onnx v0.0.1 // indirect
-	github.com/amikos-tech/pure-tokenizers v0.1.5 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cockroachdb/errors v1.9.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/creasty/defaults v1.8.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/ebitengine/purego v0.10.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/getsentry/sentry-go v0.30.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -36,7 +49,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.22.1 // indirect
 	github.com/go-openapi/jsonreference v0.21.3 // indirect
 	github.com/go-openapi/loads v0.23.2 // indirect
-	github.com/go-openapi/runtime v0.29.2 // indirect3
+	github.com/go-openapi/runtime v0.29.2 // indirect; indirect3
 	github.com/go-openapi/spec v0.22.1 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-openapi/swag/conv v0.25.1 // indirect

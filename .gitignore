@@ -37,13 +37,13 @@ bin/
 examples/**/build/
 
 # Stray root-level stub folders (not part of repo structure)
-AWS/
-KafkaStream/
-MySQL/
-PostgreSQL/
-SOAP/
-SSE/
-SchemaTransform/
-Utilities/
-VectorDB/
-XML/
+/AWS/
+/KafkaStream/
+/MySQL/
+/PostgreSQL/
+/SOAP/
+/SSE/
+/SchemaTransform/
+/Utilities/
+/VectorDB/
+/XML/

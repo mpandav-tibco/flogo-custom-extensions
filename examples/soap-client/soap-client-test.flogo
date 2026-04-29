@@ -96,7 +96,7 @@
                 "autoUseWsdlEndpoint": false,
                 "soapServiceEndpoint": "https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
                 "soapVersion": "1.1",
-                "xmlMode": true,
+                "xmlMode": false,
                 "xmlAttributePrefix": "-",
                 "authorization": false,
                 "authorizationConn": "",
@@ -111,21 +111,26 @@
               },
               "input": {
                 "soapAction": "http://tempuri.org/Add",
-                "soapRequestBody": "=coerce.toObject(\"<Add xmlns=\\\"http://tempuri.org/\\\"><a>10</a><b>5</b></Add>\")"
+                "soapRequestBody": {
+                  "mapping": {
+                    "b": 22,
+                    "a": 11
+                  }
+                }
               },
               "schemas": {
                 "input": {
                   "soapRequestBody": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
-                    "fe_metadata": "{}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"number\"},\"b\":{\"type\":\"number\"}},\"required\":[\"a\",\"b\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"number\"},\"b\":{\"type\":\"number\"}},\"required\":[\"a\",\"b\"]}"
                   }
                 },
                 "output": {
                   "soapResponsePayload": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
-                    "fe_metadata": "{}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}"
                   },
                   "soapResponseFault": {
                     "type": "json",
@@ -163,7 +168,7 @@
   ],
   "properties": [],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlNPQVBDbGllbnQiLCJpZCI6IlNPQVAiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vU09BUCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuYyIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJWZWN0b3JEQiBSQUcgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L1ZlY3RvckRCIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlNPQVBDbGllbnQiLCJpZCI6IlNPQVAiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vU09BUCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [],
     "flogoVersion": "2.26.3"

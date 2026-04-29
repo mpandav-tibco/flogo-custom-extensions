@@ -579,6 +579,10 @@
               "ref": "#ingestDocuments",
               "settings": {
                 "connection": "conn://qdrant-conn",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
                 "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
@@ -899,6 +903,10 @@
               "ref": "#ingestDocuments",
               "settings": {
                 "connection": "conn://weaviate-conn",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
                 "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
@@ -1219,6 +1227,10 @@
               "ref": "#ingestDocuments",
               "settings": {
                 "connection": "conn://chroma-conn",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
                 "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
@@ -1539,6 +1551,10 @@
               "ref": "#ingestDocuments",
               "settings": {
                 "connection": "conn://milvus-conn",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
                 "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
@@ -1778,7 +1794,7 @@
     {
       "name": "EMBED_API_KEY",
       "type": "string",
-      "value": "SECRET:rBIdZIiNVntIDCQhIJacsqdQNXURy6epwp2aKEI9TyKZy+q+flGtoPB/nY+hyCplPiC068VI5gs6RKDq9NONDsp0KpeD/t3ufQ=="
+      "value": "SECRET:M5/XPJHYON9e+xLZQv/CnuEWGcFgJ1Wj5jZx6rldVTrSU62+kuvdSxgNTcQEyplf8UIHPj1dHL57xXicz9pM9dnIU7arvQ0gtQ=="
     },
     {
       "name": "EMBED_BASE_URL",
@@ -1833,7 +1849,7 @@
     {
       "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].API_Key",
       "type": "string",
-      "value": "SECRET:r51Fn7kp2KX4kN9UOkcPLrXPp+rgI7i+x66zSZEycMaK5a5MruSLKfIoppSmgkc3T0HC9j9ljxx5FA=="
+      "value": "SECRET:eLXPrNJTJ/bh7aj2B/EF70bFBFyiI8M/xPMuTF+Zjnl9qVwxuENaX6Xqks+z15gsHnlVYn/sNNrNJA=="
     },
     {
       "name": "VectorDB.=$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection",
@@ -1883,7 +1899,7 @@
     {
       "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key",
       "type": "string",
-      "value": "SECRET:xmGHImG3TJznLVUG6k7V6hn1mwNvv6Kw8v0IvYEYG/7kcBj5mRMhUDj1sN3D4PhHM0LYIuzFaK3eKm4z"
+      "value": "SECRET:r9wmuXOWosJ+mZlDUk7gJCJkBper6TVKHIfyWEEq56q4dJdUHkG3GR9G9qZk8sfk+DVXitkEopeikn9a"
     },
     {
       "name": "VectorDB.=$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection",
@@ -1933,7 +1949,7 @@
     {
       "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].API_Key",
       "type": "string",
-      "value": "SECRET:g4a6KecB4yeW+GxdVlfigkKYG668nJuhbzsyzBU0i4vteCMPSlp3Xfbv4F1VBzLeYpdl1CejaMO0mg=="
+      "value": "SECRET:EGHrFK6qhvtMjDn3cDsULdWlg6ww/KEslVUTiFHC0s3Ougjp9AC7LT4Tla9wJ9GnUyh0xcPnpxQpyw=="
     },
     {
       "name": "VectorDB.=$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection",
@@ -1983,7 +1999,7 @@
     {
       "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].API_Key",
       "type": "string",
-      "value": "SECRET:Bp85cPUFGJJVWNt6oJo0EzuflYRZxRO/wFfHHRWsWfFihL8zIv45SRI5kzlNj1psNp4hDRy6+UWUww=="
+      "value": "SECRET:ezTzEXgXoMYL2bVmAduviQILuIXLww3DRUjWMLkMo87cQztaaZoScr+AeD1TUHZ/GEZOm+/tq2bOSQ=="
     },
     {
       "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection",
@@ -2009,100 +2025,300 @@
       "name": "VectorDB.=$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider",
       "type": "boolean",
       "value": "$property[\"VectorDB.MilvusConn.Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:/UfmOYe6S06EGXUc4EET+m6sY4VOwfUzfL0q2NSsrnMmmHmSMxeqbVE4mTO5HAmpIOL6H5gFsyRefhVP5SY0R5pGS7lJ1p4PIq+KIcxsuUGmfBIzpZ1512ho7C/ZYlGrmDA="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:QqLD+F3y+XMEKMB2ZojkRkjdTPUhnBmyccI1pSoRqB61pZwKXGCJkGtOuQibw6jT961Cm1iXPToQpTZb2mQLU2zPMkU1C7ZFvvCKUptRH+OEv6GuPc5a6/L4+ZApCi6cedPuqQ=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:SoXrISWLaOuUUFUwv9eY+7o0cUaZGgyWXgKPNwxThrcpTb/p8FL2VfkC/kbIwRdP/kVvxA9Gz54/U3+boyjBDHxSuC3oE+4dXCo/T14QkAoiIUF/TyDb9LpLmRN9z1T98os="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Configure_Embedding_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].DB_Provider",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].DB_Provider\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:/1JaCUYs63vcZiyRVkhVN8zULlQ5/vaJqd22FLm3nmL+Uyeq/Ts87SU8jkvIozv8rqrQwOwHzq3r0QdllFa8JAe6fVPRb37ItrDmkD3J4MKJWndpE2eLSKUuKVxX/xnhMuw="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Secure_Connection",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider\"]"
     }
   ],
   "connections": {
     "qdrant-conn": {
       "id": "qdrant-conn",
-      "name": "$property[\"VectorDB.QdrantConn.Connection_Name\"]",
+      "name": "$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name\"]",
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Connection_Name\"]",
-        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].DB_Provider\"]",
-        "host": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Host\"]",
-        "port": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Port\"]",
-        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].API_Key\"]",
-        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Secure_Connection\"]",
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Secure_Connection\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Timeout_(seconds)\"]",
-        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Max_Retries\"]",
-        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)\"]",
         "grpcPort": "$property[\"VectorDB.QdrantConn.gRPC_Port\"]",
         "scheme": "http",
         "dbName": "default",
-        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_QdrantConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_QdrantConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI"
       }
     },
     "weaviate-conn": {
       "id": "weaviate-conn",
-      "name": "$property[\"VectorDB.WeaviateConn.Connection_Name\"]",
+      "name": "$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name\"]",
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Connection_Name\"]",
-        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].DB_Provider\"]",
-        "host": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Host\"]",
-        "port": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Port\"]",
-        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].API_Key\"]",
-        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Secure_Connection\"]",
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Secure_Connection\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Timeout_(seconds)\"]",
-        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Max_Retries\"]",
-        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)\"]",
         "grpcPort": 6334,
         "scheme": "$property[\"VectorDB.WeaviateConn.HTTP_Scheme\"]",
         "dbName": "default",
-        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_WeaviateConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_WeaviateConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI"
       }
     },
     "chroma-conn": {
       "id": "chroma-conn",
-      "name": "$property[\"VectorDB.ChromaConn.Connection_Name\"]",
+      "name": "$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name\"]",
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Connection_Name\"]",
-        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].DB_Provider\"]",
-        "host": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Host\"]",
-        "port": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Port\"]",
-        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].API_Key\"]",
-        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Secure_Connection\"]",
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Secure_Connection\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Timeout_(seconds)\"]",
-        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Max_Retries\"]",
-        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)\"]",
         "grpcPort": 6334,
         "scheme": "http",
         "dbName": "default",
-        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_ChromaConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_ChromaConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI"
       }
     },
     "milvus-conn": {
       "id": "milvus-conn",
-      "name": "$property[\"VectorDB.MilvusConn.Connection_Name\"]",
+      "name": "$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name\"]",
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Connection_Name\"]",
-        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].DB_Provider\"]",
-        "host": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Host\"]",
-        "port": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Port\"]",
-        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].API_Key\"]",
-        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Secure_Connection\"]",
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Connection_Name\"]",
+        "dbType": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].DB_Provider\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Port\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Secure_Connection\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Timeout_(seconds)\"]",
-        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Max_Retries\"]",
-        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Retry_Backoff_(ms)\"]",
         "grpcPort": 6334,
         "scheme": "http",
         "username": "$property[\"VectorDB.MilvusConn.Username\"]",
-        "password": "SECRET:UosQ3ATTjIV3VjVhr+PL8ktGzWOilAuHJmPXIPQ4Gpf0VOPtb/u3utHsOqMa7EwhNFrsj+ft1ckRm4A=",
+        "password": "SECRET:Ghm0KGZDZtgF1DHk64uY1T7cPbnZNYhyZwRIDENiGofHZ5YjXea+Mc/mU/KjrM5VrbMWSH8GR45LXLI=",
         "dbName": "$property[\"VectorDB.MilvusConn.Database_Name\"]",
-        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_MilvusConn_Connection_Name\"].Configure_Embedding_Provider\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_$property[\"VectorDB_MilvusConn_Connection_Name\"]_Connection_Name\"].Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI"
       }
     }
