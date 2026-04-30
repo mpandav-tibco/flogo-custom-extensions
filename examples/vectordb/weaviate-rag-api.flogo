@@ -7,10 +7,12 @@
     "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments",
     "github.com/project-flogo/contrib/activity/actreturn",
     "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery",
-    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/flogo-general/src/app/General/activity/rest",
+    "rest_1 github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
     "github.com/project-flogo/contrib/function/array",
+    "github.com/mpandav-tibco/flogo-extensions/function/text",
     "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
   ],
   "name": "weaviate-rag-mcp",
@@ -21,7 +23,7 @@
   "tags": [],
   "triggers": [
     {
-      "ref": "#rest",
+      "ref": "#rest_1",
       "name": "tibco-wi-rest",
       "description": "REST trigger exposing /rag/weaviate/ingest and /rag/weaviate/query endpoints on port 9191",
       "settings": {
@@ -577,19 +579,26 @@
           {
             "id": 3,
             "from": "CreateCollection",
-            "to": "IngestFile",
+            "to": "TikaExtract",
             "type": "label",
             "label": "created"
           },
           {
             "id": 4,
+            "from": "TikaExtract",
+            "to": "IngestFile",
+            "type": "label",
+            "label": "extracted"
+          },
+          {
+            "id": 5,
             "from": "IngestFile",
             "to": "LogResult",
             "type": "label",
             "label": "ingested"
           },
           {
-            "id": 5,
+            "id": 6,
             "from": "LogResult",
             "to": "Return",
             "type": "label",
@@ -638,6 +647,110 @@
             }
           },
           {
+            "id": "TikaExtract",
+            "name": "TikaExtract",
+            "description": "Call Apache Tika REST API to extract clean text from uploaded binary file (.doc, .pdf, .docx). PUT file bytes to /tika endpoint, receive plain text response.",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#rest",
+              "input": {
+                "enableASR": false,
+                "swagger": "",
+                "authorization": false,
+                "serviceName": "",
+                "resourcePath": "",
+                "Method": "POST",
+                "Uri": "http://localhost:9998/tika/form",
+                "requestType": "multipart/form-data",
+                "Use certificate for verification": false,
+                "mutualAuth": false,
+                "Client Certificate": "",
+                "Client Key": "",
+                "Server Certificate": "",
+                "disableSSLVerification": false,
+                "disableKeepAlives": false,
+                "followRedirects": true,
+                "Timeout": 30000,
+                "proxy": "",
+                "host": "",
+                "serviceUrl": "",
+                "multipartForm": {
+                  "metadata": "",
+                  "value": "[{\"name\":\"upload\",\"type\":\"file\",\"required\":\"\",\"schema\":\"\"}]"
+                },
+                "headers": {
+                  "mapping": {
+                    "Accept": "text/plain"
+                  }
+                },
+                "dynamicRequestHeaders": {
+                  "mapping": {}
+                },
+                "multipartFormData": {
+                  "mapping": {
+                    "upload": {
+                      "filename": "=$flow.multipartFormData.filename",
+                      "content": "=$flow.multipartFormData.file"
+                    }
+                  }
+                }
+              },
+              "output": {
+                "configureResponseCodes": false,
+                "throwError": false,
+                "responseType": "text/plain",
+                "responseOutput": "Text"
+              },
+              "schemas": {
+                "input": {
+                  "headers": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                    "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}, {\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                  },
+                  "dynamicRequestHeaders": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  },
+                  "body": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    }\n  },\n  \"type\": \"object\"\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    }\n  },\n  \"type\": \"object\"\n}"
+                  },
+                  "multipartFormData": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"upload\":{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"any\"},\"filename\":{\"type\":\"string\"},\"content-type\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"upload\":{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"any\"},\"filename\":{\"type\":\"string\"},\"content-type\":{\"type\":\"string\"}}}}}"
+                  },
+                  "multipartForm": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"required\":{\"type\":\"string\"},\"schema\":{\"type\":\"string\"}}}}",
+                    "fe_metadata": "[{\"name\":\"upload\",\"type\":\"file\",\"required\":\"\",\"schema\":\"\"}]"
+                  }
+                },
+                "output": {
+                  "responseBody": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    }\n  },\n  \"type\": \"object\"\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    }\n  },\n  \"type\": \"object\"\n}"
+                  },
+                  "headers": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                    "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
             "id": "IngestFile",
             "name": "IngestFile",
             "description": "Extract text from uploaded file (PDF/DOCX/TXT) and ingest into VectorDB.",
@@ -646,9 +759,9 @@
               "settings": {
                 "connection": "conn://weaviate-conn",
                 "enableChunking": true,
-                "chunkStrategy": "paragraph",
-                "chunkSize": 1000,
-                "chunkOverlap": 200,
+                "chunkStrategy": "fixed",
+                "chunkSize": 3000,
+                "chunkOverlap": 500,
                 "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
@@ -662,24 +775,24 @@
               },
               "input": {
                 "collectionName": "=$flow.multipartFormData.collection",
-                "fileName": "=$flow.multipartFormData.filename",
+                "fileName": "=string.concat(coerce.toString($flow.multipartFormData.filename), \".tika.txt\")",
                 "documents": {
                   "mapping": []
                 },
-                "fileContent": "=$flow.multipartFormData.file"
+                "fileContent": "=text.cleanText($activity[TikaExtract].responseBody.data)"
               }
             }
           },
           {
             "id": "LogResult",
             "name": "LogResult",
-            "description": "",
+            "description": "Log ingest result",
             "activity": {
               "ref": "#log",
               "input": {
                 "Log Level": "INFO",
                 "flowInfo": false,
-                "message": "=string.concat('[weaviate-rag-mcp] Upload COMPLETE collection=', coerce.toString($flow.multipartFormData.collection), ' ingested=', coerce.toString($activity[IngestFile].ingestedCount), ' dims=', coerce.toString($activity[IngestFile].dimensions), ' duration=', $activity[IngestFile].duration)",
+                "message": "=string.concat('[weaviate-rag-mcp] Upload COMPLETE collection=', coerce.toString($flow.multipartFormData.collection), ' file=', coerce.toString($flow.multipartFormData.filename), ' ingested=', coerce.toString($activity[IngestFile].ingestedCount), ' duration=', $activity[IngestFile].duration)",
                 "logLevel": ""
               }
             }
@@ -699,7 +812,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dVcGxvYWQiOnsieCI6MTk0LCJ5Ijo0OH0sIkNyZWF0ZUNvbGxlY3Rpb24iOnsieCI6NDI0LCJ5Ijo1MH0sIkluZ2VzdEZpbGUiOnsieCI6NjE1LCJ5Ijo0OH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo4MjUsInkiOjUzfSwiUmV0dXJuIjp7IngiOjEwMzMsInkiOjQ3fX0=",
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJMb2dVcGxvYWQiOnsieCI6MTMxLCJ5IjoxMjh9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjM3NCwieSI6MTM5fSwiVGlrYUV4dHJhY3QiOnsieCI6NTcxLCJ5IjoxNDF9LCJJbmdlc3RGaWxlIjp7IngiOjc1NCwieSI6MTM2fSwiTG9nUmVzdWx0Ijp7IngiOjk1NCwieSI6MTQxfSwiUmV0dXJuIjp7IngiOjExMzQsInkiOjE0NX19",
         "metadata": {
           "input": [
             {
@@ -755,7 +868,7 @@
     {
       "name": "EMBED_API_KEY",
       "type": "string",
-      "value": "SECRET:NAz+wFrJPvJZVu1KMlHJG3g="
+      "value": "SECRET:PEWtKcOXEesAsFEMhfW4FL4="
     },
     {
       "name": "EMBED_BASE_URL",
@@ -771,6 +884,11 @@
       "name": "EMBED_DIMS",
       "type": "float64",
       "value": 768
+    },
+    {
+      "name": "TIKA_BASE_URL",
+      "type": "string",
+      "value": "http://localhost:9998"
     },
     {
       "name": "VectorDB.WeaviateConn.Timeout_seconds",
@@ -858,12 +976,13 @@
         "grpcPort": 0,
         "scheme": "=$property[\"VectorDB.WeaviateConn.HTTP_Scheme\"]",
         "dbName": "default",
+        "defaultMetricType": "cosine",
         "enableEmbedding": "=$property[\"VectorDB.WeaviateConn.Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI"
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJpZCI6InRleHQiLCJyZWYiOiJnaXRodWIuY29tL21wYW5kYXYtdGliY28vZmxvZ28tZXh0ZW5zaW9ucy9mdW5jdGlvbi90ZXh0IiwibmFtZSI6IlRleHQgVXRpbGl0eSBGdW5jdGlvbnMiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9mdW5jdGlvbi90ZXh0IiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
   "metadata": {
     "endpoints": [
       {
