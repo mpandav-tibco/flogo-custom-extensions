@@ -1,9 +1,12 @@
 package ragQuery
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
 	"time"
 
@@ -75,8 +78,24 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	if s.TimeoutSeconds <= 0 {
 		s.TimeoutSeconds = 30
 	}
-	ctx.Logger().Infof("RAGQuery initialised: connection=%s provider=%s embeddingModel=%s defaultTopK=%d",
-		conn.GetName(), s.EmbeddingProvider, s.EmbeddingModel, s.DefaultTopK)
+	// LLM generation defaults (only applied when EnableLLMGenerate=true at runtime)
+	if s.LLMProvider == "" {
+		s.LLMProvider = "Ollama"
+	}
+	if s.LLMModel == "" {
+		s.LLMModel = "llama3.1:8b"
+	}
+	if s.LLMBaseURL == "" && s.LLMProvider == "Ollama" {
+		s.LLMBaseURL = "http://localhost:11434"
+	}
+	if s.MaxTokens <= 0 {
+		s.MaxTokens = 1024
+	}
+	if s.SystemPrompt == "" {
+		s.SystemPrompt = "You are a helpful assistant. Answer the question using only the provided context. If the context does not contain enough information, say so."
+	}
+	ctx.Logger().Infof("RAGQuery initialised: connection=%s provider=%s embeddingModel=%s defaultTopK=%d llmGenerate=%v",
+		conn.GetName(), s.EmbeddingProvider, s.EmbeddingModel, s.DefaultTopK, s.EnableLLMGenerate)
 	return &Activity{settings: s, conn: conn}, nil
 }
 
@@ -227,8 +246,25 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	// Build sourceDocuments output
 	sourceDocs := searchResultsToInterface(searchResults)
 
+	// Step 4 (optional): LLM answer generation
+	answer := ""
+	if a.settings.EnableLLMGenerate {
+		systemPrompt := a.settings.SystemPrompt
+		if input.SystemPrompt != "" {
+			systemPrompt = input.SystemPrompt
+		}
+		l.Debugf("RAGQuery: generating answer with llmProvider=%s llmModel=%s", a.settings.LLMProvider, a.settings.LLMModel)
+		var llmErr error
+		answer, llmErr = a.generate(opCtx, input.QueryText, formattedContext, systemPrompt)
+		if llmErr != nil {
+			l.Warnf("RAGQuery: LLM generation failed (%v) — returning context only", llmErr)
+			answer = fmt.Sprintf("[LLM generation failed: %s]\n\nRetrieved context:\n%s", llmErr.Error(), formattedContext)
+		}
+	}
+
 	if err := ctx.SetOutputObject(&Output{
 		Success:          true,
+		Answer:           answer,
 		FormattedContext: formattedContext,
 		SourceDocuments:  sourceDocs,
 		QueryEmbedding:   qEmbOut,
@@ -334,4 +370,150 @@ func searchResultsToInterface(results []vectordb.SearchResult) []interface{} {
 		}
 	}
 	return out
+}
+
+// ── LLM generation ──────────────────────────────────────────────────────────
+
+// generate calls the configured LLM to produce an answer grounded in context.
+func (a *Activity) generate(ctx context.Context, query, context_, systemPrompt string) (string, error) {
+	prompt := buildPrompt(systemPrompt, context_, query)
+	switch a.settings.LLMProvider {
+	case "Ollama":
+		return a.generateOllama(ctx, prompt)
+	default: // OpenAI, Azure OpenAI, Custom
+		return a.generateOpenAICompat(ctx, prompt)
+	}
+}
+
+// buildPrompt constructs the full prompt from system prompt, context, and query.
+func buildPrompt(systemPrompt, context_, query string) string {
+	var sb strings.Builder
+	if systemPrompt != "" {
+		sb.WriteString(systemPrompt)
+		sb.WriteString("\n\n")
+	}
+	sb.WriteString("Context:\n")
+	sb.WriteString(context_)
+	sb.WriteString("\n\nQuestion: ")
+	sb.WriteString(query)
+	sb.WriteString("\n\nAnswer:")
+	return sb.String()
+}
+
+// ollamaGenerateRequest is the Ollama /api/generate request body.
+type ollamaGenerateRequest struct {
+	Model  string `json:"model"`
+	Prompt string `json:"prompt"`
+	Stream bool   `json:"stream"`
+}
+
+// ollamaGenerateResponse is the non-streaming Ollama response.
+type ollamaGenerateResponse struct {
+	Response string `json:"response"`
+	Error    string `json:"error,omitempty"`
+}
+
+func (a *Activity) generateOllama(ctx context.Context, prompt string) (string, error) {
+	baseURL := strings.TrimRight(a.settings.LLMBaseURL, "/")
+	url := baseURL + "/api/generate"
+
+	reqBody, _ := json.Marshal(ollamaGenerateRequest{
+		Model:  a.settings.LLMModel,
+		Prompt: prompt,
+		Stream: false,
+	})
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("ollama: create request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return "", fmt.Errorf("ollama: http: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("ollama: status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result ollamaGenerateResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", fmt.Errorf("ollama: parse response: %w", err)
+	}
+	if result.Error != "" {
+		return "", fmt.Errorf("ollama: %s", result.Error)
+	}
+	return strings.TrimSpace(result.Response), nil
+}
+
+// openAIChatRequest is a minimal OpenAI /v1/chat/completions request body.
+type openAIChatRequest struct {
+	Model       string              `json:"model"`
+	Messages    []openAIChatMessage `json:"messages"`
+	MaxTokens   int                 `json:"max_tokens,omitempty"`
+	Temperature float64             `json:"temperature,omitempty"`
+}
+
+type openAIChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type openAIChatResponse struct {
+	Choices []struct {
+		Message openAIChatMessage `json:"message"`
+	} `json:"choices"`
+	Error *struct {
+		Message string `json:"message"`
+	} `json:"error,omitempty"`
+}
+
+func (a *Activity) generateOpenAICompat(ctx context.Context, prompt string) (string, error) {
+	baseURL := strings.TrimRight(a.settings.LLMBaseURL, "/")
+	url := baseURL + "/v1/chat/completions"
+
+	reqBody, _ := json.Marshal(openAIChatRequest{
+		Model: a.settings.LLMModel,
+		Messages: []openAIChatMessage{
+			{Role: "user", Content: prompt},
+		},
+		MaxTokens:   a.settings.MaxTokens,
+		Temperature: a.settings.Temperature,
+	})
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("openai-compat: create request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	if a.settings.LLMAPIKey != "" {
+		httpReq.Header.Set("Authorization", "Bearer "+a.settings.LLMAPIKey)
+	}
+
+	resp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return "", fmt.Errorf("openai-compat: http: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("openai-compat: status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result openAIChatResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", fmt.Errorf("openai-compat: parse response: %w", err)
+	}
+	if result.Error != nil {
+		return "", fmt.Errorf("openai-compat: %s", result.Error.Message)
+	}
+	if len(result.Choices) == 0 {
+		return "", fmt.Errorf("openai-compat: no choices in response")
+	}
+	return strings.TrimSpace(result.Choices[0].Message.Content), nil
 }

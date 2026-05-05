@@ -189,6 +189,100 @@
         "description": "Blend weight for hybrid search: 0.0 = pure BM25 keyword, 1.0 = pure dense vector, 0.5 = balanced (default). Only used when useHybridSearch is true.",
         "appPropertySupport": true
       }
+    },
+    {
+      "name": "enableLLMGenerate",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Enable LLM Generation",
+        "description": "When enabled, the retrieved context is passed to an LLM to generate an answer. When disabled, only retrieval is performed and the answer output is empty.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmProvider",
+      "type": "string",
+      "required": false,
+      "value": "Ollama",
+      "allowed": [
+        "Ollama",
+        "OpenAI",
+        "Azure OpenAI",
+        "Custom"
+      ],
+      "display": {
+        "name": "LLM Provider",
+        "description": "LLM provider for answer generation. Ollama uses /api/generate; OpenAI/Azure/Custom use /v1/chat/completions. Only used when Enable LLM Generation is true.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmBaseURL",
+      "type": "string",
+      "required": false,
+      "value": "http://localhost:11434",
+      "display": {
+        "name": "LLM Base URL",
+        "description": "Base URL for the LLM API. Ollama default: http://localhost:11434. OpenAI: https://api.openai.com. Only used when Enable LLM Generation is true.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "LLM API Key",
+        "description": "API key for OpenAI or Azure OpenAI. Leave empty for Ollama. Only used when Enable LLM Generation is true.",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmModel",
+      "type": "string",
+      "required": false,
+      "value": "llama3.1:8b",
+      "display": {
+        "name": "LLM Model",
+        "description": "Model name for generation. Ollama: llama3.1:8b. OpenAI: gpt-4o-mini. Only used when Enable LLM Generation is true.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "systemPrompt",
+      "type": "string",
+      "required": false,
+      "value": "You are a helpful assistant. Answer the question using only the provided context. If the context does not contain enough information, say so.",
+      "display": {
+        "name": "System Prompt",
+        "description": "Default system/instruction prompt prepended before context and query. Can be overridden per-request via the systemPrompt input. Only used when Enable LLM Generation is true.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "maxTokens",
+      "type": "integer",
+      "required": false,
+      "value": 1024,
+      "display": {
+        "name": "Max Tokens",
+        "description": "Maximum tokens in the generated answer. Only used for OpenAI/Azure/Custom.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "required": false,
+      "value": 0.1,
+      "display": {
+        "name": "Temperature",
+        "description": "Sampling temperature (0.0 = deterministic). Only used for OpenAI/Azure/Custom.",
+        "appPropertySupport": true
+      }
     }
   ],
   "input": [
@@ -209,12 +303,20 @@
       "name": "filters",
       "type": "object",
       "schema": "{\"type\": \"object\", \"description\": \"Key-value filter map. Keys are payload field names. Values can be string, number, boolean, or array (for 'in' match). Example: {\\\"category\\\":\\\"tech\\\",\\\"year\\\":2024,\\\"tags\\\":[\\\"rag\\\",\\\"llm\\\"]}\", \"additionalProperties\": true}"
+    },
+    {
+      "name": "systemPrompt",
+      "type": "string"
     }
   ],
   "output": [
     {
       "name": "success",
       "type": "boolean"
+    },
+    {
+      "name": "answer",
+      "type": "string"
     },
     {
       "name": "formattedContext",
