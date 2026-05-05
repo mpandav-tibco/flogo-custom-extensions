@@ -33,6 +33,19 @@ type Settings struct {
 	// HybridAlpha controls the weighting between dense (1.0) and sparse/BM25 (0.0).
 	// Only used when UseHybridSearch=true. Default: 0.5 (balanced fusion).
 	HybridAlpha float64 `md:"hybridAlpha"`
+
+	// EnableLLMGenerate adds an LLM generation step after retrieval.
+	// When false (default), only retrieval is performed and Answer is empty.
+	EnableLLMGenerate bool `md:"enableLLMGenerate"`
+
+	// --- LLM Generation (only used when EnableLLMGenerate=true) ---
+	LLMProvider  string  `md:"llmProvider"`
+	LLMBaseURL   string  `md:"llmBaseURL"`
+	LLMAPIKey    string  `md:"llmAPIKey"`
+	LLMModel     string  `md:"llmModel"`
+	SystemPrompt string  `md:"systemPrompt"`
+	MaxTokens    int     `md:"maxTokens"`
+	Temperature  float64 `md:"temperature"`
 }
 
 // String returns a human-readable representation of Settings with sensitive
@@ -43,10 +56,15 @@ func (s Settings) String() string {
 	if s.EmbeddingAPIKey != "" {
 		apiKey = "[redacted]"
 	}
+	llmKey := ""
+	if s.LLMAPIKey != "" {
+		llmKey = "[redacted]"
+	}
 	return fmt.Sprintf(
-		"ragQuery.Settings{provider:%q model:%q dims:%d topK:%d collection:%q hybrid:%v alpha:%.2f apiKey:%s}",
+		"ragQuery.Settings{provider:%q model:%q dims:%d topK:%d collection:%q hybrid:%v alpha:%.2f llmGenerate:%v llmProvider:%q llmModel:%q apiKey:%s llmApiKey:%s}",
 		s.EmbeddingProvider, s.EmbeddingModel, s.EmbeddingDimensions,
-		s.DefaultTopK, s.DefaultCollection, s.UseHybridSearch, s.HybridAlpha, apiKey,
+		s.DefaultTopK, s.DefaultCollection, s.UseHybridSearch, s.HybridAlpha,
+		s.EnableLLMGenerate, s.LLMProvider, s.LLMModel, apiKey, llmKey,
 	)
 }
 
@@ -56,6 +74,7 @@ type Input struct {
 	CollectionName string                 `md:"collectionName"`
 	TopK           int                    `md:"topK"`
 	Filters        map[string]interface{} `md:"filters"`
+	SystemPrompt   string                 `md:"systemPrompt"`
 }
 
 func (i *Input) ToMap() map[string]interface{} {
@@ -64,6 +83,7 @@ func (i *Input) ToMap() map[string]interface{} {
 		"collectionName": i.CollectionName,
 		"topK":           i.TopK,
 		"filters":        i.Filters,
+		"systemPrompt":   i.SystemPrompt,
 	}
 }
 
@@ -87,12 +107,16 @@ func (i *Input) FromMap(v map[string]interface{}) error {
 			i.Filters = m
 		}
 	}
+	if val, ok := v["systemPrompt"]; ok && val != nil {
+		i.SystemPrompt = fmt.Sprintf("%v", val)
+	}
 	return nil
 }
 
 // Output holds the activity result.
 type Output struct {
 	Success          bool          `md:"success"`
+	Answer           string        `md:"answer"`
 	FormattedContext string        `md:"formattedContext"`
 	SourceDocuments  []interface{} `md:"sourceDocuments"`
 	QueryEmbedding   []interface{} `md:"queryEmbedding"`
@@ -104,6 +128,7 @@ type Output struct {
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"success":          o.Success,
+		"answer":           o.Answer,
 		"formattedContext": o.FormattedContext,
 		"sourceDocuments":  o.SourceDocuments,
 		"queryEmbedding":   o.QueryEmbedding,

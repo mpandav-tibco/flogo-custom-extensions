@@ -10,6 +10,12 @@ var core_1 = require("@angular/core"),
     // These fields are hidden when useConnectorEmbedding=true (inherited from connector)
     CONNECTOR_INHERITED_FIELDS = ["embeddingProvider", "embeddingAPIKey", "embeddingBaseURL"],
 
+    // These fields are only visible when enableLLMGenerate=true
+    // Note: systemPrompt is intentionally excluded — both the design-time default (settings)
+    // and the per-request override (input) are always visible so users can prepare/override
+    // the prompt regardless of whether LLM generation is currently enabled.
+    LLM_FIELDS = ["llmProvider", "llmBaseURL", "llmAPIKey", "llmModel", "maxTokens", "temperature"],
+
     RAGQueryActivityHandler = function (t) {
         function e(e, i) {
             var n = t.call(this, e, i) || this;
@@ -18,9 +24,7 @@ var core_1 = require("@angular/core"),
             n.value = function (t, e) { return null };
             n.validate = function (fieldName, ctx) {
                 var useConnector = n.getContextVar(ctx, "useConnectorEmbedding");
-                var useHybrid = n.getContextVar(ctx, "useHybridSearch");
                 var inherit = useConnector === true || useConnector === "true";
-                var hybrid = useHybrid === true || useHybrid === "true";
 
                 // --- Embedding credential fields: hide when connector-level settings are in use ---
                 if (CONNECTOR_INHERITED_FIELDS.indexOf(fieldName) !== -1) {
@@ -29,7 +33,16 @@ var core_1 = require("@angular/core"),
 
                 // --- Hybrid alpha: only relevant when hybrid search is enabled ---
                 if (fieldName === "hybridAlpha") {
+                    var useHybrid = n.getContextVar(ctx, "useHybridSearch");
+                    var hybrid = useHybrid === true || useHybrid === "true";
                     return wi_contrib_1.ValidationResult.newValidationResult().setVisible(hybrid);
+                }
+
+                // --- LLM fields: only visible when enableLLMGenerate=true ---
+                if (LLM_FIELDS.indexOf(fieldName) !== -1) {
+                    var enableLLM = n.getContextVar(ctx, "enableLLMGenerate");
+                    var llmOn = enableLLM === true || enableLLM === "true";
+                    return wi_contrib_1.ValidationResult.newValidationResult().setVisible(llmOn);
                 }
 
                 return null;
