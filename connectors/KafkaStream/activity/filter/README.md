@@ -209,7 +209,7 @@ Only hot readings reach the aggregation window:
   {
     "id": "filter_step",
     "activity": {
-      "ref": "github.com/milindpandav/flogo-extensions/kafkastream/activity/filter",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/filter",
       "settings": { "operator": "gt" },
       "input": { "message": "=$flow.message", "field": "temperature", "value": "25" }
     }
@@ -217,7 +217,7 @@ Only hot readings reach the aggregation window:
   {
     "id": "aggregate_step",
     "activity": {
-      "ref": "github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/aggregate",
       "settings": {
         "windowName": "hot-sensor-avg",
         "windowType": "TumblingCount",

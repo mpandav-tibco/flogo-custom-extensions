@@ -52,7 +52,7 @@ The SSE Send Activity works in conjunction with the [SSE Trigger](../trigger/REA
 {
   "id": "broadcast_all",
   "activity": {
-    "ref": "github.com/milindpandav/flogo-extensions/sse/activity",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/sse/activity",
     "input": {
       "target": "all",
       "eventType": "notification",
@@ -72,7 +72,7 @@ The SSE Send Activity works in conjunction with the [SSE Trigger](../trigger/REA
 {
   "id": "send_to_connection",
   "activity": {
-    "ref": "github.com/milindpandav/flogo-extensions/sse/activity",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/sse/activity",
     "input": {
       "target": "connection:conn_12345",
       "eventType": "private_message",
@@ -89,7 +89,7 @@ The SSE Send Activity works in conjunction with the [SSE Trigger](../trigger/REA
 {
   "id": "send_to_topic",
   "activity": {
-    "ref": "github.com/milindpandav/flogo-extensions/sse/activity",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/sse/activity",
     "input": {
       "target": "topic:chat-room-1",
       "eventType": "chat_message",
@@ -238,10 +238,10 @@ This activity is designed to work seamlessly with the SSE Trigger through a shar
 {
   "trigger": {
     "name": "dashboard_sse",
-    "ref": "github.com/milindpandav/flogo-extensions/sse/trigger"
+    "ref": "github.com/mpandav-tibco/flogo-extensions/sse/trigger"
   },
   "activity": {
-    "ref": "github.com/milindpandav/flogo-extensions/sse/activity", 
+    "ref": "github.com/mpandav-tibco/flogo-extensions/sse/activity", 
     "settings": {
       "sseServerRef": "dashboard_sse"
     }

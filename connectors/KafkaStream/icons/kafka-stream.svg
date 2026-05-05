@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- Data stream lanes (three horizontal lines of decreasing opacity) -->
+  <line x1="4" y1="13" x2="44" y2="13" stroke="#E3EAF6" stroke-width="4" stroke-linecap="round"/>
+  <line x1="4" y1="22" x2="44" y2="22" stroke="#D1DCF2" stroke-width="3" stroke-linecap="round"/>
+  <line x1="4" y1="31" x2="44" y2="31" stroke="#BECFEF" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Kafka lightning bolt centered and bold -->
+  <polyline points="28,6 20,22 27,22 19,40" stroke="#FF6D00" stroke-width="3.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Label -->
+  <text x="24" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="4.5" fill="#5C6BC0">KAFKA STREAM</text>
+</svg>

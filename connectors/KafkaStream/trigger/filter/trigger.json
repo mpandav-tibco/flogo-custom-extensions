@@ -3,14 +3,15 @@
     "title": "Filter Kafka Stream ",
     "version": "1.0.0",
     "type": "flogo:trigger",
+    "image": "icons/kafka-filter-trigger.svg",
     "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) — no separate Kafka trigger is needed.",
-    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/filter",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/filter",
     "display": {
         "category": "KafkaStream",
         "visible": true,
         "description": "Fire a flow when a Kafka message matches a field predicate.",
-        "smallIcon": "icons/consumer_trigger.png",
-        "largeIcon": "icons/consumer_trigger@2x.png",
+        "smallIcon": "icons/kafka-filter-trigger.svg",
+        "largeIcon": "icons/kafka-filter-trigger.svg",
         "connector": [
             "Kafka/tibco-kafka"
         ],

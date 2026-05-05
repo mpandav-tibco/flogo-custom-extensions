@@ -3,14 +3,15 @@
     "title": "Aggregate Kafka Stream",
     "version": "1.0.0",
     "type": "flogo:trigger",
+    "image": "icons/kafka-aggregate-trigger.svg",
     "description": "Consumes messages from a Kafka topic, accumulates a numeric field into a stateful window, and fires the flow when the window closes (tumbling) or on every message (sliding). Supports keyed windows, event-time watermarks, late-event DLQ routing, overflow policies, MessageID deduplication, idle-timeout auto-close, and state persistence.",
-    "ref": "github.com/milindpandav/flogo-extensions/kafkastream/trigger/aggregate",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/kafkastream/trigger/aggregate",
     "display": {
         "category": "KafkaStream",
         "visible": true,
         "description": "Fire a flow with an aggregate result when a Kafka stream window closes.",
-        "smallIcon": "icons/consumer_trigger.png",
-        "largeIcon": "icons/consumer_trigger@2x.png",
+        "smallIcon": "icons/kafka-aggregate-trigger.svg",
+        "largeIcon": "icons/kafka-aggregate-trigger.svg",
         "connector": [
             "Kafka/tibco-kafka"
         ],

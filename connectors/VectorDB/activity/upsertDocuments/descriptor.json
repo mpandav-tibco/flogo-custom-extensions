@@ -1,0 +1,67 @@
+{
+  "name": "tibco-vectordb-upsert",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/upsertDocuments",
+  "title": "Upsert Documents",
+  "image": "icons/upsert.svg",
+  "description": "Insert or update documents (vectors + metadata) in a VectorDB collection.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/upsert.svg",
+    "description": "Upsert documents into a VectorDB collection"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": []
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "documents",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\", \"description\": \"Unique document ID (UUID recommended)\"}, \"content\": {\"type\": \"string\", \"description\": \"Source text of the document\"}, \"vector\": {\"type\": \"array\", \"items\": {\"type\": \"number\"}, \"description\": \"Dense embedding vector\"}, \"payload\": {\"type\": \"object\", \"description\": \"Arbitrary metadata key-value pairs\"}}, \"required\": [\"vector\"]}}"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "upsertedCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

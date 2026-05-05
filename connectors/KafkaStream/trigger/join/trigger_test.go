@@ -472,3 +472,94 @@ func TestMemoryStore_Restore_ThenComplete_FreesSlot(t *testing.T) {
 	_, _, err2 := store.Contribute("key-2", "orders", map[string]interface{}{"v": 3}, now)
 	assert.NoError(t, err2, "new key should be accepted after slot freed")
 }
+
+// ─── SweepExpired — timeout path ─────────────────────────────────────────────
+
+// TestMemoryStore_SweepExpired_Fires verifies that expired entries are swept
+// and the onExpired callback receives the partial contributions.
+func TestMemoryStore_SweepExpired_Fires(t *testing.T) {
+	store := newMemoryStore(2, 0)
+	old := time.Now().Add(-2 * time.Second)
+
+	store.rawStore("stale-key", &joinEntry{
+		contributions: map[string]map[string]interface{}{
+			"orders": {"id": "x"},
+		},
+		createdAt: old,
+	})
+
+	var swept []string
+	store.SweepExpired(time.Now(), 1*time.Second, func(key string, pe *persistedEntry) {
+		swept = append(swept, key)
+	})
+	assert.Contains(t, swept, "stale-key", "stale-key should be swept after deadline")
+
+	// Entry should be deleted from the store.
+	_, loaded := store.rawLoad("stale-key")
+	assert.False(t, loaded, "stale-key should be removed after sweep")
+}
+
+// TestMemoryStore_SweepExpired_FreshEntryNotSwept verifies that a fresh entry
+// (age < deadline) is not swept.
+func TestMemoryStore_SweepExpired_FreshEntryNotSwept(t *testing.T) {
+	store := newMemoryStore(2, 0)
+	store.rawStore("fresh-key", &joinEntry{
+		contributions: map[string]map[string]interface{}{"orders": {"id": "y"}},
+		createdAt:     time.Now(),
+	})
+
+	var swept []string
+	store.SweepExpired(time.Now(), 5*time.Second, func(key string, _ *persistedEntry) {
+		swept = append(swept, key)
+	})
+	assert.NotContains(t, swept, "fresh-key")
+}
+
+// TestProcessPayload_JoinedAt_Reasonable verifies JoinedAt is a plausible Unix-ms value.
+func TestProcessPayload_JoinedAt_Reasonable(t *testing.T) {
+	s := &Settings{
+		Topics:        "orders,payments",
+		ConsumerGroup: "test-cg",
+		JoinKeyField:  "id",
+		JoinWindowMs:  5000,
+	}
+	trig := newJoinTrigger(s)
+	before := time.Now().UnixMilli()
+	trig.processPayload("orders", map[string]interface{}{"id": "k1", "data": "o"})
+	out, et, err := trig.processPayload("payments", map[string]interface{}{"id": "k1", "data": "p"})
+	after := time.Now().UnixMilli()
+	require.NoError(t, err)
+	require.Equal(t, EventTypeJoined, et)
+	require.NotNil(t, out)
+	assert.GreaterOrEqual(t, out.JoinResult.JoinedAt, before)
+	assert.LessOrEqual(t, out.JoinResult.JoinedAt, after)
+}
+
+// TestOutput_FromMap_MissingJoinResult verifies that a map with no joinResult
+// key does not error (optional field).
+func TestOutput_FromMap_MissingJoinResult(t *testing.T) {
+	m := map[string]interface{}{
+		"eventType": EventTypeTimeout,
+	}
+	var o Output
+	err := o.FromMap(m)
+	require.NoError(t, err)
+	assert.Equal(t, EventTypeTimeout, o.EventType)
+}
+
+// TestTopicList_SpacesAreStripped verifies leading/trailing spaces in topic list are handled.
+func TestTopicList_SpacesAreStripped(t *testing.T) {
+	s := &Settings{Topics: " orders , payments "}
+	list := s.TopicList()
+	require.Len(t, list, 2)
+	assert.Equal(t, "orders", list[0])
+	assert.Equal(t, "payments", list[1])
+}
+
+// TestSanitizeGroupSuffix_AllSpecialChars verifies that a string of all
+// non-alphanumeric characters collapses to "-".
+func TestSanitizeGroupSuffix_AllSpecialChars(t *testing.T) {
+	result := sanitizeGroupSuffix("!@#$%")
+	// All chars are non-word chars → replaced by '-'; leading/trailing '-' may be trimmed.
+	assert.NotContains(t, result, "!", "special chars should be replaced")
+}

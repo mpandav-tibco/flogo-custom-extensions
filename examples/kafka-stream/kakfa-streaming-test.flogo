@@ -85,7 +85,7 @@
     {
       "ref": "#filter",
       "name": "kafka-stream-filter-trigger",
-      "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) \u2014 no separate Kafka trigger is needed.",
+      "description": "Consumes messages from a Kafka topic and fires the flow only for messages that satisfy the configured predicate(s). Supports single-predicate and multi-predicate AND/OR evaluation, opt-in deduplication, and opt-in rate limiting. The trigger owns its Kafka transport (consumer group) — no separate Kafka trigger is needed.",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
@@ -190,7 +190,7 @@
     {
       "ref": "#join",
       "name": "kafka-stream-join-trigger",
-      "description": "Timeout handler \u2014 fires when demo-readings or demo-alerts does not arrive within the 30 s join window.",
+      "description": "Timeout handler — fires when demo-readings or demo-alerts does not arrive within the 30 s join window.",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topics": "demo-readings,demo-alerts",
@@ -241,17 +241,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-hot",
+      "name": "kafka-stream-split-trigger",
       "description": "tempreture > 30 - HOT messages",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cg-hot",
         "initialOffset": "newest",
         "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cg-hot"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitKafkaStream_Hot",
       "handlers": [
@@ -289,17 +289,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-warm",
+      "name": "kafka-stream-split-trigger",
       "description": "tempreture > 20 - WARM messages",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cg-warm",
         "initialOffset": "newest",
         "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cg-warm"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitKafkaStream_Warm",
       "handlers": [
@@ -337,17 +337,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-cold",
+      "name": "kafka-stream-split-trigger",
       "description": "No predicate - COLD/default messages",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cg-cold",
         "initialOffset": "newest",
         "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cg-cold"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitKafkaStream_Cold",
       "handlers": [
@@ -385,17 +385,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-unmatched",
+      "name": "kafka-stream-split-trigger",
       "description": "Unmatched handler - fires when no matched handler passes",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cg-unmatched",
         "initialOffset": "newest",
         "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cg-unmatched"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitKafkaStream_Unmatched",
       "handlers": [
@@ -433,17 +433,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-tap",
+      "name": "kafka-stream-split-trigger",
       "description": "Tap/all handler - fires for every message",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cg-tap",
         "initialOffset": "newest",
         "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cg-tap"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitKafkaStream_Tap",
       "handlers": [
@@ -481,22 +481,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_eq",
-      "description": "CC: eq operator \u2014 status == active",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: eq operator — status == active",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-eq",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-eq",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Eq",
       "handlers": [
         {
-          "description": "CC: eq operator \u2014 status == active",
+          "description": "CC: eq operator — status == active",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -529,22 +529,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_neq",
-      "description": "CC: neq operator \u2014 status != inactive",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: neq operator — status != inactive",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-neq",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-neq",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Neq",
       "handlers": [
         {
-          "description": "CC: neq operator \u2014 status != inactive",
+          "description": "CC: neq operator — status != inactive",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -577,22 +577,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_gte",
-      "description": "CC: gte operator \u2014 tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: gte operator — tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-gte",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-gte",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Gte",
       "handlers": [
         {
-          "description": "CC: gte operator \u2014 tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
+          "description": "CC: gte operator — tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -625,22 +625,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_lt",
-      "description": "CC: lt operator \u2014 tempreture < 20 (strict: 20 does NOT pass)",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: lt operator — tempreture < 20 (strict: 20 does NOT pass)",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-lt",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-lt",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Lt",
       "handlers": [
         {
-          "description": "CC: lt operator \u2014 tempreture < 20 (strict: 20 does NOT pass)",
+          "description": "CC: lt operator — tempreture < 20 (strict: 20 does NOT pass)",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -673,22 +673,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_lte",
-      "description": "CC: lte operator \u2014 tempreture <= 20 (20 passes)",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: lte operator — tempreture <= 20 (20 passes)",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-lte",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-lte",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Lte",
       "handlers": [
         {
-          "description": "CC: lte operator \u2014 tempreture <= 20 (20 passes)",
+          "description": "CC: lte operator — tempreture <= 20 (20 passes)",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -721,22 +721,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_contains",
-      "description": "CC: contains operator \u2014 alert contains CRITICAL",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: contains operator — alert contains CRITICAL",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-contains",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-contains",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Contains",
       "handlers": [
         {
-          "description": "CC: contains operator \u2014 alert contains CRITICAL",
+          "description": "CC: contains operator — alert contains CRITICAL",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -769,22 +769,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_regex",
-      "description": "CC: regex operator \u2014 device matches ^sensor-[A-Z]+$ (uppercase only)",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: regex operator — device matches ^sensor-[A-Z]+$ (uppercase only)",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-regex",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-regex",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_Regex",
       "handlers": [
         {
-          "description": "CC: regex operator \u2014 device matches ^sensor-[A-Z]+$ (uppercase only)",
+          "description": "CC: regex operator — device matches ^sensor-[A-Z]+$ (uppercase only)",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -817,22 +817,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_multiand",
-      "description": "CC: multi-predicate AND \u2014 tempreture>20 AND status==ok",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: multi-predicate AND — tempreture>20 AND status==ok",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-multiand",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-multiand",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_MultiAnd",
       "handlers": [
         {
-          "description": "CC: multi-predicate AND \u2014 tempreture>20 AND status==ok",
+          "description": "CC: multi-predicate AND — tempreture>20 AND status==ok",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -865,22 +865,22 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_multior",
-      "description": "CC: multi-predicate OR \u2014 tempreture>30 OR status==critical",
+      "name": "kafka-stream-split-trigger",
+      "description": "CC: multi-predicate OR — tempreture>30 OR status==critical",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-multior",
         "initialOffset": "newest",
+        "routingMode": "first-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-multior",
-        "routingMode": "first-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_MultiOr",
       "handlers": [
         {
-          "description": "CC: multi-predicate OR \u2014 tempreture>30 OR status==critical",
+          "description": "CC: multi-predicate OR — tempreture>30 OR status==critical",
           "settings": {
             "eventType": "matched",
             "priority": 1,
@@ -913,17 +913,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_allmatcha",
+      "name": "kafka-stream-split-trigger",
       "description": "CC: all-match routingMode, tempreture > 20 (A)",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-allmatcha",
         "initialOffset": "newest",
+        "routingMode": "all-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-allmatcha",
-        "routingMode": "all-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_AllMatchA",
       "handlers": [
@@ -961,17 +961,17 @@
     },
     {
       "ref": "#split",
-      "name": "kafka-stream-split-trigger-splitcc_allmatchb",
+      "name": "kafka-stream-split-trigger",
       "description": "CC: all-match routingMode, tempreture > 30 (B)",
       "settings": {
         "kafkaConnection": "conn://1d56a409-8777-475e-a91c-07ad312336c9",
         "topic": "demo",
+        "consumerGroup": "demo-split-cc-allmatchb",
         "initialOffset": "newest",
+        "routingMode": "all-match",
         "balanceStrategy": "roundrobin",
         "commitOnSuccess": true,
-        "handlerTimeoutMs": 5000,
-        "consumerGroup": "demo-split-cc-allmatchb",
-        "routingMode": "all-match"
+        "handlerTimeoutMs": 5000
       },
       "id": "SplitCC_AllMatchB",
       "handlers": [
@@ -1250,6 +1250,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1334,6 +1335,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1418,6 +1420,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1502,6 +1505,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1586,6 +1590,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1636,7 +1641,7 @@
       "id": "flow:SplitCC_Eq",
       "data": {
         "name": "SplitCC_Eq",
-        "description": "CC: eq operator \u2014 status == active",
+        "description": "CC: eq operator — status == active",
         "links": [
           {
             "id": 1,
@@ -1670,6 +1675,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1720,7 +1726,7 @@
       "id": "flow:SplitCC_Neq",
       "data": {
         "name": "SplitCC_Neq",
-        "description": "CC: neq operator \u2014 status != inactive",
+        "description": "CC: neq operator — status != inactive",
         "links": [
           {
             "id": 1,
@@ -1754,6 +1760,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1804,7 +1811,7 @@
       "id": "flow:SplitCC_Gte",
       "data": {
         "name": "SplitCC_Gte",
-        "description": "CC: gte operator \u2014 tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
+        "description": "CC: gte operator — tempreture >= 30 (boundary: 30 passes, 29 doesn't)",
         "links": [
           {
             "id": 1,
@@ -1838,6 +1845,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1888,7 +1896,7 @@
       "id": "flow:SplitCC_Lt",
       "data": {
         "name": "SplitCC_Lt",
-        "description": "CC: lt operator \u2014 tempreture < 20 (strict: 20 does NOT pass)",
+        "description": "CC: lt operator — tempreture < 20 (strict: 20 does NOT pass)",
         "links": [
           {
             "id": 1,
@@ -1922,6 +1930,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -1972,7 +1981,7 @@
       "id": "flow:SplitCC_Lte",
       "data": {
         "name": "SplitCC_Lte",
-        "description": "CC: lte operator \u2014 tempreture <= 20 (20 passes)",
+        "description": "CC: lte operator — tempreture <= 20 (20 passes)",
         "links": [
           {
             "id": 1,
@@ -2006,6 +2015,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -2056,7 +2066,7 @@
       "id": "flow:SplitCC_Contains",
       "data": {
         "name": "SplitCC_Contains",
-        "description": "CC: contains operator \u2014 alert contains CRITICAL",
+        "description": "CC: contains operator — alert contains CRITICAL",
         "links": [
           {
             "id": 1,
@@ -2090,6 +2100,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -2140,7 +2151,7 @@
       "id": "flow:SplitCC_Regex",
       "data": {
         "name": "SplitCC_Regex",
-        "description": "CC: regex operator \u2014 device matches ^sensor-[A-Z]+$ (uppercase only)",
+        "description": "CC: regex operator — device matches ^sensor-[A-Z]+$ (uppercase only)",
         "links": [
           {
             "id": 1,
@@ -2174,6 +2185,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -2224,7 +2236,7 @@
       "id": "flow:SplitCC_MultiAnd",
       "data": {
         "name": "SplitCC_MultiAnd",
-        "description": "CC: multi-predicate AND \u2014 tempreture>20 AND status==ok",
+        "description": "CC: multi-predicate AND — tempreture>20 AND status==ok",
         "links": [
           {
             "id": 1,
@@ -2258,6 +2270,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -2308,7 +2321,7 @@
       "id": "flow:SplitCC_MultiOr",
       "data": {
         "name": "SplitCC_MultiOr",
-        "description": "CC: multi-predicate OR \u2014 tempreture>30 OR status==critical",
+        "description": "CC: multi-predicate OR — tempreture>30 OR status==critical",
         "links": [
           {
             "id": 1,
@@ -2342,6 +2355,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -2426,6 +2440,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -2510,6 +2525,7 @@
             }
           }
         ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ01lc3NhZ2UiOnsieCI6MjUwLCJ5IjoxNTB9fQ==",
         "metadata": {
           "input": [
             {

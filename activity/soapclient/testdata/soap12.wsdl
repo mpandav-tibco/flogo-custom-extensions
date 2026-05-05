@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WSDL that declares SOAP 1.2 binding — used to test soap12 envelope format -->
+<definitions name="PingService"
+             targetNamespace="http://ping.example.com/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://ping.example.com/"
+             xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+             xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <types>
+    <xs:schema targetNamespace="http://ping.example.com/">
+      <xs:element name="PingRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Value" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PingResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PongValue" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </types>
+
+  <message name="PingRequestMsg">  <part name="parameters" element="tns:PingRequest"/>  </message>
+  <message name="PingResponseMsg"> <part name="parameters" element="tns:PingResponse"/> </message>
+
+  <portType name="PingPort">
+    <operation name="Ping">
+      <input  message="tns:PingRequestMsg"/>
+      <output message="tns:PingResponseMsg"/>
+    </operation>
+  </portType>
+
+  <binding name="PingBinding12" type="tns:PingPort">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="Ping">
+      <soap12:operation soapAction="http://ping.example.com/Ping"/>
+      <input>  <soap12:body use="literal"/> </input>
+      <output> <soap12:body use="literal"/> </output>
+    </operation>
+  </binding>
+
+  <service name="PingService">
+    <port name="PingPort12" binding="tns:PingBinding12">
+      <soap12:address location="http://ping.example.com/service"/>
+    </port>
+  </service>
+
+</definitions>

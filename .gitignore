@@ -29,11 +29,11 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
 activity/.DS_Store
 .DS_Store
 activity/xsdschematransform/.DS_Store
-bin/*
+bin/
 examples/**/build/
 
 # Local VS Code Flogo extension junctions (flogo.extensions.local)
@@ -42,3 +42,15 @@ General/
 GQL/
 GraphQLClient/
 user-extensions/
+
+# Stray root-level stub folders (not part of repo structure)
+/AWS/
+/KafkaStream/
+/MySQL/
+/PostgreSQL/
+/SOAP/
+/SSE/
+/SchemaTransform/
+/Utilities/
+/VectorDB/
+/XML/

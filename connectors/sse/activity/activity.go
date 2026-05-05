@@ -11,7 +11,7 @@ import (
 	"github.com/project-flogo/core/support/log"
 
 	// Import shared SSE types and registry from parent package
-	"github.com/milindpandav/flogo-extensions/sse"
+	"github.com/mpandav-tibco/flogo-extensions/sse"
 )
 
 // Activity represents the SSE Send activity

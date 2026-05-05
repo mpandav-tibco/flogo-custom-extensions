@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- WSDL with ISO-8859-1 charset declaration — tests the xmlDecode charset-reader fix -->
+<definitions name="EchoService"
+             targetNamespace="http://echo.example.com/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://echo.example.com/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <types>
+    <xs:schema targetNamespace="http://echo.example.com/">
+      <xs:element name="EchoRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Message" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="EchoResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="EchoResult" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </types>
+
+  <message name="EchoRequestMsg">  <part name="parameters" element="tns:EchoRequest"/>  </message>
+  <message name="EchoResponseMsg"> <part name="parameters" element="tns:EchoResponse"/> </message>
+
+  <portType name="EchoPort">
+    <operation name="Echo">
+      <input  message="tns:EchoRequestMsg"/>
+      <output message="tns:EchoResponseMsg"/>
+    </operation>
+  </portType>
+
+  <binding name="EchoBinding" type="tns:EchoPort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="Echo">
+      <soap:operation soapAction="http://echo.example.com/Echo"/>
+      <input>  <soap:body use="literal"/> </input>
+      <output> <soap:body use="literal"/> </output>
+    </operation>
+  </binding>
+
+  <service name="EchoService">
+    <port name="EchoPort" binding="tns:EchoBinding">
+      <soap:address location="http://echo.example.com/service"/>
+    </port>
+  </service>
+
+</definitions>

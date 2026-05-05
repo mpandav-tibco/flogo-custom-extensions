@@ -1,0 +1,24 @@
+{
+    "name": "text",
+    "type": "flogo:function",
+    "version": "1.0.0",
+    "title": "Text Utility Functions",
+    "description": "Text processing utilities for cleaning and normalising plain-text extracted by Apache Tika and similar tools.",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/function/text",
+    "functions": [
+        {
+            "name": "cleanText",
+            "description": "Removes Apache Tika extraction artifacts from plain text: strips [image: ...] alt-text tokens, decodes HTML entities, removes control characters, trims whitespace per line, joins short orphaned fragments (table cells), and collapses runs of 3+ blank lines. Safe to call on empty strings (returns \"\").",
+            "example": "text.cleanText(\"[image: (tick)]\\nBC 7.5.0\\n\\n\\n\\nBC 7.4.0\") => \"BC 7.5.0\\n\\nBC 7.4.0\"",
+            "args": [
+                {
+                    "name": "text",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        }
+    ]
+}

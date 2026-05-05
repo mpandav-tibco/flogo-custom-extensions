@@ -20,9 +20,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kafkastream "github.com/milindpandav/flogo-extensions/kafkastream"
-	aggregate "github.com/milindpandav/flogo-extensions/kafkastream/activity/aggregate"
-	filteract "github.com/milindpandav/flogo-extensions/kafkastream/activity/filter"
+	kafkastream "github.com/mpandav-tibco/flogo-extensions/kafkastream"
+	aggregate "github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/aggregate"
+	filteract "github.com/mpandav-tibco/flogo-extensions/kafkastream/activity/filter"
 )
 
 const (

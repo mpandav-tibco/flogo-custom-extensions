@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- document background -->
+  <rect x="10" y="8" width="28" height="32" rx="3" fill="#F3F5F8" stroke="#37474F" stroke-width="1"/>
+  <!-- left curly brace {{ -->
+  <text x="10" y="30" font-family="Courier New,monospace" font-size="16" font-weight="bold" fill="#7C4DFF">{{</text>
+  <!-- right curly brace }} -->
+  <text x="27" y="30" font-family="Courier New,monospace" font-size="16" font-weight="bold" fill="#7C4DFF">}}</text>
+  <!-- content line placeholders -->
+  <rect x="14" y="14" width="12" height="2" rx="1" fill="#BECFEF"/>
+  <rect x="28" y="14" width="6" height="2" rx="1" fill="#7C4DFF" opacity="0.7"/>
+  <rect x="14" y="34" width="8" height="2" rx="1" fill="#BECFEF"/>
+  <rect x="24" y="34" width="10" height="2" rx="1" fill="#7C4DFF" opacity="0.7"/>
+  <!-- label -->
+  <text x="24" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="5" font-weight="bold" fill="#7C4DFF">TEMPLATE</text>
+</svg>

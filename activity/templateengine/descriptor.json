@@ -3,8 +3,15 @@
     "title": "Template Engine",
     "version": "1.0.0",
     "type": "flogo:activity",
+    "image": "icons/templateengine.svg",
     "description": "Dynamic content generation using configurable templates with support for Go templates, Handlebars-style syntax, and OOTB business templates",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/templateengine",
+    "display": {
+        "category": "Utilities",
+        "visible": true,
+        "smallIcon": "icons/templateengine.svg",
+        "description": "Generate dynamic content using Go, Handlebars, or Mustache templates"
+    },
     "settings": [
         {
             "name": "templateEngine",

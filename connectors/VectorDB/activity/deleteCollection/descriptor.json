@@ -1,0 +1,47 @@
+{
+  "name": "tibco-vectordb-delete-col",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteCollection",
+  "title": "Delete Collection",
+  "image": "icons/delete-col.svg",
+  "description": "Permanently delete a VectorDB collection and all its data.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/delete-col.svg"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": []
+    }
+  ],
+  "input": [
+    {
+      "name": "collectionName",
+      "type": "string"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

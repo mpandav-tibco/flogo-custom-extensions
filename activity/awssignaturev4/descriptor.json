@@ -4,8 +4,15 @@
     "author": "TIBCO Software Inc.",
     "type": "flogo:activity",
     "title": "AWS Signature V4 Generator",
+    "image": "icons/awssignaturev4.svg",
     "description": "Generates AWS Signature Version 4 authentication headers for REST API calls",
     "ref": "github.com/mpandav-tibco/flogo-extensions/activity/awssignaturev4",
+    "display": {
+        "category": "AWS",
+        "visible": true,
+        "smallIcon": "icons/awssignaturev4.svg",
+        "description": "Generate AWS Signature V4 authentication headers"
+    },
     "inputs": [
         {
             "name": "accessKeyId",

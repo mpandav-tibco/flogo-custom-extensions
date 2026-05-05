@@ -1,0 +1,2095 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-custom-extensions/activity/soapclient",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/trigger/timer"
+  ],
+  "name": "soap-client-integration-tests",
+  "description": "Comprehensive integration tests for the SOAP Client activity — 14 flows covering all features",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#timer",
+      "name": "tibco-wi-timer",
+      "description": "Simple Timer trigger — fires once then exits (Repeating=false)",
+      "settings": {},
+      "id": "TimerTrigger",
+      "handlers": [
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T01_—_SOAP1.1_JSON_WSDL_Add"
+            }
+          },
+          "name": "T01_—_SOAP1.1_JSON_WSDL_Add"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T02_—_SOAP1.1_JSON_WSDL_Subtract"
+            }
+          },
+          "name": "T02_—_SOAP1.1_JSON_WSDL_Subtract"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T03_—_SOAP1.1_JSON_WSDL_Multiply"
+            }
+          },
+          "name": "T03_—_SOAP1.1_JSON_WSDL_Multiply"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T04_—_SOAP1.2_JSON_WSDL_Multiply"
+            }
+          },
+          "name": "T04_—_SOAP1.2_JSON_WSDL_Multiply"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T05_—_SOAP1.1_XML_mode_no_WSDL_Add"
+            }
+          },
+          "name": "T05_—_SOAP1.1_XML_mode_no_WSDL_Add"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T06_—_Fault_Divide_by_Zero"
+            }
+          },
+          "name": "T06_—_Fault_Divide_by_Zero"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T07_—_WSDL_URL_Mode_Add"
+            }
+          },
+          "name": "T07_—_WSDL_URL_Mode_Add"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T08_—_No_WSDL_JSON_Explicit_Action"
+            }
+          },
+          "name": "T08_—_No_WSDL_JSON_Explicit_Action"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T09_—_Auto_Use_WSDL_Endpoint"
+            }
+          },
+          "name": "T09_—_Auto_Use_WSDL_Endpoint"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T10_—_SOAP1.2_XML_mode_no_WSDL_Multiply"
+            }
+          },
+          "name": "T10_—_SOAP1.2_XML_mode_no_WSDL_Multiply"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T11_—_EnableTLS_SkipVerify_Add"
+            }
+          },
+          "name": "T11_—_EnableTLS_SkipVerify_Add"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T12_—_CountryInfo_ListContinents"
+            }
+          },
+          "name": "T12_—_CountryInfo_ListContinents"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T13_—_Query_Params_Appended"
+            }
+          },
+          "name": "T13_—_Query_Params_Appended"
+        },
+        {
+          "description": "",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T14_—_SOAP1.2_JSON_WSDL_Fault"
+            }
+          },
+          "name": "T14_—_SOAP1.2_JSON_WSDL_Fault"
+        },
+        {
+          "description": "retryOnError integration test",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T15_—_RetryOnError:_2_drops_then_success"
+            }
+          },
+          "name": "T15_—_RetryOnError:_2_drops_then_success"
+        },
+        {
+          "description": "retryOnError integration test",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Europe/Berlin * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:T16_—_RetryOnError:_retries_exhausted_flow_fails"
+            }
+          },
+          "name": "T16_—_RetryOnError:_retries_exhausted_flow_fails"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:T01_—_SOAP1.1_JSON_WSDL_Add",
+      "data": {
+        "name": "T01 — SOAP1.1 JSON WSDL Add",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPAdd",
+            "type": "label",
+            "label": "Start to SOAPAdd"
+          },
+          {
+            "id": 2,
+            "from": "SOAPAdd",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAdd to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPAdd",
+            "name": "SOAPAdd",
+            "description": "SOAP 1.1 JSON WSDL File — Add(10+5), expect AddResult=15",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Add",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 10,
+                    "intB": 5
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T01] SOAP1.1 JSON WSDL Add(10+5) expect=15: =coerce.toString($activity[SOAPAdd].soapResponsePayload) isFault=false: =coerce.toString($activity[SOAPAdd].isFault)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQWRkIjp7IngiOjI1MCwieSI6NDR9LCJMb2dSZXN1bHQiOnsieCI6NDk2LCJ5Ijo0NX19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T02_—_SOAP1.1_JSON_WSDL_Subtract",
+      "data": {
+        "name": "T02 — SOAP1.1 JSON WSDL Subtract",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPSub",
+            "type": "label",
+            "label": "Start to SOAPSub"
+          },
+          {
+            "id": 2,
+            "from": "SOAPSub",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPSub to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPSub",
+            "name": "SOAPSub",
+            "description": "SOAP 1.1 JSON WSDL — Subtract(100-37), expect SubtractResult=63",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Subtract",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 100,
+                    "intB": 37
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"SubtractResult\":{\"type\":\"number\"}},\"required\":[\"SubtractResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"SubtractResult\":{\"type\":\"number\"}},\"required\":[\"SubtractResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T02] Subtract(100-37) expect=63: =coerce.toString($activity[SOAPSub].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQU3ViIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T03_—_SOAP1.1_JSON_WSDL_Multiply",
+      "data": {
+        "name": "T03 — SOAP1.1 JSON WSDL Multiply",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPMul",
+            "type": "label",
+            "label": "Start to SOAPMul"
+          },
+          {
+            "id": 2,
+            "from": "SOAPMul",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPMul to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPMul",
+            "name": "SOAPMul",
+            "description": "SOAP 1.1 JSON WSDL — Multiply(6×7), expect MultiplyResult=42",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Multiply",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 6,
+                    "intB": 7
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"MultiplyResult\":{\"type\":\"number\"}},\"required\":[\"MultiplyResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"MultiplyResult\":{\"type\":\"number\"}},\"required\":[\"MultiplyResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T03] Multiply(6x7) expect=42: =coerce.toString($activity[SOAPMul].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQTXVsIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T04_—_SOAP1.2_JSON_WSDL_Multiply",
+      "data": {
+        "name": "T04 — SOAP1.2 JSON WSDL Multiply",
+        "description": "",
+        "links": [],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T05_—_SOAP1.1_XML_mode_no_WSDL_Add",
+      "data": {
+        "name": "T05 — SOAP1.1 XML mode no WSDL Add",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPAddXML",
+            "type": "label",
+            "label": "Start to SOAPAddXML"
+          },
+          {
+            "id": 2,
+            "from": "SOAPAddXML",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAddXML to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPAddXML",
+            "name": "SOAPAddXML",
+            "description": "SOAP 1.1 XML mode no-WSDL — Add(20+22) raw XML, expect AddResult=42",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "None",
+                "wsdlUrl": "",
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://localhost:19091/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": true,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "http://tempuri.org/Add"
+              },
+              "schemas": {
+                "output": {
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T05] XML mode no-WSDL Add(20+22) expect AddResult=42: =coerce.toString($activity[SOAPAddXML].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQWRkWE1MIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T06_—_Fault_Divide_by_Zero",
+      "data": {
+        "name": "T06 — Fault Divide by Zero",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPDiv0",
+            "type": "label",
+            "label": "Start to SOAPDiv0"
+          },
+          {
+            "id": 2,
+            "from": "SOAPDiv0",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPDiv0 to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPDiv0",
+            "name": "SOAPDiv0",
+            "description": "SOAP 1.1 JSON WSDL — Divide(10÷0) expects SOAP Fault, isFault=true",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Divide",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 10,
+                    "intB": 0
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"DivideResult\":{\"type\":\"number\"}},\"required\":[\"DivideResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"DivideResult\":{\"type\":\"number\"}},\"required\":[\"DivideResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T06] DivideByZero expect isFault=true: =coerce.toString($activity[SOAPDiv0].isFault) fault: =coerce.toString($activity[SOAPDiv0].soapResponseFault)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQRGl2MCI6eyJ4IjoyNTAsInkiOjE1MH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T07_—_WSDL_URL_Mode_Add",
+      "data": {
+        "name": "T07 — WSDL URL Mode Add",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPAddURL",
+            "type": "label",
+            "label": "Start to SOAPAddURL"
+          },
+          {
+            "id": 2,
+            "from": "SOAPAddURL",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAddURL to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPAddURL",
+            "name": "SOAPAddURL",
+            "description": "SOAP 1.1 WSDL URL mode — WSDL fetched via HTTP, Add(3+4), expect AddResult=7",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL URL",
+                "wsdlUrl": "",
+                "wsdlHttpUrl": "http://localhost:19090/calculator-local.wsdl",
+                "wsdlOperation": "Add",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://localhost:19091/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 3,
+                    "intB": 4
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-07/schema#\", \"type\": \"object\", \"properties\": {\"intA\": {\"type\": \"number\"}, \"intB\": {\"type\": \"number\"}}, \"required\": [\"intA\", \"intB\"]}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-07/schema#\", \"type\": \"object\", \"properties\": {\"intA\": {\"type\": \"number\"}, \"intB\": {\"type\": \"number\"}}, \"required\": [\"intA\", \"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-07/schema#\", \"type\": \"object\", \"properties\": {\"AddResult\": {\"type\": \"number\"}}, \"required\": [\"AddResult\"]}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-07/schema#\", \"type\": \"object\", \"properties\": {\"AddResult\": {\"type\": \"number\"}}, \"required\": [\"AddResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T07] WSDL URL mode Add(3+4) expect=7: =coerce.toString($activity[SOAPAddURL].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQWRkVVJMIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T08_—_No_WSDL_JSON_Explicit_Action",
+      "data": {
+        "name": "T08 — No WSDL JSON Explicit Action",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPAddNoW",
+            "type": "label",
+            "label": "Start to SOAPAddNoW"
+          },
+          {
+            "id": 2,
+            "from": "SOAPAddNoW",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAddNoW to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPAddNoW",
+            "name": "SOAPAddNoW",
+            "description": "No WSDL, JSON mode, manual namespace wrapper in body, explicit soapAction, Add(8+9)=17",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "None",
+                "wsdlUrl": "",
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://localhost:19091/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "http://tempuri.org/Add",
+                "soapRequestBody": {
+                  "mapping": {
+                    "Add": {
+                      "intA": 8,
+                      "intB": 9
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "output": {
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T08] No-WSDL explicit action Add(8+9) expect 17: =coerce.toString($activity[SOAPAddNoW].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQWRkTm9XIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T09_—_Auto_Use_WSDL_Endpoint",
+      "data": {
+        "name": "T09 — Auto Use WSDL Endpoint",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPAutoEP",
+            "type": "label",
+            "label": "Start to SOAPAutoEP"
+          },
+          {
+            "id": 2,
+            "from": "SOAPAutoEP",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAutoEP to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPAutoEP",
+            "name": "SOAPAutoEP",
+            "description": "autoUseWsdlEndpoint=true — soapServiceEndpoint overridden from WSDL, Divide(100÷4)=25",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHdzZGw6ZGVmaW5pdGlvbnMgeG1sbnM6c29hcD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwLyIgeG1sbnM6dG09Imh0dHA6Ly9taWNyb3NvZnQuY29tL3dzZGwvbWltZS90ZXh0TWF0Y2hpbmcvIiB4bWxuczpzb2FwZW5jPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2VuY29kaW5nLyIgeG1sbnM6bWltZT0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9taW1lLyIgeG1sbnM6dG5zPSJodHRwOi8vdGVtcHVyaS5vcmcvIiB4bWxuczpzPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSIgeG1sbnM6c29hcDEyPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL3NvYXAxMi8iIHhtbG5zOmh0dHA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvaHR0cC8iIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPgogIDx3c2RsOnR5cGVzPgogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPgogICAgICA8czplbGVtZW50IG5hbWU9IkFkZCI+CiAgICAgICAgPHM6Y29tcGxleFR5cGU+CiAgICAgICAgICA8czpzZXF1ZW5jZT4KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QSIgdHlwZT0iczppbnQiIC8+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPgogICAgICAgICAgPC9zOnNlcXVlbmNlPgogICAgICAgIDwvczpjb21wbGV4VHlwZT4KICAgICAgPC9zOmVsZW1lbnQ+CiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPgogICAgICAgIDxzOmNvbXBsZXhUeXBlPgogICAgICAgICAgPHM6c2VxdWVuY2U+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+CiAgICAgICAgICA8L3M6c2VxdWVuY2U+CiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPgogICAgICA8L3M6ZWxlbWVudD4KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJTdWJ0cmFjdCI+CiAgICAgICAgPHM6Y29tcGxleFR5cGU+CiAgICAgICAgICA8czpzZXF1ZW5jZT4KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QSIgdHlwZT0iczppbnQiIC8+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPgogICAgICAgICAgPC9zOnNlcXVlbmNlPgogICAgICAgIDwvczpjb21wbGV4VHlwZT4KICAgICAgPC9zOmVsZW1lbnQ+CiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+CiAgICAgICAgPHM6Y29tcGxleFR5cGU+CiAgICAgICAgICA8czpzZXF1ZW5jZT4KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPgogICAgICAgICAgPC9zOnNlcXVlbmNlPgogICAgICAgIDwvczpjb21wbGV4VHlwZT4KICAgICAgPC9zOmVsZW1lbnQ+CiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iTXVsdGlwbHkiPgogICAgICAgIDxzOmNvbXBsZXhUeXBlPgogICAgICAgICAgPHM6c2VxdWVuY2U+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPgogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRCIiB0eXBlPSJzOmludCIgLz4KICAgICAgICAgIDwvczpzZXF1ZW5jZT4KICAgICAgICA8L3M6Y29tcGxleFR5cGU+CiAgICAgIDwvczplbGVtZW50PgogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPgogICAgICAgIDxzOmNvbXBsZXhUeXBlPgogICAgICAgICAgPHM6c2VxdWVuY2U+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4KICAgICAgICAgIDwvczpzZXF1ZW5jZT4KICAgICAgICA8L3M6Y29tcGxleFR5cGU+CiAgICAgIDwvczplbGVtZW50PgogICAgICA8czplbGVtZW50IG5hbWU9IkRpdmlkZSI+CiAgICAgICAgPHM6Y29tcGxleFR5cGU+CiAgICAgICAgICA8czpzZXF1ZW5jZT4KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QSIgdHlwZT0iczppbnQiIC8+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPgogICAgICAgICAgPC9zOnNlcXVlbmNlPgogICAgICAgIDwvczpjb21wbGV4VHlwZT4KICAgICAgPC9zOmVsZW1lbnQ+CiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPgogICAgICAgIDxzOmNvbXBsZXhUeXBlPgogICAgICAgICAgPHM6c2VxdWVuY2U+CiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+CiAgICAgICAgICA8L3M6c2VxdWVuY2U+CiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPgogICAgICA8L3M6ZWxlbWVudD4KICAgIDwvczpzY2hlbWE+CiAgPC93c2RsOnR5cGVzPgogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZCIgLz4KICA8L3dzZGw6bWVzc2FnZT4KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPgogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6QWRkUmVzcG9uc2UiIC8+CiAgPC93c2RsOm1lc3NhZ2U+CiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+CiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpTdWJ0cmFjdCIgLz4KICA8L3dzZGw6bWVzc2FnZT4KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+CiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpTdWJ0cmFjdFJlc3BvbnNlIiAvPgogIDwvd3NkbDptZXNzYWdlPgogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPgogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6TXVsdGlwbHkiIC8+CiAgPC93c2RsOm1lc3NhZ2U+CiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPgogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6TXVsdGlwbHlSZXNwb25zZSIgLz4KICA8L3dzZGw6bWVzc2FnZT4KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+CiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGUiIC8+CiAgPC93c2RsOm1lc3NhZ2U+CiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkRpdmlkZVJlc3BvbnNlIiAvPgogIDwvd3NkbDptZXNzYWdlPgogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJBZGQiPgogICAgICA8d3NkbDpkb2N1bWVudGF0aW9uIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj5BZGRzIHR3byBpbnRlZ2Vycy4gVGhpcyBpcyBhIHRlc3QgV2ViU2VydmljZS4gwqlETkUgT25saW5lPC93c2RsOmRvY3VtZW50YXRpb24+CiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+CiAgICAgIDx3c2RsOm91dHB1dCBtZXNzYWdlPSJ0bnM6QWRkU29hcE91dCIgLz4KICAgIDwvd3NkbDpvcGVyYXRpb24+CiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPgogICAgICA8d3NkbDppbnB1dCBtZXNzYWdlPSJ0bnM6U3VidHJhY3RTb2FwSW4iIC8+CiAgICAgIDx3c2RsOm91dHB1dCBtZXNzYWdlPSJ0bnM6U3VidHJhY3RTb2FwT3V0IiAvPgogICAgPC93c2RsOm9wZXJhdGlvbj4KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+CiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBJbiIgLz4KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+CiAgICA8L3dzZGw6b3BlcmF0aW9uPgogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkRpdmlkZSI+CiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+CiAgICAgIDx3c2RsOm91dHB1dCBtZXNzYWdlPSJ0bnM6RGl2aWRlU29hcE91dCIgLz4KICAgIDwvd3NkbDpvcGVyYXRpb24+CiAgPC93c2RsOnBvcnRUeXBlPgogIDx3c2RsOmJpbmRpbmcgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIHR5cGU9InRuczpDYWxjdWxhdG9yU29hcCI+CiAgICA8c29hcDpiaW5kaW5nIHRyYW5zcG9ydD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9odHRwIiAvPgogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+CiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvQWRkIiBzdHlsZT0iZG9jdW1lbnQiIC8+CiAgICAgIDx3c2RsOmlucHV0PgogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6aW5wdXQ+CiAgICAgIDx3c2RsOm91dHB1dD4KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4KICAgICAgPC93c2RsOm91dHB1dD4KICAgIDwvd3NkbDpvcGVyYXRpb24+CiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPgogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL1N1YnRyYWN0IiBzdHlsZT0iZG9jdW1lbnQiIC8+CiAgICAgIDx3c2RsOmlucHV0PgogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6aW5wdXQ+CiAgICAgIDx3c2RsOm91dHB1dD4KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4KICAgICAgPC93c2RsOm91dHB1dD4KICAgIDwvd3NkbDpvcGVyYXRpb24+CiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPgogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL011bHRpcGx5IiBzdHlsZT0iZG9jdW1lbnQiIC8+CiAgICAgIDx3c2RsOmlucHV0PgogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6aW5wdXQ+CiAgICAgIDx3c2RsOm91dHB1dD4KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4KICAgICAgPC93c2RsOm91dHB1dD4KICAgIDwvd3NkbDpvcGVyYXRpb24+CiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9EaXZpZGUiIHN0eWxlPSJkb2N1bWVudCIgLz4KICAgICAgPHdzZGw6aW5wdXQ+CiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+CiAgICAgIDwvd3NkbDppbnB1dD4KICAgICAgPHdzZGw6b3V0cHV0PgogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6b3V0cHV0PgogICAgPC93c2RsOm9wZXJhdGlvbj4KICA8L3dzZGw6YmluZGluZz4KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwMTIiIHR5cGU9InRuczpDYWxjdWxhdG9yU29hcCI+CiAgICA8c29hcDEyOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+CiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPgogICAgICA8d3NkbDppbnB1dD4KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6aW5wdXQ+CiAgICAgIDx3c2RsOm91dHB1dD4KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6b3V0cHV0PgogICAgPC93c2RsOm9wZXJhdGlvbj4KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+CiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPgogICAgICA8d3NkbDppbnB1dD4KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6aW5wdXQ+CiAgICAgIDx3c2RsOm91dHB1dD4KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6b3V0cHV0PgogICAgPC93c2RsOm9wZXJhdGlvbj4KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+CiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPgogICAgICA8d3NkbDppbnB1dD4KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6aW5wdXQ+CiAgICAgIDx3c2RsOm91dHB1dD4KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPgogICAgICA8L3dzZGw6b3V0cHV0PgogICAgPC93c2RsOm9wZXJhdGlvbj4KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPgogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+CiAgICAgIDx3c2RsOmlucHV0PgogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+CiAgICAgIDwvd3NkbDppbnB1dD4KICAgICAgPHdzZGw6b3V0cHV0PgogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+CiAgICAgIDwvd3NkbDpvdXRwdXQ+CiAgICA8L3dzZGw6b3BlcmF0aW9uPgogIDwvd3NkbDpiaW5kaW5nPgogIDx3c2RsOnNlcnZpY2UgbmFtZT0iQ2FsY3VsYXRvciI+CiAgICA8d3NkbDpwb3J0IG5hbWU9IkNhbGN1bGF0b3JTb2FwIiBiaW5kaW5nPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPgogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vbG9jYWxob3N0OjE5MDkxL2NhbGN1bGF0b3IuYXNteCIgLz4KICAgIDwvd3NkbDpwb3J0PgogICAgPHdzZGw6cG9ydCBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiBiaW5kaW5nPSJ0bnM6Q2FsY3VsYXRvclNvYXAxMiI+CiAgICAgIDxzb2FwMTI6YWRkcmVzcyBsb2NhdGlvbj0iaHR0cDovL2xvY2FsaG9zdDoxOTA5MS9jYWxjdWxhdG9yLmFzbXgiIC8+CiAgICA8L3dzZGw6cG9ydD4KICA8L3dzZGw6c2VydmljZT4KPC93c2RsOmRlZmluaXRpb25zPg=="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Divide",
+                "autoUseWsdlEndpoint": true,
+                "soapServiceEndpoint": "http://localhost:19091/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 100,
+                    "intB": 4
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"DivideResult\":{\"type\":\"number\"}},\"required\":[\"DivideResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"DivideResult\":{\"type\":\"number\"}},\"required\":[\"DivideResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T09] autoUseWsdlEndpoint Divide(100/4) expect=25: =coerce.toString($activity[SOAPAutoEP].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQXV0b0VQIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T10_—_SOAP1.2_XML_mode_no_WSDL_Multiply",
+      "data": {
+        "name": "T10 — SOAP1.2 XML mode no WSDL Multiply",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPMulXML12",
+            "type": "label",
+            "label": "Start to SOAPMulXML12"
+          },
+          {
+            "id": 2,
+            "from": "SOAPMulXML12",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPMulXML12 to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPMulXML12",
+            "name": "SOAPMulXML12",
+            "description": "SOAP 1.2 XML mode no-WSDL Multiply(11×11)=121",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "None",
+                "wsdlUrl": "",
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://localhost:19091/calculator.asmx",
+                "soapVersion": "1.2",
+                "xmlMode": true,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "http://tempuri.org/Multiply",
+                "soapRequestBody": "<Multiply xmlns=\"http://tempuri.org/\"><intA>11</intA><intB>11</intB></Multiply>"
+              },
+              "schemas": {
+                "output": {
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T10] SOAP1.2 XML mode Multiply(11x11) expect=121: =coerce.toString($activity[SOAPMulXML12].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQTXVsWE1MMTIiOnsieCI6MjUwLCJ5IjoxNTB9LCJMb2dSZXN1bHQiOnsieCI6NDUwLCJ5IjoyNTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T11_—_EnableTLS_SkipVerify_Add",
+      "data": {
+        "name": "T11 — EnableTLS SkipVerify Add",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPSkipTLS",
+            "type": "label",
+            "label": "Start to SOAPSkipTLS"
+          },
+          {
+            "id": 2,
+            "from": "SOAPSkipTLS",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPSkipTLS to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPSkipTLS",
+            "name": "SOAPSkipTLS",
+            "description": "enableTLS=true + skipTlsVerify=true — activity must init and execute, Add(1+1)=2",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Add",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": true,
+                "skipTlsVerify": true,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 1,
+                    "intB": 1
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T11] skipTlsVerify Add(1+1) expect=2: =coerce.toString($activity[SOAPSkipTLS].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQU2tpcFRMUyI6eyJ4IjoyNTAsInkiOjE1MH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T12_—_CountryInfo_ListContinents",
+      "data": {
+        "name": "T12 — CountryInfo ListContinents",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPCountry",
+            "type": "label",
+            "label": "Start to SOAPCountry"
+          },
+          {
+            "id": 2,
+            "from": "SOAPCountry",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPCountry to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPCountry",
+            "name": "SOAPCountry",
+            "description": "CountryInfo service (different NS) — ListOfContinentsByName",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "CountryInfoService.wsdl",
+                  "content": "data:application/octet-stream;base64,PHdzZGw6ZGVmaW5pdGlvbnMgeG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRucz0iaHR0cHM6Ly9zb2FwLXNlcnZpY2UtZnJlZS5tb2NrLmJlZWNlcHRvci5jb20vQ291bnRyeUluZm9TZXJ2aWNlIiB4bWxuczp4c2Q9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hIiB0YXJnZXROYW1lc3BhY2U9Imh0dHBzOi8vc29hcC1zZXJ2aWNlLWZyZWUubW9jay5iZWVjZXB0b3IuY29tL0NvdW50cnlJbmZvU2VydmljZSI+Cjx3c2RsOnR5cGVzPgo8eHNkOnNjaGVtYSB0YXJnZXROYW1lc3BhY2U9Imh0dHBzOi8vc29hcC1zZXJ2aWNlLWZyZWUubW9jay5iZWVjZXB0b3IuY29tL0NvdW50cnlJbmZvU2VydmljZSI+Cjx4c2Q6ZWxlbWVudCBuYW1lPSJMaXN0T2ZDb250aW5lbnRzQnlOYW1lIiB0eXBlPSJ0bnM6TGlzdE9mQ29udGluZW50c0J5TmFtZVR5cGUiLz4KPHhzZDplbGVtZW50IG5hbWU9Ikxpc3RPZkNvbnRpbmVudHNCeU5hbWVSZXNwb25zZSIgdHlwZT0idG5zOkxpc3RPZkNvbnRpbmVudHNCeU5hbWVSZXNwb25zZVR5cGUiLz4KPHhzZDplbGVtZW50IG5hbWU9Ikxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZSIgdHlwZT0idG5zOkxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZVR5cGUiLz4KPHhzZDplbGVtZW50IG5hbWU9Ikxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZVJlc3BvbnNlIiB0eXBlPSJ0bnM6TGlzdE9mQ291bnRyeU5hbWVzQnlOYW1lUmVzcG9uc2VUeXBlIi8+Cjx4c2Q6Y29tcGxleFR5cGUgbmFtZT0iTGlzdE9mQ29udGluZW50c0J5TmFtZVR5cGUiLz4KPHhzZDpjb21wbGV4VHlwZSBuYW1lPSJMaXN0T2ZDb250aW5lbnRzQnlOYW1lUmVzcG9uc2VUeXBlIj4KPHhzZDpzZXF1ZW5jZT4KPHhzZDplbGVtZW50IG5hbWU9Ikxpc3RPZkNvbnRpbmVudHNCeU5hbWVSZXN1bHQiIHR5cGU9InRuczpBcnJheU9mQ29udGluZW50cyIvPgo8L3hzZDpzZXF1ZW5jZT4KPC94c2Q6Y29tcGxleFR5cGU+Cjx4c2Q6Y29tcGxleFR5cGUgbmFtZT0iTGlzdE9mQ291bnRyeU5hbWVzQnlOYW1lVHlwZSIvPgo8eHNkOmNvbXBsZXhUeXBlIG5hbWU9Ikxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZVJlc3BvbnNlVHlwZSI+Cjx4c2Q6c2VxdWVuY2U+Cjx4c2Q6ZWxlbWVudCBuYW1lPSJMaXN0T2ZDb3VudHJ5TmFtZXNCeU5hbWVSZXN1bHQiIHR5cGU9InRuczpBcnJheU9mQ291bnRyeU5hbWVzIi8+CjwveHNkOnNlcXVlbmNlPgo8L3hzZDpjb21wbGV4VHlwZT4KPHhzZDpjb21wbGV4VHlwZSBuYW1lPSJBcnJheU9mQ29udGluZW50cyI+Cjx4c2Q6c2VxdWVuY2U+Cjx4c2Q6ZWxlbWVudCBuYW1lPSJ0Q29udGluZW50IiB0eXBlPSJ0bnM6Q29udGluZW50IiBtYXhPY2N1cnM9InVuYm91bmRlZCIvPgo8L3hzZDpzZXF1ZW5jZT4KPC94c2Q6Y29tcGxleFR5cGU+Cjx4c2Q6Y29tcGxleFR5cGUgbmFtZT0iQXJyYXlPZkNvdW50cnlOYW1lcyI+Cjx4c2Q6c2VxdWVuY2U+Cjx4c2Q6ZWxlbWVudCBuYW1lPSJ0Q291bnRyeUNvZGVBbmROYW1lIiB0eXBlPSJ0bnM6Q291bnRyeUNvZGVBbmROYW1lIiBtYXhPY2N1cnM9InVuYm91bmRlZCIvPgo8L3hzZDpzZXF1ZW5jZT4KPC94c2Q6Y29tcGxleFR5cGU+Cjx4c2Q6Y29tcGxleFR5cGUgbmFtZT0iQ29udGluZW50Ij4KPHhzZDpzZXF1ZW5jZT4KPHhzZDplbGVtZW50IG5hbWU9InNDb2RlIiB0eXBlPSJ4c2Q6c3RyaW5nIi8+Cjx4c2Q6ZWxlbWVudCBuYW1lPSJzTmFtZSIgdHlwZT0ieHNkOnN0cmluZyIvPgo8L3hzZDpzZXF1ZW5jZT4KPC94c2Q6Y29tcGxleFR5cGU+Cjx4c2Q6Y29tcGxleFR5cGUgbmFtZT0iQ291bnRyeUNvZGVBbmROYW1lIj4KPHhzZDpzZXF1ZW5jZT4KPHhzZDplbGVtZW50IG5hbWU9InNJU09Db2RlIiB0eXBlPSJ4c2Q6c3RyaW5nIi8+Cjx4c2Q6ZWxlbWVudCBuYW1lPSJzTmFtZSIgdHlwZT0ieHNkOnN0cmluZyIvPgo8L3hzZDpzZXF1ZW5jZT4KPC94c2Q6Y29tcGxleFR5cGU+CjwveHNkOnNjaGVtYT4KPC93c2RsOnR5cGVzPgo8d3NkbDptZXNzYWdlIG5hbWU9Ikxpc3RPZkNvbnRpbmVudHNCeU5hbWVSZXF1ZXN0Ij4KPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6TGlzdE9mQ29udGluZW50c0J5TmFtZSIvPgo8L3dzZGw6bWVzc2FnZT4KPHdzZGw6bWVzc2FnZSBuYW1lPSJMaXN0T2ZDb250aW5lbnRzQnlOYW1lUmVzcG9uc2UiPgo8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpMaXN0T2ZDb250aW5lbnRzQnlOYW1lUmVzcG9uc2UiLz4KPC93c2RsOm1lc3NhZ2U+Cjx3c2RsOm1lc3NhZ2UgbmFtZT0iTGlzdE9mQ291bnRyeU5hbWVzQnlOYW1lUmVxdWVzdCI+Cjx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZSIvPgo8L3dzZGw6bWVzc2FnZT4KPHdzZGw6bWVzc2FnZSBuYW1lPSJMaXN0T2ZDb3VudHJ5TmFtZXNCeU5hbWVSZXNwb25zZSI+Cjx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZVJlc3BvbnNlIi8+Cjwvd3NkbDptZXNzYWdlPgo8d3NkbDpwb3J0VHlwZSBuYW1lPSJDb3VudHJ5SW5mb1BvcnRUeXBlIj4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9Ikxpc3RPZkNvbnRpbmVudHNCeU5hbWUiPgo8d3NkbDppbnB1dCBtZXNzYWdlPSJ0bnM6TGlzdE9mQ29udGluZW50c0J5TmFtZVJlcXVlc3QiLz4KPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpMaXN0T2ZDb250aW5lbnRzQnlOYW1lUmVzcG9uc2UiLz4KPC93c2RsOm9wZXJhdGlvbj4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9Ikxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZSI+Cjx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpMaXN0T2ZDb3VudHJ5TmFtZXNCeU5hbWVSZXF1ZXN0Ii8+Cjx3c2RsOm91dHB1dCBtZXNzYWdlPSJ0bnM6TGlzdE9mQ291bnRyeU5hbWVzQnlOYW1lUmVzcG9uc2UiLz4KPC93c2RsOm9wZXJhdGlvbj4KPC93c2RsOnBvcnRUeXBlPgo8d3NkbDpiaW5kaW5nIG5hbWU9IkNvdW50cnlJbmZvQmluZGluZyIgdHlwZT0idG5zOkNvdW50cnlJbmZvUG9ydFR5cGUiPgo8c29hcDpiaW5kaW5nIHN0eWxlPSJkb2N1bWVudCIgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiLz4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9Ikxpc3RPZkNvbnRpbmVudHNCeU5hbWUiPgo8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cHM6Ly9zb2FwLXNlcnZpY2UtZnJlZS5tb2NrLmJlZWNlcHRvci5jb20vQ291bnRyeUluZm9TZXJ2aWNlLndzby9MaXN0T2ZDb250aW5lbnRzQnlOYW1lIi8+Cjx3c2RsOmlucHV0Pgo8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIvPgo8L3dzZGw6aW5wdXQ+Cjx3c2RsOm91dHB1dD4KPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiLz4KPC93c2RsOm91dHB1dD4KPC93c2RsOm9wZXJhdGlvbj4KPHdzZGw6b3BlcmF0aW9uIG5hbWU9Ikxpc3RPZkNvdW50cnlOYW1lc0J5TmFtZSI+Cjxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwczovL3NvYXAtc2VydmljZS1mcmVlLm1vY2suYmVlY2VwdG9yLmNvbS9Db3VudHJ5SW5mb1NlcnZpY2Uud3NvL0xpc3RPZkNvdW50cnlOYW1lc0J5TmFtZSIvPgo8d3NkbDppbnB1dD4KPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiLz4KPC93c2RsOmlucHV0Pgo8d3NkbDpvdXRwdXQ+Cjxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIi8+Cjwvd3NkbDpvdXRwdXQ+Cjwvd3NkbDpvcGVyYXRpb24+Cjwvd3NkbDpiaW5kaW5nPgo8d3NkbDpzZXJ2aWNlIG5hbWU9IkNvdW50cnlJbmZvU2VydmljZSI+Cjx3c2RsOnBvcnQgbmFtZT0iQ291bnRyeUluZm9Qb3J0IiBiaW5kaW5nPSJ0bnM6Q291bnRyeUluZm9CaW5kaW5nIj4KPHNvYXA6YWRkcmVzcyBsb2NhdGlvbj0iaHR0cHM6Ly9zb2FwLXNlcnZpY2UtZnJlZS5tb2NrLmJlZWNlcHRvci5jb20vQ291bnRyeUluZm9TZXJ2aWNlLndzbyIvPgo8L3dzZGw6cG9ydD4KPC93c2RsOnNlcnZpY2U+Cjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "ListOfContinentsByName",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "https://soap-service-free.mock.beeceptor.com/CountryInfoService.wso",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{}}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{}}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T12] CountryInfo continents isFault: =coerce.toString($activity[SOAPCountry].isFault) payload: =coerce.toString($activity[SOAPCountry].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQ291bnRyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T13_—_Query_Params_Appended",
+      "data": {
+        "name": "T13 — Query Params Appended",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPQueryP",
+            "type": "label",
+            "label": "Start to SOAPQueryP"
+          },
+          {
+            "id": 2,
+            "from": "SOAPQueryP",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPQueryP to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPQueryP",
+            "name": "SOAPQueryP",
+            "description": "httpQueryParams appended to endpoint URL — Add(5+5)=10",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "None",
+                "wsdlUrl": "",
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://localhost:19091/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "http://tempuri.org/Add",
+                "httpQueryParams": {
+                  "mapping": {
+                    "client": "flogo-soap",
+                    "test": "T13"
+                  }
+                },
+                "soapRequestBody": {
+                  "mapping": {
+                    "Add": {
+                      "intA": 5,
+                      "intB": 5
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "output": {
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T13] queryParams Add(5+5) expect 10: =coerce.toString($activity[SOAPQueryP].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQUXVlcnlQIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T14_—_SOAP1.2_JSON_WSDL_Fault",
+      "data": {
+        "name": "T14 — SOAP1.2 JSON WSDL Fault",
+        "description": "",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPDiv012",
+            "type": "label",
+            "label": "Start to SOAPDiv012"
+          },
+          {
+            "id": 2,
+            "from": "SOAPDiv012",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPDiv012 to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPDiv012",
+            "name": "SOAPDiv012",
+            "description": "SOAP 1.2 JSON WSDL — Divide(7÷0) expects Fault",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Divide",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.2",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 30,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 7,
+                    "intB": 0
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"DivideResult\":{\"type\":\"number\"}},\"required\":[\"DivideResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"DivideResult\":{\"type\":\"number\"}},\"required\":[\"DivideResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T14] SOAP1.2 DivByZero expect isFault=true: =coerce.toString($activity[SOAPDiv012].isFault) fault: =coerce.toString($activity[SOAPDiv012].soapResponseFault)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQRGl2MDEyIjp7IngiOjI1MCwieSI6MTUwfSwiTG9nUmVzdWx0Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T15_—_RetryOnError:_2_drops_then_success",
+      "data": {
+        "name": "T15 — RetryOnError: 2 drops then success",
+        "description": "retryOnError integration test",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPCall",
+            "type": "label",
+            "label": "Start to SOAPAdd"
+          },
+          {
+            "id": 2,
+            "from": "SOAPCall",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAdd to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPCall",
+            "name": "SOAPCall",
+            "description": "T15 — RetryOnError: 2 drops then success",
+            "settings": {
+              "retryOnError": {
+                "count": 3,
+                "interval": 200
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Add",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 5,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 10,
+                    "intB": 5
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T15_RetryOnError_Success] result: =coerce.toString($activity[SOAPCall].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQ2FsbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    },
+    {
+      "id": "flow:T16_—_RetryOnError:_retries_exhausted_flow_fails",
+      "data": {
+        "name": "T16 — RetryOnError: retries exhausted flow fails",
+        "description": "retryOnError integration test",
+        "links": [
+          {
+            "id": 1,
+            "from": "Start",
+            "to": "SOAPCall",
+            "type": "label",
+            "label": "Start to SOAPAdd"
+          },
+          {
+            "id": 2,
+            "from": "SOAPCall",
+            "to": "LogResult",
+            "type": "label",
+            "label": "SOAPAdd to LogResult"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "Start",
+            "name": "Start",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "SOAPCall",
+            "name": "SOAPCall",
+            "description": "T16 — RetryOnError: retries exhausted flow fails",
+            "settings": {
+              "retryOnError": {
+                "count": 1,
+                "interval": 100
+              }
+            },
+            "activity": {
+              "ref": "#soapclient",
+              "settings": {
+                "wsdlSourceType": "WSDL File",
+                "wsdlUrl": {
+                  "filename": "calculator.wsdl",
+                  "content": "data:application/octet-stream;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjx3c2RsOmRlZmluaXRpb25zIHhtbG5zOnNvYXA9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvc29hcC8iIHhtbG5zOnRtPSJodHRwOi8vbWljcm9zb2Z0LmNvbS93c2RsL21pbWUvdGV4dE1hdGNoaW5nLyIgeG1sbnM6c29hcGVuYz0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbmNvZGluZy8iIHhtbG5zOm1pbWU9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvbWltZS8iIHhtbG5zOnRucz0iaHR0cDovL3RlbXB1cmkub3JnLyIgeG1sbnM6cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnNvYXAxMj0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC9zb2FwMTIvIiB4bWxuczpodHRwPSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93c2RsL2h0dHAvIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iIHhtbG5zOndzZGw9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzZGwvIj4NCiAgPHdzZGw6dHlwZXM+DQogICAgPHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiB0YXJnZXROYW1lc3BhY2U9Imh0dHA6Ly90ZW1wdXJpLm9yZy8iPg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJBZGQiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iQWRkUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkFkZFJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3QiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iU3VidHJhY3RSZXNwb25zZSI+DQogICAgICAgIDxzOmNvbXBsZXhUeXBlPg0KICAgICAgICAgIDxzOnNlcXVlbmNlPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iU3VidHJhY3RSZXN1bHQiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5Ij4NCiAgICAgICAgPHM6Y29tcGxleFR5cGU+DQogICAgICAgICAgPHM6c2VxdWVuY2U+DQogICAgICAgICAgICA8czplbGVtZW50IG1pbk9jY3Vycz0iMSIgbWF4T2NjdXJzPSIxIiBuYW1lPSJpbnRBIiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEIiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgIDwvczpzZXF1ZW5jZT4NCiAgICAgICAgPC9zOmNvbXBsZXhUeXBlPg0KICAgICAgPC9zOmVsZW1lbnQ+DQogICAgICA8czplbGVtZW50IG5hbWU9Ik11bHRpcGx5UmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9Ik11bHRpcGx5UmVzdWx0IiB0eXBlPSJzOmludCIgLz4NCiAgICAgICAgICA8L3M6c2VxdWVuY2U+DQogICAgICAgIDwvczpjb21wbGV4VHlwZT4NCiAgICAgIDwvczplbGVtZW50Pg0KICAgICAgPHM6ZWxlbWVudCBuYW1lPSJEaXZpZGUiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9ImludEEiIHR5cGU9InM6aW50IiAvPg0KICAgICAgICAgICAgPHM6ZWxlbWVudCBtaW5PY2N1cnM9IjEiIG1heE9jY3Vycz0iMSIgbmFtZT0iaW50QiIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICAgIDxzOmVsZW1lbnQgbmFtZT0iRGl2aWRlUmVzcG9uc2UiPg0KICAgICAgICA8czpjb21wbGV4VHlwZT4NCiAgICAgICAgICA8czpzZXF1ZW5jZT4NCiAgICAgICAgICAgIDxzOmVsZW1lbnQgbWluT2NjdXJzPSIxIiBtYXhPY2N1cnM9IjEiIG5hbWU9IkRpdmlkZVJlc3VsdCIgdHlwZT0iczppbnQiIC8+DQogICAgICAgICAgPC9zOnNlcXVlbmNlPg0KICAgICAgICA8L3M6Y29tcGxleFR5cGU+DQogICAgICA8L3M6ZWxlbWVudD4NCiAgICA8L3M6c2NoZW1hPg0KICA8L3dzZGw6dHlwZXM+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iQWRkU29hcEluIj4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpBZGQiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkFkZFNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOkFkZFJlc3BvbnNlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJTdWJ0cmFjdFNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3QiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IlN1YnRyYWN0U29hcE91dCI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6U3VidHJhY3RSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOm1lc3NhZ2UgbmFtZT0iTXVsdGlwbHlTb2FwSW4iPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5IiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJNdWx0aXBseVNvYXBPdXQiPg0KICAgIDx3c2RsOnBhcnQgbmFtZT0icGFyYW1ldGVycyIgZWxlbWVudD0idG5zOk11bHRpcGx5UmVzcG9uc2UiIC8+DQogIDwvd3NkbDptZXNzYWdlPg0KICA8d3NkbDptZXNzYWdlIG5hbWU9IkRpdmlkZVNvYXBJbiI+DQogICAgPHdzZGw6cGFydCBuYW1lPSJwYXJhbWV0ZXJzIiBlbGVtZW50PSJ0bnM6RGl2aWRlIiAvPg0KICA8L3dzZGw6bWVzc2FnZT4NCiAgPHdzZGw6bWVzc2FnZSBuYW1lPSJEaXZpZGVTb2FwT3V0Ij4NCiAgICA8d3NkbDpwYXJ0IG5hbWU9InBhcmFtZXRlcnMiIGVsZW1lbnQ9InRuczpEaXZpZGVSZXNwb25zZSIgLz4NCiAgPC93c2RsOm1lc3NhZ2U+DQogIDx3c2RsOnBvcnRUeXBlIG5hbWU9IkNhbGN1bGF0b3JTb2FwIj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDx3c2RsOmRvY3VtZW50YXRpb24geG1sbnM6d3NkbD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3NkbC8iPkFkZHMgdHdvIGludGVnZXJzLiBUaGlzIGlzIGEgdGVzdCBXZWJTZXJ2aWNlLiDCqURORSBPbmxpbmU8L3dzZGw6ZG9jdW1lbnRhdGlvbj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpBZGRTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkFkZFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOlN1YnRyYWN0U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpTdWJ0cmFjdFNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHdzZGw6aW5wdXQgbWVzc2FnZT0idG5zOk11bHRpcGx5U29hcEluIiAvPg0KICAgICAgPHdzZGw6b3V0cHV0IG1lc3NhZ2U9InRuczpNdWx0aXBseVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDx3c2RsOmlucHV0IG1lc3NhZ2U9InRuczpEaXZpZGVTb2FwSW4iIC8+DQogICAgICA8d3NkbDpvdXRwdXQgbWVzc2FnZT0idG5zOkRpdmlkZVNvYXBPdXQiIC8+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgPC93c2RsOnBvcnRUeXBlPg0KICA8d3NkbDpiaW5kaW5nIG5hbWU9IkNhbGN1bGF0b3JTb2FwIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwOmJpbmRpbmcgdHJhbnNwb3J0PSJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy9zb2FwL2h0dHAiIC8+DQogICAgPHdzZGw6b3BlcmF0aW9uIG5hbWU9IkFkZCI+DQogICAgICA8c29hcDpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0FkZCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iU3VidHJhY3QiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9TdWJ0cmFjdCIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iTXVsdGlwbHkiPg0KICAgICAgPHNvYXA6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9NdWx0aXBseSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDpib2R5IHVzZT0ibGl0ZXJhbCIgLz4NCiAgICAgIDwvd3NkbDpvdXRwdXQ+DQogICAgPC93c2RsOm9wZXJhdGlvbj4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iRGl2aWRlIj4NCiAgICAgIDxzb2FwOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvRGl2aWRlIiBzdHlsZT0iZG9jdW1lbnQiIC8+DQogICAgICA8d3NkbDppbnB1dD4NCiAgICAgICAgPHNvYXA6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICA8L3dzZGw6YmluZGluZz4NCiAgPHdzZGw6YmluZGluZyBuYW1lPSJDYWxjdWxhdG9yU29hcDEyIiB0eXBlPSJ0bnM6Q2FsY3VsYXRvclNvYXAiPg0KICAgIDxzb2FwMTI6YmluZGluZyB0cmFuc3BvcnQ9Imh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3NvYXAvaHR0cCIgLz4NCiAgICA8d3NkbDpvcGVyYXRpb24gbmFtZT0iQWRkIj4NCiAgICAgIDxzb2FwMTI6b3BlcmF0aW9uIHNvYXBBY3Rpb249Imh0dHA6Ly90ZW1wdXJpLm9yZy9BZGQiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJTdWJ0cmFjdCI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvU3VidHJhY3QiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJNdWx0aXBseSI+DQogICAgICA8c29hcDEyOm9wZXJhdGlvbiBzb2FwQWN0aW9uPSJodHRwOi8vdGVtcHVyaS5vcmcvTXVsdGlwbHkiIHN0eWxlPSJkb2N1bWVudCIgLz4NCiAgICAgIDx3c2RsOmlucHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOmlucHV0Pg0KICAgICAgPHdzZGw6b3V0cHV0Pg0KICAgICAgICA8c29hcDEyOmJvZHkgdXNlPSJsaXRlcmFsIiAvPg0KICAgICAgPC93c2RsOm91dHB1dD4NCiAgICA8L3dzZGw6b3BlcmF0aW9uPg0KICAgIDx3c2RsOm9wZXJhdGlvbiBuYW1lPSJEaXZpZGUiPg0KICAgICAgPHNvYXAxMjpvcGVyYXRpb24gc29hcEFjdGlvbj0iaHR0cDovL3RlbXB1cmkub3JnL0RpdmlkZSIgc3R5bGU9ImRvY3VtZW50IiAvPg0KICAgICAgPHdzZGw6aW5wdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6aW5wdXQ+DQogICAgICA8d3NkbDpvdXRwdXQ+DQogICAgICAgIDxzb2FwMTI6Ym9keSB1c2U9ImxpdGVyYWwiIC8+DQogICAgICA8L3dzZGw6b3V0cHV0Pg0KICAgIDwvd3NkbDpvcGVyYXRpb24+DQogIDwvd3NkbDpiaW5kaW5nPg0KICA8d3NkbDpzZXJ2aWNlIG5hbWU9IkNhbGN1bGF0b3IiPg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAiIGJpbmRpbmc9InRuczpDYWxjdWxhdG9yU29hcCI+DQogICAgICA8c29hcDphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICAgIDx3c2RsOnBvcnQgbmFtZT0iQ2FsY3VsYXRvclNvYXAxMiIgYmluZGluZz0idG5zOkNhbGN1bGF0b3JTb2FwMTIiPg0KICAgICAgPHNvYXAxMjphZGRyZXNzIGxvY2F0aW9uPSJodHRwOi8vd3d3LmRuZW9ubGluZS5jb20vY2FsY3VsYXRvci5hc214IiAvPg0KICAgIDwvd3NkbDpwb3J0Pg0KICA8L3dzZGw6c2VydmljZT4NCjwvd3NkbDpkZWZpbml0aW9ucz4="
+                },
+                "wsdlHttpUrl": "",
+                "wsdlOperation": "Add",
+                "autoUseWsdlEndpoint": false,
+                "soapServiceEndpoint": "http://www.dneonline.com/calculator.asmx",
+                "soapVersion": "1.1",
+                "xmlMode": false,
+                "xmlAttributePrefix": "-",
+                "authorization": false,
+                "enableTLS": false,
+                "skipTlsVerify": false,
+                "serverCertificate": "",
+                "clientCertificate": "",
+                "clientKey": "",
+                "timeout": 5,
+                "maxResponseBodyMB": 10,
+                "maxConnsPerHost": 100
+              },
+              "input": {
+                "soapAction": "",
+                "soapRequestBody": {
+                  "mapping": {
+                    "intA": 10,
+                    "intB": 5
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "soapRequestBody": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"intA\":{\"type\":\"number\"},\"intB\":{\"type\":\"number\"}},\"required\":[\"intA\",\"intB\"]}"
+                  }
+                },
+                "output": {
+                  "soapResponsePayload": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"AddResult\":{\"type\":\"number\"}},\"required\":[\"AddResult\"]}"
+                  },
+                  "soapResponseFault": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"title\":\"SOAPFault\",\"description\":\"SOAP 1.1 Fault structure. Present when isFault=true.\",\"type\":\"object\",\"properties\":{\"faultcode\":{\"type\":\"string\",\"description\":\"Fault code, e.g. soap:Server or soap:Client\"},\"faultstring\":{\"type\":\"string\",\"description\":\"Human-readable description of the fault\"},\"faultactor\":{\"type\":\"string\",\"description\":\"URI of the node that generated the fault (optional)\"},\"detail\":{\"type\":\"object\",\"description\":\"Service-specific fault detail element (optional)\"}},\"required\":[\"faultcode\",\"faultstring\"]}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "[T16_RetryOnError_Exhausted] result: =coerce.toString($activity[SOAPCall].soapResponsePayload)",
+                "logLevel": ""
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydCI6eyJ4Ijo1MCwieSI6NTB9LCJTT0FQQ2FsbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkxvZ1Jlc3VsdCI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlNPQVBBZGQiLCJpZCI6IlNPQVAiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vU09BUCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.3"
+  }
+}

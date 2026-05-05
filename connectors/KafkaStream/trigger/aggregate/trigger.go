@@ -23,8 +23,8 @@ import (
 	"github.com/project-flogo/core/trigger"
 	kafkaconn "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/connector/kafka"
 
-	kafkastream "github.com/milindpandav/flogo-extensions/kafkastream"
-	"github.com/milindpandav/flogo-extensions/kafkastream/window"
+	kafkastream "github.com/mpandav-tibco/flogo-extensions/kafkastream"
+	"github.com/mpandav-tibco/flogo-extensions/kafkastream/window"
 )
 
 var triggerMd = trigger.NewMetadata(&Settings{}, &HandlerSettings{}, &Output{})

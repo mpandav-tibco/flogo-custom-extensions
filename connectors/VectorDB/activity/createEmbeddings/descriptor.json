@@ -1,0 +1,157 @@
+{
+  "name": "tibco-vectordb-create-embeddings",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createEmbeddings",
+  "title": "Create Embeddings",
+  "image": "icons/embed.svg",
+  "description": "Generate vector embeddings from text using OpenAI, Azure OpenAI, Cohere, or Ollama. Supports single text and batch embedding.",
+  "display": {
+    "category": "VectorDB",
+    "visible": true,
+    "smallIcon": "icons/embed.svg",
+    "description": "Generate dense vector embeddings for RAG, semantic search, and clustering"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": false,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Optional. Select a VectorDB connection to inherit embedding settings from.",
+        "type": "connection"
+      },
+      "allowed": []
+    },
+    {
+      "name": "useConnectorEmbedding",
+      "type": "boolean",
+      "required": false,
+      "value": true,
+      "display": {
+        "name": "Use Connector Embedding Settings",
+        "description": "Inherit the embedding provider, API key, and base URL from the VectorDB connection. Only the model needs to be set below. Requires 'Configure Embedding Provider' to be enabled on the connection.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "provider",
+      "type": "string",
+      "required": false,
+      "value": "OpenAI",
+      "allowed": [
+        "OpenAI",
+        "Azure OpenAI",
+        "Cohere",
+        "Ollama",
+        "Custom"
+      ],
+      "display": {
+        "name": "Embedding Provider",
+        "description": "Embedding API provider to use",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "apiKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "API Key",
+        "description": "API key / access token. Not required for Ollama or private networks.",
+        "type": "password",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "baseURL",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Base URL",
+        "description": "Override the default provider URL. OpenAI: https://api.openai.com/v1 | Azure: full deployment URL | Ollama: http://localhost:11434 | Custom: your endpoint.",
+        "visible": false,
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": true,
+      "value": "text-embedding-3-small",
+      "display": {
+        "name": "Embedding Model",
+        "description": "Model name. Examples: text-embedding-3-small (OpenAI), embed-english-v3.0 (Cohere), nomic-embed-text (Ollama).",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "dimensions",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Dimensions",
+        "description": "Output vector size. 0 = model default. Supported by text-embedding-3-* models (e.g. 512, 1536, 3072).",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 30,
+      "display": {
+        "name": "Timeout (s)",
+        "description": "HTTP request timeout in seconds",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {
+      "name": "inputText",
+      "type": "string"
+    },
+    {
+      "name": "inputTexts",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "embedding",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"number\"}}"
+    },
+    {
+      "name": "embeddings",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"array\", \"items\": {\"type\": \"number\"}}}"
+    },
+    {
+      "name": "dimensions",
+      "type": "integer"
+    },
+    {
+      "name": "tokensUsed",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}

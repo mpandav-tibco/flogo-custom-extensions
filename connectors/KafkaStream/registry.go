@@ -10,7 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/milindpandav/flogo-extensions/kafkastream/window"
+	"github.com/mpandav-tibco/flogo-extensions/kafkastream/window"
 )
 
 // Global window store registry — one entry per named window instance.

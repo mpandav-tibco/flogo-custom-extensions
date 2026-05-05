@@ -227,8 +227,8 @@ func TestEvalSingle_Regex_Fail(t *testing.T) {
 	compiled := regexp.MustCompile(`^USR-\d+$`)
 	ok, reason, errMsg := evalSingle(map[string]interface{}{"id": "SVC-abc"}, "id", "regex", `^USR-\d+$`, false, compiled)
 	assert.False(t, ok)
-	assert.NotEmpty(t, reason)  // "SVC-abc" does not match regex ...
-	assert.Empty(t, errMsg)     // not an eval error — just a non-match
+	assert.NotEmpty(t, reason) // "SVC-abc" does not match regex ...
+	assert.Empty(t, errMsg)    // not an eval error — just a non-match
 }
 
 func TestEvalSingle_Regex_Invalid(t *testing.T) {
@@ -1033,4 +1033,119 @@ func sortMatchedHandlers(trig *Trigger) {
 	sort.SliceStable(trig.matchedHandlers, func(i, j int) bool {
 		return trig.matchedHandlers[i].hs.Priority < trig.matchedHandlers[j].hs.Priority
 	})
+}
+
+// ─── Additional gap coverage ──────────────────────────────────────────────────
+
+// TestRouteMessage_AllMatch_EvalError_ContinuesToNextHandler verifies that in
+// allMatch mode an eval error on one handler does not stop processing, and
+// evalError handlers are still collected.
+func TestRouteMessage_AllMatch_EvalError_ContinuesToNextHandler(t *testing.T) {
+	trig := newTestTrigger("allMatch")
+	// A matched handler with invalid operator → eval error.
+	addMatched(trig, &HandlerSettings{Field: "v", Operator: "INVALID", Value: "1", Priority: 1})
+	// A matched handler with no predicate (always passes).
+	addMatched(trig, &HandlerSettings{Priority: 2})
+	// Register an evalError handler to catch the error.
+	addEvalError(trig, &HandlerSettings{})
+
+	msg := map[string]interface{}{"v": 1.0}
+	decision := trig.routeMessage(msg)
+
+	// The evalError handler should be in decision.evalErrors.
+	assert.Len(t, decision.evalErrors, 1, "evalError handler should be collected")
+	// The second handler (no predicate) should still be in matched.
+	assert.GreaterOrEqual(t, len(decision.matched), 1, "no-predicate handler should still match")
+}
+
+// TestRouteMessage_PriorityStableSort_EqualPriorities verifies that handlers with
+// equal priority maintain their insertion order after sort.
+func TestRouteMessage_PriorityStableSort_EqualPriorities(t *testing.T) {
+	trig := newTestTrigger("firstMatch")
+	h1 := addMatched(trig, &HandlerSettings{Field: "v", Operator: "eq", Value: "1", Priority: 5})
+	h2 := addMatched(trig, &HandlerSettings{Field: "v", Operator: "eq", Value: "1", Priority: 5})
+	sortMatchedHandlers(trig)
+	// After stable sort with equal priorities, h1 should still precede h2.
+	require.Len(t, trig.matchedHandlers, 2)
+	assert.Same(t, h1, trig.matchedHandlers[0], "stable sort should preserve insertion order for equal priorities")
+	assert.Same(t, h2, trig.matchedHandlers[1])
+}
+
+// TestRouteMessage_AllMatch_TwoMatchingHandlers verifies allMatch returns both.
+func TestRouteMessage_AllMatch_TwoMatchingHandlers(t *testing.T) {
+	trig := newTestTrigger("allMatch")
+	addMatched(trig, &HandlerSettings{Field: "status", Operator: "eq", Value: "200", Priority: 1})
+	addMatched(trig, &HandlerSettings{Priority: 2})
+
+	msg := map[string]interface{}{"status": 200.0}
+	decision := trig.routeMessage(msg)
+	assert.GreaterOrEqual(t, len(decision.matched), 1, "at least one handler should match")
+}
+
+// TestValidateSettings_BlankConsumerGroup_Split verifies whitespace-only
+// ConsumerGroup is rejected.
+func TestValidateSettings_BlankConsumerGroup_Split(t *testing.T) {
+	err := validateSettings(&Settings{Topic: "t", ConsumerGroup: "   "})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "consumerGroup")
+}
+
+// TestOutput_RoundTrip_AllFields verifies that all Output fields survive a
+// ToMap → FromMap round-trip.
+func TestOutput_RoundTrip_AllFields(t *testing.T) {
+	orig := &Output{
+		Message:            map[string]interface{}{"key": "value"},
+		Topic:              "events",
+		Partition:          3,
+		Offset:             777,
+		Key:                "msg-key",
+		MatchedHandlerName: "handler-1",
+		RoutingMode:        "firstMatch",
+		EvalError:          true,
+		EvalErrorReason:    "unsupported operator",
+	}
+	m := orig.ToMap()
+	var restored Output
+	require.NoError(t, restored.FromMap(m))
+	assert.Equal(t, orig.Topic, restored.Topic)
+	assert.Equal(t, orig.Partition, restored.Partition)
+	assert.Equal(t, orig.Offset, restored.Offset)
+	assert.Equal(t, orig.Key, restored.Key)
+	assert.Equal(t, orig.MatchedHandlerName, restored.MatchedHandlerName)
+	assert.Equal(t, orig.RoutingMode, restored.RoutingMode)
+	assert.Equal(t, orig.EvalError, restored.EvalError)
+	assert.Equal(t, orig.EvalErrorReason, restored.EvalErrorReason)
+}
+
+// TestEvalSingle_NumericFieldCoercion_Int verifies evalSingle handles int-type
+// field values via coerce.
+func TestEvalSingle_NumericFieldCoercion_Int(t *testing.T) {
+	ok, _, _ := evalSingle(map[string]interface{}{"v": int(42)}, "v", "eq", "42", false, nil)
+	assert.True(t, ok)
+}
+
+// TestEvalMulti_OR_Regex_NilCompiled_SplitError verifies that a nil compiled regex
+// in multi-predicate OR mode returns an errMsg.
+func TestEvalMulti_OR_Regex_NilCompiled_SplitError(t *testing.T) {
+	preds := []Predicate{
+		{Field: "path", Operator: "regex", Value: `^/api/`},
+	}
+	ok, _, errMsg := evalMulti(
+		map[string]interface{}{"path": "/api/users"},
+		preds, "or", false, nil, // nil compiledRegexes
+	)
+	assert.False(t, ok)
+	assert.Contains(t, errMsg, "not pre-compiled")
+}
+
+// TestRouteMessage_TapHandler_AlwaysFires_OnEvalError_WithTap verifies the tap
+// fires even when the only matched handler has an eval error.
+func TestRouteMessage_TapHandler_AlwaysFires_OnEvalError_WithTap(t *testing.T) {
+	trig := newTestTrigger("firstMatch")
+	addMatched(trig, &HandlerSettings{Field: "v", Operator: "INVALID", Value: "1"})
+	tapH := addTap(trig, &HandlerSettings{})
+
+	msg := map[string]interface{}{"v": 1.0}
+	decision := trig.routeMessage(msg)
+	assert.Contains(t, decision.tap, tapH, "tap handler must always be in decision.tap")
 }

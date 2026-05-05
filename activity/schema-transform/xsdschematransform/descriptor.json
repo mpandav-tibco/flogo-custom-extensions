@@ -3,9 +3,16 @@
   "type": "flogo:activity",
   "version": "1.0.0",
   "title": "XSD Schema Transform",
+  "image": "icons/xsd-schema-transform.svg",
   "description": "Comprehensive XSD Schema transformation activity supporting conversion to JSON Schema and Avro Schema with extensive feature coverage",
   "author": "Flogo Custom Extensions",
   "homepage": "https://github.com/project-flogo/contrib/tree/master/activity/xsdschematransform",
+  "display": {
+    "category": "SchemaTransform",
+    "visible": true,
+    "smallIcon": "icons/xsd-schema-transform.svg",
+    "description": "Convert XSD schema to JSON Schema or Avro"
+  },
   "settings": [],
   "inputs": [
     {

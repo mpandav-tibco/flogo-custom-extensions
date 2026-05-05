@@ -3,6 +3,7 @@
   "type": "flogo:trigger",
   "version": "1.1.0",
   "title": "MySQL Binlog Listener",
+  "image": "icons/mysql-binlog.svg",
   "description": "A dedicated MySQL/MariaDB binlog streaming trigger that captures real-time database changes",
   "homepage": "https://github.com/project-flogo/contrib",
   "display": {

@@ -1,0 +1,318 @@
+{
+    "name": "soapclient",
+    "type": "flogo:activity",
+    "version": "1.0.0",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/soapclient",
+    "title": "SOAP Client",
+    "description": "Invoke a SOAP 1.1/1.2 service with optional WSDL-driven operation discovery, auto soapAction injection, and request-body skeleton generation.",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/activity/soapclient",
+    "display": {
+        "category": "SOAP",
+        "visible": true,
+        "smallIcon": "icons/soap-client.svg",
+        "largeIcon": "icons/soap-client.svg",
+        "description": "Invoke a SOAP service with WSDL-driven operation discovery and automatic request skeleton generation"
+    },
+    "settings": [
+        {
+            "name": "wsdlSourceType",
+            "type": "string",
+            "allowed": [
+                "None",
+                "WSDL File",
+                "WSDL URL"
+            ],
+            "value": "None",
+            "description": "Choose how to provide the WSDL: browse a local file or enter a remote HTTP/HTTPS URL.",
+            "display": {
+                "name": "WSDL Source",
+                "description": "Select WSDL File to browse a local file, or WSDL URL to enter a remote address.",
+                "type": "dropdown",
+                "selection": "single",
+                "visible": true
+            }
+        },
+        {
+            "name": "wsdlUrl",
+            "type": "string",
+            "description": "Local WSDL file (selected via file browser).",
+            "display": {
+                "name": "WSDL File",
+                "description": "Browse to select a local .wsdl file",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".wsdl"
+                ],
+                "appPropertySupport": true,
+                "visible": false
+            }
+        },
+        {
+            "name": "wsdlHttpUrl",
+            "type": "string",
+            "description": "HTTP or HTTPS URL of the WSDL document (e.g. https://host/service?wsdl). NOTE: Browser CORS policy prevents the designer from fetching external URLs — operations and schema will NOT auto-populate. Use \"WSDL File\" for design-time features. The URL is used by the runtime (Go) only.",
+            "display": {
+                "name": "WSDL URL",
+                "description": "Remote WSDL URL — design-time WSDL parsing is blocked by browser CORS. Use WSDL File for operation discovery.",
+                "appPropertySupport": true,
+                "visible": false
+            }
+        },
+        {
+            "name": "wsdlOperation",
+            "type": "string",
+            "description": "Name of the WSDL operation to invoke. Required when a WSDL URL is set. The dropdown is populated automatically after the WSDL is fetched and parsed.",
+            "display": {
+                "name": "WSDL Operation",
+                "description": "Select an operation from the parsed WSDL. Populated automatically when a valid WSDL URL or file is provided.",
+                "type": "dropdown",
+                "selection": "single",
+                "visible": false
+            }
+        },
+        {
+            "name": "autoUseWsdlEndpoint",
+            "type": "boolean",
+            "description": "When enabled, the SOAP Service Endpoint setting is overridden with the endpoint declared in the WSDL <service> element.",
+            "value": false,
+            "display": {
+                "name": "Use WSDL Service Endpoint",
+                "description": "Override the endpoint below with the one declared in the WSDL <service> element",
+                "visible": false
+            }
+        },
+        {
+            "name": "soapServiceEndpoint",
+            "type": "string",
+            "required": true,
+            "description": "The endpoint URL of the SOAP service to invoke. When autoUseWsdlEndpoint is enabled this is overridden with the value from the WSDL <service> element.",
+            "value": "",
+            "display": {
+                "name": "SOAP Service Endpoint",
+                "appPropertySupport": true,
+                "visible": true
+            }
+        },
+        {
+            "name": "soapVersion",
+            "type": "string",
+            "required": true,
+            "allowed": [
+                "1.1",
+                "1.2"
+            ],
+            "description": "The SOAP version to use.",
+            "value": "1.1",
+            "display": {
+                "name": "SOAP Version"
+            }
+        },
+        {
+            "name": "xmlMode",
+            "type": "boolean",
+            "description": "When enabled, the request body is a JSON object whose keys map directly to XML elements. Use @-prefixed keys for XML attributes (e.g. @xmlns). The activity converts the JSON object to XML and places it inside the SOAP envelope without any WSDL-driven wrapping. The response is returned as a raw XML string. When disabled (default), the activity performs automatic JSON↔XML conversion and, when a WSDL operation is selected, wraps the body with the correct root element and namespace.",
+            "value": false,
+            "display": {
+                "name": "XML Mode"
+            }
+        },
+        {
+            "name": "xmlAttributePrefix",
+            "type": "string",
+            "description": "Attribute prefix for JSON ↔ XML conversion. Default is '-'. Only used when XML Mode is disabled.",
+            "value": "-",
+            "display": {
+                "name": "XML Attribute Prefix"
+            }
+        },
+        {
+            "name": "authorization",
+            "type": "boolean",
+            "description": "Enable HTTP authentication using an HTTP auth connector. When enabled select the authentication connection below.",
+            "value": false,
+            "display": {
+                "name": "Enable Authentication"
+            }
+        },
+        {
+            "name": "authorizationConn",
+            "type": "connection",
+            "required": false,
+            "description": "HTTP authentication connection used to inject Authorization headers.",
+            "display": {
+                "name": "Authentication Connection",
+                "description": "Select an HTTP authentication connection",
+                "type": "connection",
+                "visible": false
+            },
+            "allowed": []
+        },
+        {
+            "name": "enableTLS",
+            "type": "boolean",
+            "description": "Enable a secure TLS connection. When enabled the certificate fields below become available.",
+            "value": false,
+            "display": {
+                "name": "Enable TLS",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "skipTlsVerify",
+            "type": "boolean",
+            "description": "Disable TLS certificate verification. WARNING: enables man-in-the-middle attacks. Use only for development or when connecting to services with self-signed certificates that cannot be added to the system trust store.",
+            "value": false,
+            "display": {
+                "name": "Skip TLS Verification",
+                "description": "WARNING: disables certificate validation — development use only.",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "serverCertificate",
+            "type": "string",
+            "display": {
+                "name": "Server / CA Certificate",
+                "description": "CA or server certificate file for TLS verification (.crt / .pem / .cer / .der)",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".crt",
+                    ".pem",
+                    ".cer",
+                    ".der"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "clientCertificate",
+            "type": "string",
+            "display": {
+                "name": "Client Certificate",
+                "description": "Client certificate file for mutual TLS (.crt / .pem / .cer / .der)",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".crt",
+                    ".pem",
+                    ".cer",
+                    ".der"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "clientKey",
+            "type": "string",
+            "display": {
+                "name": "Client Private Key",
+                "description": "Client private key file for mutual TLS (.key / .pem / .der)",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".key",
+                    ".pem",
+                    ".der"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "timeout",
+            "type": "integer",
+            "description": "HTTP request timeout in seconds.",
+            "value": 30,
+            "display": {
+                "name": "Timeout (seconds)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxResponseBodyMB",
+            "type": "integer",
+            "description": "Maximum response body size in megabytes. Responses larger than this limit are rejected with an error. Default is 10 MB when set to 0.",
+            "value": 10,
+            "display": {
+                "name": "Max Response Body (MB)",
+                "description": "Reject responses larger than this size to prevent out-of-memory conditions.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxConnsPerHost",
+            "type": "integer",
+            "description": "Maximum number of simultaneous active HTTP connections to the SOAP endpoint host. Default is 100 when set to 0. Increase for high-concurrency flows that send many parallel SOAP calls to the same endpoint.",
+            "value": 100,
+            "display": {
+                "name": "Max Connections Per Host",
+                "description": "Cap on simultaneous connections to the SOAP host. Increase for high-concurrency deployments.",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "input": [
+        {
+            "name": "soapAction",
+            "type": "string",
+            "description": "Overrides the SOAPAction HTTP header. When a WSDL operation is configured and this field is empty the value is injected automatically from the WSDL binding."
+        },
+        {
+            "name": "httpQueryParams",
+            "type": "object",
+            "description": "Key-value pairs appended to the endpoint URL as query parameters. Merged with any existing query string from the endpoint.",
+            "enablecoercing": "true"
+        },
+        {
+            "name": "soapRequestHeaders",
+            "type": "any",
+            "description": "SOAP <Header> element contents. JSON object (JSON mode) or JSON object / raw XML string (XML mode). Leave empty when no SOAP headers are required.",
+            "enablecoercing": "true"
+        },
+        {
+            "name": "soapRequestBody",
+            "type": "complex_object",
+            "description": "SOAP <Body> element contents. In JSON mode: a JSON object converted to XML automatically. In XML mode: a JSON object (use @-prefixed keys for XML attributes, e.g. @xmlns) or a raw XML string for exact element order control.",
+            "enablecoercing": "true"
+        }
+    ],
+    "feature": {
+        "retry": {
+            "enabled": true
+        },
+        "circuitBreaker": {
+            "enabled": true
+        }
+    },
+    "output": [
+        {
+            "name": "httpStatus",
+            "type": "int",
+            "description": "HTTP status code returned by the SOAP service."
+        },
+        {
+            "name": "isFault",
+            "type": "boolean",
+            "description": "True when the response contained a SOAP Fault."
+        },
+        {
+            "name": "soapResponsePayload",
+            "type": "complex_object",
+            "enablecoercing": "true",
+            "description": "Successful SOAP response body (JSON object or XML string depending on XML Mode). When a WSDL operation is configured the wsdlResponseJSONSchema output describes the field structure."
+        },
+        {
+            "name": "soapResponseHeaders",
+            "type": "any",
+            "enablecoercing": "true",
+            "description": "SOAP response headers."
+        },
+        {
+            "name": "soapResponseFault",
+            "type": "complex_object",
+            "enablecoercing": "true",
+            "description": "SOAP Fault details when isFault is true. Structure follows the SOAP 1.1 Fault shape (faultcode, faultstring, faultactor, detail). The wsdlFaultJSONSchema output contains the exact JSON Schema."
+        }
+    ]
+}

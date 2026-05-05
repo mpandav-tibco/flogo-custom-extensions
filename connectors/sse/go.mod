@@ -1,4 +1,4 @@
-module github.com/milindpandav/flogo-extensions/sse
+module github.com/mpandav-tibco/flogo-extensions/sse
 
 go 1.21
 
@@ -7,4 +7,4 @@ require (
 	github.com/stretchr/testify v1.8.4
 )
 
-replace github.com/milindpandav/flogo-extensions/sse => ./
+replace github.com/mpandav-tibco/flogo-extensions/sse => ./
