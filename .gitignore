@@ -35,3 +35,10 @@ activity/.DS_Store
 activity/xsdschematransform/.DS_Store
 bin/*
 examples/**/build/
+
+# Local VS Code Flogo extension junctions (flogo.extensions.local)
+# These are Windows directory junctions - not real directories to commit
+General/
+GQL/
+GraphQLClient/
+user-extensions/
