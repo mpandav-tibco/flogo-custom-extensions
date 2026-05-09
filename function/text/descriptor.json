@@ -7,12 +7,44 @@
     "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/function/text",
     "functions": [
         {
+            "name": "parseUnstructured",
+            "description": "Converts the JSON response body from the Unstructured.io REST API (POST /general/v0/general) into clean plain text for vector embedding. Table elements are reconstructed from their HTML to preserve column context (e.g. DEV/SIT/UAT/PROD environment columns). Footer, Header, Image and PageBreak elements are omitted. Safe to call on empty strings.",
+            "example": "text.parseUnstructured(\"[{\\\"type\\\":\\\"Title\\\",\\\"text\\\":\\\"Spec\\\",\\\"metadata\\\":{}},{\\\"type\\\":\\\"Table\\\",\\\"text\\\":\\\"A B\\\",\\\"metadata\\\":{\\\"text_as_html\\\":\\\"<table><thead><tr><th>Col</th></tr></thead><tbody><tr><td>Val</td></tr></tbody></table>\\\"}}]\") => \"Spec\\n\\nCol: Val\"",
+            "args": [
+                {
+                    "name": "jsonResponse",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
             "name": "cleanText",
             "description": "Removes Apache Tika extraction artifacts from plain text: strips [image: ...] alt-text tokens, decodes HTML entities, removes control characters, trims whitespace per line, joins short orphaned fragments (table cells), and collapses runs of 3+ blank lines. Safe to call on empty strings (returns \"\").",
             "example": "text.cleanText(\"[image: (tick)]\\nBC 7.5.0\\n\\n\\n\\nBC 7.4.0\") => \"BC 7.5.0\\n\\nBC 7.4.0\"",
             "args": [
                 {
                     "name": "text",
+                    "type": "string"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "name": "smartChunk",
+            "description": "Converts the JSON response from the Unstructured.io REST API into structure-aware text chunks separated by blank lines (\\n\\n), ready for the VectorDB ingestDocuments activity using chunkStrategy=paragraph. Each chunk carries [Document: ...] [Section: ...] context. Tables are kept atomic with column labels preserved (no orphan cells). Two-column key/value tables also produce a 'Form fields:' digest chunk for high-precision retrieval. Footer/Header/Image/PageBreak elements are dropped.",
+            "example": "text.smartChunk(unstructuredJson, \"spec.pdf\") => \"[Document: spec] [Section: Heading]\\n...\\n\\n[Document: spec] [Section: Heading]\\nTable:\\nColumns: A | B\\nA: x | B: y\"",
+            "args": [
+                {
+                    "name": "jsonResponse",
+                    "type": "string"
+                },
+                {
+                    "name": "filename",
                     "type": "string"
                 }
             ],
