@@ -13,6 +13,10 @@ package textfn
 //     lines are joined with a space; fixes "BC\n\n7.5.0" → "BC 7.5.0" caused by
 //     Tika extracting multi-cell table rows as separate paragraphs
 //  6. Excessive blank lines — 3+ consecutive newlines → single blank line
+//  7. Standalone URL lines — lines consisting only of a URL are removed; these
+//     are Confluence/SharePoint/JIRA navigation links that Tika includes verbatim
+//     and add no semantic value for vector embedding.
+//  8. Email addresses — replaced with [email] to remove PII noise from chunks.
 //
 // These are format-agnostic transformations applied to the plain-text string
 // returned by Tika regardless of original file type (PDF, DOC, DOCX, etc.).
@@ -50,8 +54,31 @@ var reHtmlNamedEntity = regexp.MustCompile(`&(amp|lt|gt|quot|apos|nbsp);`)
 // reHtmlNumericEntity matches numeric HTML entities &#NNN; or &#xHHH;
 var reHtmlNumericEntity = regexp.MustCompile(`&#[xX]?[0-9a-fA-F]+;`)
 
-// fragmentMaxLen is the maximum byte length for a line to be considered a
-// table-cell fragment eligible for joining with an adjacent fragment.
+// reStandaloneURLLine matches a line that consists only of a URL (navigation noise).
+// Handles both ://  (http/ftp) and :  (mailto) URL formats.
+// Multiline flag makes ^ and $ match line boundaries.
+var reStandaloneURLLine = regexp.MustCompile(`(?m)^(?:(?:https?|ftp)://|mailto:)\S*\s*$`)
+
+// reURLFragmentLine matches orphaned URL fragment lines left after reStandaloneURLLine
+// strips the primary https:// line. Tika wraps long URLs across lines, producing:
+//
+//	"net/display/~user", "/display/~user", ".com", "com" as standalone remnants.
+//
+// Patterns: TLD-prefixed paths (net/pages/…), Confluence/JIRA/Bitbucket paths (/display/…),
+// bare TLD-only lines (.com  .net  .io), and bare TLD words without a dot prefix (com  io)
+// — the last case occurs when the email regex consumes a trailing dot leaving "com" orphaned,
+// and the fragment joiner would otherwise merge it into "[email] com".
+var reURLFragmentLine = regexp.MustCompile(`(?m)^(?:` +
+	`(?:com|net|org|io|tools|api|gov|edu|de|uk|fr|nl)/\S*` + // TLD-as-path fragment: net/pages/viewpage
+	`|/(?:display|pages|browse|projects|repos|spaces|wiki)[^\n]*` + // Confluence/JIRA/Bitbucket path fragments
+	`|\.[a-z]{2,6}` + // bare TLD with dot: .com  .net  .io
+	`|com|io` + // bare TLD word without dot (email wrapping artifact: user@domain.\ncom)
+	`)\s*$`)
+
+// reEmailAddr matches email addresses; TLD is optional to also catch wrapped
+// addresses where Tika placed the TLD on the next line (e.g. "Rathore@adidas").
+var reEmailAddr = regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+(?:\.[a-zA-Z]{2,})?`)
+
 const fragmentMaxLen = 20
 
 type fnCleanText struct{}
@@ -118,6 +145,20 @@ func (fnCleanText) Eval(params ...interface{}) (interface{}, error) {
 
 	// Step 4: remove [image: ...] alt-text tokens
 	text = reImageAlt.ReplaceAllString(text, "")
+
+	// Step 4b: replace email addresses with [email] placeholder.
+	// Done before URL removal so that mailto:user@host patterns also become
+	// standalone URL lines and are caught by the next step.
+	text = reEmailAddr.ReplaceAllString(text, "[email]")
+
+	// Step 4c: remove standalone URL-only lines (Confluence/JIRA/SharePoint link noise)
+	// These are navigation links Tika extracts verbatim; they add no semantic value.
+	// Removal leaves the surrounding newlines, naturally creating paragraph breaks.
+	text = reStandaloneURLLine.ReplaceAllString(text, "")
+
+	// Step 4d: remove orphaned URL fragment lines — path/TLD remnants left after
+	// stripping the primary https:// line when Tika wrapped long URLs across lines.
+	text = reURLFragmentLine.ReplaceAllString(text, "")
 
 	// Step 5: trim leading/trailing whitespace from every line
 	lines := strings.Split(text, "\n")
