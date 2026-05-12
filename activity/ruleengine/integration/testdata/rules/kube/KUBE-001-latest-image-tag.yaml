@@ -1,0 +1,20 @@
+rule:
+  id: KUBE-001
+  severity: ERROR
+  title: Container Uses latest or Untagged Image
+  description: "Container {{.Scope.name}} uses image {{.Match}} with no pinned version."
+  tags: [kubernetes, deployment]
+  applies_to: [.yaml, .yml]
+  parser: yaml
+  scope: "spec.template.spec.containers"
+  match:
+    type: any_of
+    conditions:
+      - type: regex
+        path: image
+        pattern: ":latest$"
+      - type: not_contains
+        path: image
+        substring: ":"
+  location: "container:{{.Scope.name}}"
+  recommendation: "Pin the image to a specific digest or version tag."

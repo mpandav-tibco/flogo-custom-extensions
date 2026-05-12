@@ -1,0 +1,13 @@
+rule:
+  id: FLOGO-001
+  severity: ERROR
+  title: Flow Missing Error Handler
+  description: "Flow {{.Scope.name}} has no error handler tasks."
+  tags: [flogo, reliability]
+  applies_to: [.json, .flogo]
+  scope: "$.resources[*].data"
+  match:
+    type: missing
+    path: "errorHandler.tasks"
+  location: "flow:{{.Scope.name}}"
+  recommendation: "Add an errorHandler section with at least one task."

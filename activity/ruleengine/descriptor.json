@@ -1,0 +1,101 @@
+{
+    "name": "tibco-rule-engine",
+    "title": "Rule Engine",
+    "version": "1.0.0",
+    "type": "flogo:activity",
+    "description": "Generic YAML-driven document analysis engine. Evaluates externalized rules against any structured document (JSON, XML, YAML, key-value, text lines) and returns structured findings.",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine",
+    "display": {
+        "category": "AI Agent",
+        "visible": true,
+        "smallIcon": "icons/ruleengine.svg",
+        "largeIcon": "icons/ruleengine.svg",
+        "description": "Evaluate YAML rules against structured documents — JSON, XML, YAML, config files, logs"
+    },
+    "inputs": [
+        {
+            "name": "content",
+            "type": "string",
+            "required": true
+        },
+        {
+            "name": "fileName",
+            "type": "string",
+            "required": true
+        },
+        {
+            "name": "rulesPath",
+            "type": "string",
+            "required": true
+        },
+        {
+            "name": "parserOverride",
+            "type": "string",
+            "required": false,
+            "allowed": ["", "json", "xml", "yaml", "kv", "lines"],
+            "display": {
+                "name": "Parser Override",
+                "description": "Override automatic parser detection. Leave empty to infer from file extension.",
+                "type": "dropdown",
+                "mappable": true
+            }
+        },
+        {
+            "name": "disabledRules",
+            "type": "array",
+            "required": false
+        },
+        {
+            "name": "tags",
+            "type": "array",
+            "required": false
+        }
+    ],
+    "outputs": [
+        {
+            "name": "findings",
+            "type": "array",
+            "description": "Array of issue/warning findings from matched rules"
+        },
+        {
+            "name": "positives",
+            "type": "array",
+            "description": "Array of positive/strength findings (GOOD severity rules)"
+        },
+        {
+            "name": "errorCount",
+            "type": "integer",
+            "description": "Number of ERROR severity findings"
+        },
+        {
+            "name": "warningCount",
+            "type": "integer",
+            "description": "Number of WARNING severity findings"
+        },
+        {
+            "name": "infoCount",
+            "type": "integer",
+            "description": "Number of INFO severity findings"
+        },
+        {
+            "name": "markdown",
+            "type": "string",
+            "description": "Pre-formatted markdown analysis report"
+        },
+        {
+            "name": "overview",
+            "type": "object",
+            "description": "Parsed document overview (name, item counts, structure summary)"
+        },
+        {
+            "name": "success",
+            "type": "boolean",
+            "description": "True if evaluation completed without errors"
+        },
+        {
+            "name": "error",
+            "type": "string",
+            "description": "Error message if success is false"
+        }
+    ]
+}

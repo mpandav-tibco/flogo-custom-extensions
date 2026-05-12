@@ -1,0 +1,12 @@
+{
+    "name": "Rule Engine",
+    "version": "1.0.0",
+    "category": "AI Agent",
+    "description": "Generic YAML-driven document analysis engine. Evaluates externalized rules against any structured document and returns structured findings.",
+    "contributions": [
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine"
+        }
+    ]
+}
