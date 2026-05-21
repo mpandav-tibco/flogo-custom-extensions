@@ -6,11 +6,11 @@
     "description": "Generic YAML-driven document analysis engine. Evaluates externalized rules against any structured document (JSON, XML, YAML, key-value, text lines) and returns structured findings.",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine",
     "display": {
-        "category": "AI Agent",
+        "category": "Default",
         "visible": true,
         "smallIcon": "icons/ruleengine.svg",
         "largeIcon": "icons/ruleengine.svg",
-        "description": "Evaluate YAML rules against structured documents — JSON, XML, YAML, config files, logs"
+        "description": "Evaluate YAML rules against structured documents \u2014 JSON, XML, YAML, config files, logs"
     },
     "inputs": [
         {
@@ -32,26 +32,29 @@
             "name": "parserOverride",
             "type": "string",
             "required": false,
-            "allowed": ["", "json", "xml", "yaml", "kv", "lines"],
-            "display": {
-                "name": "Parser Override",
-                "description": "Override automatic parser detection. Leave empty to infer from file extension.",
-                "type": "dropdown",
-                "mappable": true
-            }
+            "allowed": [
+                "",
+                "json",
+                "xml",
+                "yaml",
+                "kv",
+                "lines"
+            ]
         },
         {
             "name": "disabledRules",
             "type": "array",
-            "required": false
+            "required": false,
+            "items": { "type": "string" }
         },
         {
             "name": "tags",
             "type": "array",
-            "required": false
+            "required": false,
+            "items": { "type": "string" }
         }
     ],
-    "outputs": [
+    "output": [
         {
             "name": "findings",
             "type": "array",
