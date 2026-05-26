@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/antchfx/xmlquery v1.4.4
-	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
+	github.com/ohler55/ojg v1.28.1
 	github.com/project-flogo/core v1.6.13
 	gopkg.in/yaml.v3 v3.0.1
 )

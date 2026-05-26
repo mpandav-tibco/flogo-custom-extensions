@@ -360,16 +360,19 @@ func TestJSONParser_LargeNestedDocument(t *testing.T) {
 
 // ─── resolveArray edge cases ──────────────────────────────────────────────────
 
-func TestJSONParser_ResolveScope_WildcardOnObjectRoot_Empty(t *testing.T) {
-	// Root is a map, not an array. expandWildcard calls resolveArray("$"),
-	// which finds the root is NOT []interface{} → returns nil → empty scope.
+func TestJSONParser_ResolveScope_WildcardOnObjectRoot_AllValues(t *testing.T) {
+	// Root is a map, not an array. $[*] is standard JSONPath for "all children",
+	// so ojg/jp correctly returns every top-level value in the map.
 	doc, _ := (&JSONParser{}).Parse(`{"name":"app"}`)
 	scope, err := doc.ResolveScope("$[*]")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(scope) != 0 {
-		t.Fatalf("expected empty scope when root is not an array, got %d items", len(scope))
+	if len(scope) != 1 {
+		t.Fatalf("expected 1 scope item (the value 'app'), got %d", len(scope))
+	}
+	if scope[0] != "app" {
+		t.Fatalf("expected scope[0]='app', got %v", scope[0])
 	}
 }
 
