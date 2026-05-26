@@ -246,6 +246,11 @@ func evalAnyOf(cond model.Condition, doc parser.Document, scope interface{}) (Ma
 }
 
 func evalAllOf(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
+	if len(cond.Conditions) == 0 {
+		// Vacuous all_of with no sub-conditions must not match — an empty rule
+		// would fire against every scope item, producing false positives.
+		return MatchResult{Matched: false}, nil
+	}
 	for _, sub := range cond.Conditions {
 		r, err := EvaluateCondition(sub, doc, scope)
 		if err != nil {
@@ -307,6 +312,12 @@ func evalAllMissing(cond model.Condition, doc parser.Document, scope interface{}
 // evalNoneContain fires when the resolved object/map has none of the keys listed
 // in cond.Keys, OR when none of the array items at path contain any of cond.Substrings.
 func evalNoneContain(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
+	if len(cond.Keys) == 0 && len(cond.Substrings) == 0 {
+		// Misconfigured rule: no keys or substrings to check.
+		// Return false to avoid vacuously matching every scope item
+		// (same reasoning as the all_of: [] guard).
+		return MatchResult{Matched: false}, nil
+	}
 	val, found := doc.ResolvePath(scope, cond.Path)
 	if !found || val == nil {
 		// Nothing resolved → no headers/items present → treat as match (none contain).
@@ -414,7 +425,10 @@ func evalCredentialHeaderLiteral(cond model.Condition, doc parser.Document, scop
 			s := stringify(headerVal)
 			// A Flogo expression always starts with "=$" — a literal value does not.
 			if s != "" && !strings.HasPrefix(s, "=$") {
-				return MatchResult{Matched: true, Value: fmt.Sprintf("%s: %s", headerKey, s)}, nil
+				// Return only the header name — never the value itself.
+				// The value is a credential; surfacing it in findings output would
+				// re-expose the secret to downstream systems and logs.
+				return MatchResult{Matched: true, Value: fmt.Sprintf("%s: [REDACTED]", headerKey)}, nil
 			}
 		}
 	}

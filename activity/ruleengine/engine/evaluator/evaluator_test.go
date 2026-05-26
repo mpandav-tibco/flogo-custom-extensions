@@ -311,3 +311,48 @@ func TestSortedRules_OriginalUnchanged(t *testing.T) {
 		t.Fatal("sortedRules mutated the original slice")
 	}
 }
+
+// ─── Run: evaluation error surfacing ─────────────────────────────────────────
+
+func TestEvaluator_Run_MatchError_SurfacedAsDiagnostic(t *testing.T) {
+	// A rule whose match condition produces an error (invalid regex) must surface
+	// a diagnostic INFO finding rather than silently swallowing the error.
+	d := &mapDoc{root: map[string]interface{}{"image": "nginx:latest"}}
+	r := &model.RuleDef{
+		ID:       "BAD-001",
+		Severity: "ERROR",
+		Title:    "Bad regex rule",
+		Match:    model.Condition{Type: "regex", Path: "image", Pattern: "[invalid"},
+	}
+	findings, _ := Run([]*model.RuleDef{r}, d, "test.json")
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 diagnostic finding for match error, got %d", len(findings))
+	}
+	if findings[0].Severity != model.SeverityInfo {
+		t.Fatalf("expected INFO severity for match-error diagnostic, got %q", findings[0].Severity)
+	}
+	if findings[0].RuleID != "BAD-001" {
+		t.Fatalf("expected RuleID=BAD-001 in diagnostic, got %q", findings[0].RuleID)
+	}
+}
+
+func TestEvaluator_Run_WhenError_SurfacedAsDiagnostic(t *testing.T) {
+	// A rule whose when-filter produces an error (invalid regex) must surface
+	// a diagnostic INFO finding — the match phase must not run.
+	d := &mapDoc{root: map[string]interface{}{"ref": "#rest"}}
+	whenCond := model.Condition{Type: "regex", Path: "ref", Pattern: "[invalid"}
+	r := &model.RuleDef{
+		ID:       "BAD-002",
+		Severity: "ERROR",
+		Title:    "Bad when rule",
+		When:     &whenCond,
+		Match:    model.Condition{Type: "exists", Path: "ref"},
+	}
+	findings, _ := Run([]*model.RuleDef{r}, d, "test.json")
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 diagnostic finding for when-error, got %d", len(findings))
+	}
+	if findings[0].Severity != model.SeverityInfo {
+		t.Fatalf("expected INFO severity for when-error diagnostic, got %q", findings[0].Severity)
+	}
+}

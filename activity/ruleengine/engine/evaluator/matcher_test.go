@@ -624,12 +624,15 @@ func TestMatcher_AllOf_OneFails(t *testing.T) {
 	}
 }
 
-func TestMatcher_AllOf_EmptyConditions_Matches(t *testing.T) {
+func TestMatcher_AllOf_EmptyConditions_NoMatch(t *testing.T) {
+	// all_of with zero sub-conditions must NOT match.
+	// A vacuously-true all_of would fire against every scope item,
+	// producing false positives — the corrected behaviour returns false.
 	d := doc()
 	c := model.Condition{Type: "all_of", Conditions: []model.Condition{}}
 	r, _ := EvaluateCondition(c, d, d.root)
-	if !r.Matched {
-		t.Fatal("expected match for empty all_of (vacuously true)")
+	if r.Matched {
+		t.Fatal("all_of with empty conditions must not match (would cause false positives)")
 	}
 }
 
@@ -740,6 +743,216 @@ func TestMatcher_UnknownType_Error(t *testing.T) {
 	_, err := EvaluateCondition(cond("superfluous_type", "key"), d, d.root)
 	if err == nil {
 		t.Fatal("expected error for unknown match type")
+	}
+}
+
+// ─── none_contain ─────────────────────────────────────────────────────────────
+
+func TestMatcher_NoneContain_EmptyKeysAndSubstrings_NoMatch(t *testing.T) {
+	// Misconfigured rule with no keys or substrings must NOT vacuously match.
+	d := doc("headers", map[string]interface{}{"Authorization": "Bearer token"})
+	c := model.Condition{Type: "none_contain", Path: "headers"}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("none_contain with no keys or substrings must not match (would cause false positives)")
+	}
+}
+
+func TestMatcher_NoneContain_KeyPresent_NoMatch(t *testing.T) {
+	d := doc("headers", map[string]interface{}{"Authorization": "Bearer token"})
+	c := model.Condition{Type: "none_contain", Path: "headers", Keys: []string{"Authorization"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match when forbidden key is present")
+	}
+}
+
+func TestMatcher_NoneContain_KeyAbsent_Matches(t *testing.T) {
+	d := doc("headers", map[string]interface{}{"Content-Type": "application/json"})
+	c := model.Condition{Type: "none_contain", Path: "headers", Keys: []string{"Authorization"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if !r.Matched {
+		t.Fatal("expected match when none of the forbidden keys are present")
+	}
+}
+
+func TestMatcher_NoneContain_SubstringPresent_NoMatch(t *testing.T) {
+	d := doc("envVars", []interface{}{"DB_PASSWORD=secret", "DEBUG=true"})
+	c := model.Condition{Type: "none_contain", Path: "envVars", Substrings: []string{"PASSWORD"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match when a forbidden substring is present in an array item")
+	}
+}
+
+func TestMatcher_NoneContain_SubstringAbsent_Matches(t *testing.T) {
+	d := doc("envVars", []interface{}{"APP_NAME=myapp", "DEBUG=true"})
+	c := model.Condition{Type: "none_contain", Path: "envVars", Substrings: []string{"PASSWORD"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if !r.Matched {
+		t.Fatal("expected match when no array item contains the forbidden substring")
+	}
+}
+
+func TestMatcher_NoneContain_AbsentPath_Matches(t *testing.T) {
+	// Path not found → nothing to contain → matches (none contain)
+	d := doc()
+	c := model.Condition{Type: "none_contain", Path: "headers", Keys: []string{"Authorization"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if !r.Matched {
+		t.Fatal("expected match when path does not exist (nothing can contain the forbidden key)")
+	}
+}
+
+// ─── credential_header_literal ────────────────────────────────────────────────
+
+func TestMatcher_CredentialHeaderLiteral_LiteralValue_Matches(t *testing.T) {
+	d := doc("input", map[string]interface{}{"Authorization": "Bearer hardcoded-token"})
+	c := model.Condition{Type: "credential_header_literal", Path: "input", HeaderNames: []string{"Authorization"}}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || !r.Matched {
+		t.Fatalf("expected match for literal credential header: err=%v", err)
+	}
+	// The credential VALUE must be redacted in the match result output.
+	if r.Value == "Authorization: Bearer hardcoded-token" {
+		t.Fatal("credential value must not be surfaced in match result; expected [REDACTED]")
+	}
+}
+
+func TestMatcher_CredentialHeaderLiteral_ExpressionValue_NoMatch(t *testing.T) {
+	d := doc("input", map[string]interface{}{"Authorization": "=$activity[GetToken].output.token"})
+	c := model.Condition{Type: "credential_header_literal", Path: "input", HeaderNames: []string{"Authorization"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match for Flogo expression value (not a literal)")
+	}
+}
+
+func TestMatcher_CredentialHeaderLiteral_UnrelatedHeader_NoMatch(t *testing.T) {
+	d := doc("input", map[string]interface{}{"Content-Type": "application/json"})
+	c := model.Condition{Type: "credential_header_literal", Path: "input", HeaderNames: []string{"Authorization"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match when the credential header is not present")
+	}
+}
+
+// ─── regex_not_match ──────────────────────────────────────────────────────────
+
+func TestMatcher_RegexNotMatch_PatternNotMatched_Fires(t *testing.T) {
+	d := doc("image", "nginx:1.25")
+	c := model.Condition{Type: "regex_not_match", Path: "image", Pattern: ":latest$"}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || !r.Matched {
+		t.Fatalf("expected match when pattern is NOT found: err=%v", err)
+	}
+}
+
+func TestMatcher_RegexNotMatch_PatternMatched_NoFire(t *testing.T) {
+	d := doc("image", "nginx:latest")
+	c := model.Condition{Type: "regex_not_match", Path: "image", Pattern: ":latest$"}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match when pattern IS found")
+	}
+}
+
+func TestMatcher_RegexNotMatch_RequiresContains_GuardFails_NoFire(t *testing.T) {
+	// requires_contains guard: value must contain "image" to apply the check.
+	// If the guard string is absent, the rule is not applicable → returns false.
+	d := doc("cmd", "/bin/sh")
+	c := model.Condition{Type: "regex_not_match", Path: "cmd", Pattern: ":latest$", RequiresContains: "image"}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match when requires_contains guard is not satisfied")
+	}
+}
+
+// ─── duplicate_values ─────────────────────────────────────────────────────────
+
+func TestMatcher_DuplicateValues_HasDuplicate_Matches(t *testing.T) {
+	d := doc("ports", []interface{}{"8080", "9090", "8080"})
+	c := model.Condition{Type: "duplicate_values", Path: "ports"}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || !r.Matched {
+		t.Fatalf("expected match for array with duplicate values: err=%v", err)
+	}
+}
+
+func TestMatcher_DuplicateValues_AllUnique_NoMatch(t *testing.T) {
+	d := doc("ports", []interface{}{"8080", "9090", "3000"})
+	c := model.Condition{Type: "duplicate_values", Path: "ports"}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match for array with all unique values")
+	}
+}
+
+func TestMatcher_DuplicateValues_NonArray_NoMatch(t *testing.T) {
+	d := doc("name", "myapp")
+	c := model.Condition{Type: "duplicate_values", Path: "name"}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match for non-array value")
+	}
+}
+
+// ─── all_missing ──────────────────────────────────────────────────────────────
+
+func TestMatcher_AllMissing_AllPathsAbsent_Matches(t *testing.T) {
+	d := doc("name", "myapp")
+	c := model.Condition{Type: "all_missing", Paths: []string{"timeout", "retries"}}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || !r.Matched {
+		t.Fatalf("expected match when all paths are absent: err=%v", err)
+	}
+}
+
+func TestMatcher_AllMissing_OnePathPresent_NoMatch(t *testing.T) {
+	d := doc("timeout", float64(30))
+	c := model.Condition{Type: "all_missing", Paths: []string{"timeout", "retries"}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match when one of the paths exists")
+	}
+}
+
+func TestMatcher_AllMissing_EmptyPaths_NoMatch(t *testing.T) {
+	// all_missing with no paths is vacuously under-specified → must not match.
+	d := doc()
+	c := model.Condition{Type: "all_missing", Paths: []string{}}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("all_missing with empty paths must not match")
+	}
+}
+
+// ─── count_greater_than ───────────────────────────────────────────────────────
+
+func TestMatcher_CountGreaterThan_LargeArray_Matches(t *testing.T) {
+	d := doc("items", []interface{}{"a", "b", "c", "d"})
+	c := model.Condition{Type: "count_greater_than", Path: "items", MinCount: 3}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || !r.Matched {
+		t.Fatalf("expected match for 4 items > 3: err=%v", err)
+	}
+}
+
+func TestMatcher_CountGreaterThan_ExactCount_NoMatch(t *testing.T) {
+	d := doc("items", []interface{}{"a", "b", "c"})
+	c := model.Condition{Type: "count_greater_than", Path: "items", MinCount: 3}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match for exact count (strict greater-than)")
+	}
+}
+
+func TestMatcher_CountGreaterThan_NonArray_NoMatch(t *testing.T) {
+	d := doc("count", "five")
+	c := model.Condition{Type: "count_greater_than", Path: "count", MinCount: 1}
+	r, _ := EvaluateCondition(c, d, d.root)
+	if r.Matched {
+		t.Fatal("expected no match for non-array value")
 	}
 }
 
