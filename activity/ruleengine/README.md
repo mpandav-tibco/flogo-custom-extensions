@@ -9,7 +9,6 @@ Supports:
 - Flexible scope targeting — JSONPath, XPath, or dot-path to narrow rules to specific sub-objects
 - Tag and disable filters — run only a tagged subset of rules, or skip specific rule IDs at call time
 - Go template interpolation — `{{.Scope.*}}`, `{{.Root.*}}`, `{{.File.*}}`, `{{.Match}}` in descriptions and locations
-- OpenTelemetry tracing — child span per invocation via the Flogo trace abstraction
 
 ---
 

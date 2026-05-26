@@ -5,9 +5,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine"
 )
+
+// maxRequestBodyBytes caps the incoming request body at 10 MB.
+// Without this limit a caller could send an arbitrarily large body and
+// exhaust server memory before the decode even starts.
+const maxRequestBodyBytes = 10 << 20 // 10 MB
 
 func main() {
 	rulesPath := os.Getenv("RULES_PATH")
@@ -44,6 +50,7 @@ func main() {
 			Tags           []string `json:"tags"`
 		}
 
+		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodyBytes)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -89,7 +96,14 @@ func main() {
 
 	addr := ":7000"
 	log.Printf("rule-engine-service listening on %s (rules: %s)", addr, rulesPath)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      mux,
+		ReadTimeout:  30 * time.Second, // guards against slow-request attacks
+		WriteTimeout: 60 * time.Second, // generous for large document analysis
+		IdleTimeout:  120 * time.Second,
+	}
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }

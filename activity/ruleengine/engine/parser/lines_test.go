@@ -19,15 +19,25 @@ func TestLinesParser_BasicParse(t *testing.T) {
 	}
 }
 
-func TestLinesParser_EmptyString_SingleEmptyLine(t *testing.T) {
+func TestLinesParser_EmptyString_NoLines(t *testing.T) {
+	// An empty file has no lines — the trailing-empty-string artefact from
+	// strings.Split must be filtered, not treated as a real line.
 	doc, err := (&LinesParser{}).Parse("")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	// Empty string splits into one empty line
 	scope, _ := doc.ResolveScope("")
-	if len(scope) < 1 {
-		t.Fatal("expected at least one scope item for empty content")
+	if len(scope) != 0 {
+		t.Fatalf("expected 0 lines for empty content, got %d", len(scope))
+	}
+}
+
+func TestLinesParser_TrailingNewline_NotCountedAsExtraLine(t *testing.T) {
+	// Files ending with \n must not produce a phantom empty last line.
+	doc, _ := (&LinesParser{}).Parse("line1\nline2\n")
+	scope, _ := doc.ResolveScope("")
+	if len(scope) != 2 {
+		t.Fatalf("expected 2 lines for content ending with \\n, got %d", len(scope))
 	}
 }
 

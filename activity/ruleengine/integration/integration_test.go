@@ -182,11 +182,6 @@ type analyzeRequest struct {
 	Tags           []string `json:"tags,omitempty"`
 }
 
-type analyzeResponse struct {
-	Code int                    `json:"code"`
-	Data map[string]interface{} `json:"data"`
-}
-
 func postAnalyze(t *testing.T, req analyzeRequest) (int, map[string]interface{}) {
 	t.Helper()
 	body, _ := json.Marshal(req)

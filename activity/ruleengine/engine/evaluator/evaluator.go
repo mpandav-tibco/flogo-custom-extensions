@@ -10,7 +10,6 @@ import (
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/parser"
 )
 
-
 // Run evaluates a set of rules against a parsed document and returns all findings.
 func Run(rules []*model.RuleDef, doc parser.Document, fileName string) (findings []model.Finding, positives []model.Finding) {
 	fileInfo := FileInfo{
@@ -39,7 +38,7 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 		// Scope resolution error — create a single diagnostic finding
 		findings = append(findings, model.Finding{
 			RuleID:   rule.ID,
-			Severity: "INFO",
+			Severity: model.SeverityInfo,
 			Title:    fmt.Sprintf("Scope error for rule %s", rule.ID),
 			Message:  err.Error(),
 		})
@@ -50,20 +49,25 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 		return
 	}
 
+	var whenErr, matchErr error
 	for _, scopeItem := range scopeItems {
 		// Apply when pre-filter if present
 		if rule.When != nil {
 			preFilter, err := EvaluateCondition(*rule.When, doc, scopeItem)
-			if err != nil || !preFilter.Matched {
-				continue // skip this scope item
+			if err != nil {
+				whenErr = err
+				break // same condition definition applies to all items — stop early
+			}
+			if !preFilter.Matched {
+				continue
 			}
 		}
 
 		// Evaluate the main match condition
 		result, err := EvaluateCondition(rule.Match, doc, scopeItem)
 		if err != nil {
-			// Unknown or unimplemented match type — skip silently (logged by engine)
-			continue
+			matchErr = err
+			break // same condition definition applies to all items — stop early
 		}
 
 		if !result.Matched {
@@ -95,6 +99,25 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 		} else {
 			findings = append(findings, finding)
 		}
+	}
+
+	// Surface evaluation errors as diagnostic INFO findings rather than
+	// swallowing them silently — a rule author needs to know their rule is broken.
+	if whenErr != nil {
+		findings = append(findings, model.Finding{
+			RuleID:   rule.ID,
+			Severity: model.SeverityInfo,
+			Title:    fmt.Sprintf("Rule %s: when-condition error", rule.ID),
+			Message:  whenErr.Error(),
+		})
+	}
+	if matchErr != nil {
+		findings = append(findings, model.Finding{
+			RuleID:   rule.ID,
+			Severity: model.SeverityInfo,
+			Title:    fmt.Sprintf("Rule %s: match error", rule.ID),
+			Message:  matchErr.Error(),
+		})
 	}
 	return
 }

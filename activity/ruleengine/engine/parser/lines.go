@@ -13,8 +13,16 @@ func (p *LinesParser) Parse(content string) (Document, error) {
 	rawLines := strings.Split(content, "\n")
 	lines := make([]interface{}, 0, len(rawLines))
 	for i, l := range rawLines {
+		trimmed := strings.TrimRight(l, "\r")
+		// Skip the final empty element produced when content ends with "\n".
+		// strings.Split("a\nb\n", "\n") → ["a", "b", ""] — the trailing empty
+		// string is a parsing artefact, not a real line, and would cause false
+		// positives on any rule that checks for empty or missing line content.
+		if i == len(rawLines)-1 && trimmed == "" {
+			break
+		}
 		lines = append(lines, map[string]interface{}{
-			"line":   strings.TrimRight(l, "\r"),
+			"line":   trimmed,
 			"number": i + 1,
 		})
 	}

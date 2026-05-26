@@ -343,7 +343,7 @@ func TestJSONParser_LargeNestedDocument(t *testing.T) {
 			sb.WriteString(",")
 		}
 		sb.WriteString(`{"id":`)
-		sb.WriteString(string(rune('0'+i%10)))
+		sb.WriteString(string(rune('0' + i%10)))
 		sb.WriteString(`}`)
 	}
 	sb.WriteString(`]}`)
