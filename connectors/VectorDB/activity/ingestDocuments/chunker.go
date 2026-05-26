@@ -69,7 +69,7 @@ func validateChunkConfig(cfg ChunkConfig) error {
 // further split using the fixed strategy with no overlap.
 // 8 000 characters ≈ 2 000 tokens for typical English text, which is safely
 // below the 8 192-token context window of models such as nomic-embed-text.
-const maxEmbeddingInputChars = 8000
+const maxEmbeddingInputChars = 3500
 
 // expandChunks takes the parsed input documents and, for each document, splits
 // its Text field according to cfg. The returned slice replaces the input slice:
