@@ -5,8 +5,8 @@ Evaluates declarative YAML rules against structured documents (`.flogo`, `.bwp`,
 Supports:
 - YAML-driven rules — no code required; rules are externalised files loaded at runtime
 - Five built-in parsers — JSON/Flogo (JSONPath), XML/BWP (XPath), YAML/Helm (dot-path), Key-Value (`.properties`/`.env`), and plain-text log lines
-- 13 match types — existence, equality, string, regex, numeric, composite (`any_of` / `all_of` / `none_of`)
-- Flexible scope targeting — JSONPath, XPath, or dot-path to narrow rules to specific sub-objects
+- 20 match types — existence, equality, string, regex, numeric, composite, and security-specific extended types
+- Flexible scope targeting — full JSONPath (including nested wildcards), XPath, or dot-path to narrow rules to specific sub-objects
 - Tag and disable filters — run only a tagged subset of rules, or skip specific rule IDs at call time
 - Go template interpolation — `{{.Scope.*}}`, `{{.Root.*}}`, `{{.File.*}}`, `{{.Match}}` in descriptions and locations
 
@@ -90,6 +90,7 @@ rule:
 |------|-------------|
 | `missing` | Path absent, null, empty string, or empty array |
 | `exists` | Path present and non-empty |
+| `all_missing` | Every path in `paths` (list) is absent or empty |
 
 ### Equality
 
@@ -106,6 +107,7 @@ rule:
 | `not_contains` | `substring` | Value does not contain the substring |
 | `contains_any` | `substrings` | Value contains at least one entry in the list |
 | `regex` | `pattern`, `flags` | Value matches the regex pattern (`flags: [i]` for case-insensitive) |
+| `regex_not_match` | `pattern`, `requires_contains` | Value does **not** match the pattern. If `requires_contains` is set, the rule is skipped (no finding) unless the value first contains that string — useful to avoid false positives on unrelated values. |
 
 ### Numeric
 
@@ -114,6 +116,7 @@ rule:
 | `greater_than` | `value` | Numeric value > threshold |
 | `less_than` | `value` | Numeric value < threshold |
 | `count_exceeds` | `value` | Array length > threshold |
+| `count_greater_than` | `min_count` | Array length > `min_count` (alias of `count_exceeds` with a named field) |
 
 ### Composite (recursive)
 
@@ -122,6 +125,23 @@ rule:
 | `any_of` | `conditions` | At least one sub-condition matches |
 | `all_of` | `conditions` | All sub-conditions match |
 | `none_of` | `conditions` | No sub-condition matches |
+| `none_contain` | `path` + `keys` **or** `substrings` | Object has none of the given keys (key-based), or no array element contains any of the given substrings (substring-based) |
+
+### Security
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `credential_header_literal` | `path`, `header_names` | Any header in `header_names` found at `path` has a hard-coded literal value (i.e. not a Flogo `=$` expression). The finding value is `header: [REDACTED]` — the secret itself is never surfaced. |
+| `duplicate_values` | `path`, `min_count` | Array at `path` contains the same value ≥ `min_count` times (default 2). Useful for detecting duplicate rule IDs, duplicate activity refs, etc. |
+
+### Aliases
+
+The following type names are accepted as readable synonyms:
+
+| Alias | Resolves to |
+|-------|------------|
+| `not_empty`, `not_missing` | `exists` |
+| `regex_match` | `regex` |
 
 ---
 
@@ -235,36 +255,10 @@ rule:
 
 ---
 
-## OpenTelemetry Tracing
-
-A child span named `RuleEngine.Evaluate` is started for each invocation when tracing is enabled via the Flogo OTel backend. Tracing failures are logged as warnings and never abort evaluation.
-
-**Span attributes set at start:**
-
-| Attribute | Value |
-|-----------|-------|
-| `ruleengine.file_name` | `fileName` input |
-| `ruleengine.rules_path` | `rulesPath` input |
-| `ruleengine.parser` | `parserOverride` input |
-| `ruleengine.tags` | `tags` filter input |
-
-**Span attributes set on finish:**
-
-| Attribute | Value |
-|-----------|-------|
-| `ruleengine.rules_run` | Number of rules evaluated |
-| `ruleengine.parser_used` | Parser that was actually used |
-| `ruleengine.error_count` | ERROR finding count |
-| `ruleengine.warning_count` | WARNING finding count |
-| `ruleengine.info_count` | INFO finding count |
-
----
-
 ## Limitations
 
 | Area | Limitation |
 |------|------------|
-| **JSONPath wildcard** | Only single `[*]` wildcard per path is supported. Nested wildcards (e.g. `$.a[*].b[*]`) are not expanded. |
 | **XML path resolution** | Scope items are `*xmlquery.Node`; match paths must be valid XPath from that node. Dot-notation does not apply to XML. |
 | **Rule hot-reload** | Rules are reloaded from disk on every `Evaluate` call. This is intentional but adds I/O for large rule sets. |
 | **Expression match type** | `type: expression` (JavaScript sandbox) is defined in the schema but not yet implemented — returns an error if used. |
