@@ -563,6 +563,13 @@ func TestEvaluate_Result_MarkdownGenerated(t *testing.T) {
 	if !strings.Contains(result.Markdown, "FLOGO-001") {
 		t.Errorf("expected rule ID in markdown, got: %s", result.Markdown)
 	}
+	// The Message column must contain the interpolated description (f.Message),
+	// not just the static rule title. The description for missingErrorHandlerRule
+	// is "Flow {{.Scope.name}} has no error handler tasks." — after interpolation
+	// against flow1 it becomes "Flow flow1 has no error handler tasks."
+	if !strings.Contains(result.Markdown, "flow1") {
+		t.Errorf("expected interpolated scope name 'flow1' in markdown Message column, got: %s", result.Markdown)
+	}
 }
 
 func TestEvaluate_Result_Overview_Populated(t *testing.T) {

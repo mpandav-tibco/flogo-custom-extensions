@@ -4,8 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"sync"
 	"text/template"
 )
+
+// compiledTemplates caches parsed templates keyed by template string.
+// Template.Execute is safe for concurrent use; parsing is the expensive step.
+var compiledTemplates sync.Map
 
 // TemplateContext holds the variables available inside location/recommendation templates.
 type TemplateContext struct {
@@ -41,9 +46,16 @@ func Interpolate(tmpl string, ctx TemplateContext) string {
 		"Match": fmt.Sprintf("%v", ctx.Match),
 	}
 
-	t, err := template.New("").Option("missingkey=zero").Parse(tmpl)
-	if err != nil {
-		return tmpl // return raw template on parse error
+	var t *template.Template
+	if cached, ok := compiledTemplates.Load(tmpl); ok {
+		t = cached.(*template.Template)
+	} else {
+		var err error
+		t, err = template.New("").Option("missingkey=zero").Parse(tmpl)
+		if err != nil {
+			return tmpl // return raw template on parse error
+		}
+		compiledTemplates.Store(tmpl, t)
 	}
 
 	var buf bytes.Buffer

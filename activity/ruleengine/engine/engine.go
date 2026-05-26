@@ -123,7 +123,7 @@ func buildMarkdown(result *model.Result, fileName string) string {
 		sb.WriteString("|----------|------|----------|---------|\n")
 		for _, f := range result.Findings {
 			sb.WriteString(fmt.Sprintf("| %s | %s | %s | %s |\n",
-				f.Severity, f.RuleID, mdEscape(f.Location), mdEscape(f.Title)))
+				f.Severity, f.RuleID, mdEscape(f.Location), mdEscape(f.Message)))
 		}
 		sb.WriteString("\n")
 	}
@@ -138,7 +138,11 @@ func buildMarkdown(result *model.Result, fileName string) string {
 	return sb.String()
 }
 
-// mdEscape escapes pipe characters so they don't break markdown table cells.
+// mdEscape sanitises a string for inclusion in a markdown table cell.
+// Pipes are escaped so they don't break column boundaries; newlines are
+// replaced with a space so they don't inject extra rows into the table.
 func mdEscape(s string) string {
+	s = strings.ReplaceAll(s, "\n", " ")
+	s = strings.ReplaceAll(s, "\r", "")
 	return strings.ReplaceAll(s, "|", `\|`)
 }
