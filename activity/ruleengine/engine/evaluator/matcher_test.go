@@ -668,12 +668,15 @@ func TestMatcher_NoneOf_OneMatches(t *testing.T) {
 	}
 }
 
-func TestMatcher_NoneOf_EmptyConditions_Matches(t *testing.T) {
+func TestMatcher_NoneOf_EmptyConditions_NoMatch(t *testing.T) {
+	// An empty none_of is a misconfigured rule — it must not fire on every scope
+	// item. Mirrors the all_of: [] guard. Vacuous truth here would cause a
+	// rule with no conditions to produce a finding for every scope item.
 	d := doc()
 	c := model.Condition{Type: "none_of", Conditions: []model.Condition{}}
 	r, _ := EvaluateCondition(c, d, d.root)
-	if !r.Matched {
-		t.Fatal("expected match for empty none_of (vacuously true)")
+	if r.Matched {
+		t.Fatal("expected no match for empty none_of (misconfigured rule guard)")
 	}
 }
 

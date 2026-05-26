@@ -6,10 +6,16 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/model"
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/parser"
 )
+
+// compiledRegexps caches compiled regular expressions keyed by the full pattern
+// string (including any flag prefix). Compiling a regex is expensive and the
+// same pattern is typically applied to every scope item for a given rule.
+var compiledRegexps sync.Map
 
 // MatchResult carries whether the condition matched and the actual value involved.
 type MatchResult struct {
@@ -173,9 +179,16 @@ func evalRegex(cond model.Condition, doc parser.Document, scope interface{}) (Ma
 		pattern = "(?" + strings.Join(cond.Flags, "") + ")" + pattern
 	}
 
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return MatchResult{}, fmt.Errorf("invalid regex %q: %w", cond.Pattern, err)
+	var re *regexp.Regexp
+	if cached, ok := compiledRegexps.Load(pattern); ok {
+		re = cached.(*regexp.Regexp)
+	} else {
+		var err error
+		re, err = regexp.Compile(pattern)
+		if err != nil {
+			return MatchResult{}, fmt.Errorf("invalid regex %q: %w", cond.Pattern, err)
+		}
+		compiledRegexps.Store(pattern, re)
 	}
 	return MatchResult{Matched: re.MatchString(s), Value: s}, nil
 }
@@ -264,6 +277,12 @@ func evalAllOf(cond model.Condition, doc parser.Document, scope interface{}) (Ma
 }
 
 func evalNoneOf(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
+	if len(cond.Conditions) == 0 {
+		// Vacuous none_of with no sub-conditions must not match — a misconfigured
+		// rule would otherwise fire against every scope item, producing false positives.
+		// Mirrors the same guard in evalAllOf.
+		return MatchResult{Matched: false}, nil
+	}
 	for _, sub := range cond.Conditions {
 		r, err := EvaluateCondition(sub, doc, scope)
 		if err != nil {
@@ -370,9 +389,16 @@ func evalRegexNotMatch(cond model.Condition, doc parser.Document, scope interfac
 		return MatchResult{Matched: false}, nil
 	}
 
-	re, err := regexp.Compile(cond.Pattern)
-	if err != nil {
-		return MatchResult{}, fmt.Errorf("invalid regex %q: %w", cond.Pattern, err)
+	var re *regexp.Regexp
+	if cached, ok := compiledRegexps.Load(cond.Pattern); ok {
+		re = cached.(*regexp.Regexp)
+	} else {
+		var err error
+		re, err = regexp.Compile(cond.Pattern)
+		if err != nil {
+			return MatchResult{}, fmt.Errorf("invalid regex %q: %w", cond.Pattern, err)
+		}
+		compiledRegexps.Store(cond.Pattern, re)
 	}
 	return MatchResult{Matched: !re.MatchString(s), Value: s}, nil
 }
