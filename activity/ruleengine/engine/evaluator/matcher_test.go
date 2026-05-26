@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/model"
@@ -1006,5 +1007,132 @@ func TestToFloat64_UnsupportedType(t *testing.T) {
 	_, err := toFloat64([]string{"a"})
 	if err == nil {
 		t.Fatal("expected error for unsupported type")
+	}
+}
+
+// ─── toFloat64: additional type coverage ──────────────────────────────────────
+
+func TestToFloat64_Float32(t *testing.T) {
+	f, err := toFloat64(float32(2.5))
+	if err != nil || f != float64(float32(2.5)) {
+		t.Fatalf("unexpected: f=%v err=%v", f, err)
+	}
+}
+
+func TestToFloat64_Int64(t *testing.T) {
+	f, err := toFloat64(int64(1000))
+	if err != nil || f != 1000.0 {
+		t.Fatalf("unexpected: f=%v err=%v", f, err)
+	}
+}
+
+func TestToFloat64_JsonNumber(t *testing.T) {
+	f, err := toFloat64(json.Number("99.9"))
+	if err != nil || f != 99.9 {
+		t.Fatalf("unexpected: f=%v err=%v", f, err)
+	}
+}
+
+func TestToFloat64_JsonNumber_Invalid(t *testing.T) {
+	_, err := toFloat64(json.Number("not-a-number"))
+	if err == nil {
+		t.Fatal("expected error for invalid json.Number")
+	}
+}
+
+// ─── stringify: json.Number coverage ─────────────────────────────────────────
+
+func TestStringify_JsonNumber(t *testing.T) {
+	s := stringify(json.Number("42.5"))
+	if s != "42.5" {
+		t.Fatalf("expected '42.5', got %q", s)
+	}
+}
+
+// ─── toStringMap: non-map type ────────────────────────────────────────────────
+
+func TestToStringMap_StringStringMap_Passthrough(t *testing.T) {
+	m := map[string]interface{}{"k": "v"}
+	got, ok := toStringMap(m)
+	if !ok || got["k"] != "v" {
+		t.Fatalf("expected passthrough: ok=%v got=%v", ok, got)
+	}
+}
+
+func TestToStringMap_InterfaceKeyMap_Converted(t *testing.T) {
+	m := map[interface{}]interface{}{"key": "val", 42: "num"}
+	got, ok := toStringMap(m)
+	if !ok {
+		t.Fatal("expected ok=true for map[interface{}]interface{}")
+	}
+	if got["key"] != "val" {
+		t.Fatalf("expected key 'key'='val', got %v", got)
+	}
+	if got["42"] != "num" {
+		t.Fatalf("expected key '42'='num', got %v", got)
+	}
+}
+
+func TestToStringMap_NonMap_ReturnsNil(t *testing.T) {
+	_, ok := toStringMap("not a map")
+	if ok {
+		t.Fatal("expected ok=false for non-map type")
+	}
+}
+
+// ─── evalRegexNotMatch: missing branches ──────────────────────────────────────
+
+func TestMatcher_RegexNotMatch_PathNotFound_NoFire(t *testing.T) {
+	// Path doesn't exist in scope — early return false.
+	d := doc("name", "myapp")
+	c := model.Condition{Type: "regex_not_match", Path: "missing_field", Pattern: ".*"}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || r.Matched {
+		t.Fatalf("expected no match when path is not found: err=%v matched=%v", err, r.Matched)
+	}
+}
+
+func TestMatcher_RegexNotMatch_RequiresContains_GuardPasses_RegexRuns(t *testing.T) {
+	// requires_contains guard is satisfied (value contains "nginx") and pattern
+	// does NOT match → regex_not_match fires (Matched=true).
+	d := doc("image_tag", "nginx:1.25")
+	c := model.Condition{
+		Type:             "regex_not_match",
+		Path:             "image_tag",
+		Pattern:          ":latest$",
+		RequiresContains: "nginx",
+	}
+	r, err := EvaluateCondition(c, d, d.root)
+	if err != nil || !r.Matched {
+		t.Fatalf("expected match when guard passes and pattern not found: err=%v matched=%v", err, r.Matched)
+	}
+}
+
+func TestMatcher_RegexNotMatch_InvalidPattern_ReturnsError(t *testing.T) {
+	d := doc("value", "anything")
+	c := model.Condition{Type: "regex_not_match", Path: "value", Pattern: "[invalid("}
+	_, err := EvaluateCondition(c, d, d.root)
+	if err == nil {
+		t.Fatal("expected error for invalid regex pattern")
+	}
+}
+
+// ─── evalLessThan: numeric error path ────────────────────────────────────────
+
+func TestMatcher_LessThan_NonNumericValue_ReturnsError(t *testing.T) {
+	d := doc("size", "big")
+	c := model.Condition{Type: "less_than", Path: "size", Value: float64(10)}
+	_, err := EvaluateCondition(c, d, d.root)
+	if err == nil {
+		t.Fatal("expected error when value is non-numeric")
+	}
+}
+
+func TestMatcher_LessThan_NonNumericThreshold_ReturnsError(t *testing.T) {
+	d := doc("replicas", float64(3))
+	c := model.Condition{Type: "less_than", Path: "replicas", Value: "not-a-number"}
+	_, err := EvaluateCondition(c, d, d.root)
+	if err == nil {
+		t.Fatal("expected error when threshold is non-numeric")
 	}
 }

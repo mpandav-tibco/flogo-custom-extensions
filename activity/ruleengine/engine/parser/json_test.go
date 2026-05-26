@@ -357,3 +357,44 @@ func TestJSONParser_LargeNestedDocument(t *testing.T) {
 		t.Fatalf("expected 100 items, got %d", len(scope))
 	}
 }
+
+// ─── resolveArray edge cases ──────────────────────────────────────────────────
+
+func TestJSONParser_ResolveScope_WildcardOnObjectRoot_Empty(t *testing.T) {
+	// Root is a map, not an array. expandWildcard calls resolveArray("$"),
+	// which finds the root is NOT []interface{} → returns nil → empty scope.
+	doc, _ := (&JSONParser{}).Parse(`{"name":"app"}`)
+	scope, err := doc.ResolveScope("$[*]")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(scope) != 0 {
+		t.Fatalf("expected empty scope when root is not an array, got %d items", len(scope))
+	}
+}
+
+func TestJSONParser_ResolveScope_PathLeadsToNonArray_Empty(t *testing.T) {
+	// "$.name" resolves to a string, not an array; expandWildcard should
+	// return an empty scope rather than erroring.
+	doc, _ := (&JSONParser{}).Parse(`{"name":"myapp","items":[1,2,3]}`)
+	scope, err := doc.ResolveScope("$.name[*]")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(scope) != 0 {
+		t.Fatalf("expected empty scope for non-array wildcard, got %d items", len(scope))
+	}
+}
+
+func TestJSONParser_ResolveScope_UnknownPath_Empty(t *testing.T) {
+	// JSONPath lookup for a completely absent path should yield empty scope,
+	// not an error — rules that don't match the document structure are skipped.
+	doc, _ := (&JSONParser{}).Parse(flogoJSON)
+	scope, err := doc.ResolveScope("$.nonexistent")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(scope) != 0 {
+		t.Fatalf("expected empty scope for unknown path, got %d items", len(scope))
+	}
+}
