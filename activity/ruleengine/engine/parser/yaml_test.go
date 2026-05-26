@@ -142,6 +142,30 @@ func TestYAMLParser_ResolveScope_ContainerNames(t *testing.T) {
 	}
 }
 
+func TestYAMLParser_ResolveScope_WildcardSuffix_SameAsBarePath(t *testing.T) {
+	// Rule authors familiar with JSONPath may write "spec.template.spec.containers[*]"
+	// expecting array expansion. For YAML, the bare path already expands arrays;
+	// the [*] suffix must be stripped so the result is identical to the bare path.
+	doc, _ := (&YAMLParser{}).Parse(kubeDeploymentYAML)
+	withoutWildcard, _ := doc.ResolveScope("spec.template.spec.containers")
+	withWildcard, _ := doc.ResolveScope("spec.template.spec.containers[*]")
+
+	if len(withWildcard) != len(withoutWildcard) {
+		t.Fatalf("expected %d scope items with [*] suffix, got %d",
+			len(withoutWildcard), len(withWildcard))
+	}
+	for i, item := range withWildcard {
+		m, ok := item.(map[string]interface{})
+		if !ok {
+			t.Fatalf("item %d: expected map, got %T", i, item)
+		}
+		expected := withoutWildcard[i].(map[string]interface{})
+		if m["name"] != expected["name"] {
+			t.Fatalf("item %d: expected name=%v, got %v", i, expected["name"], m["name"])
+		}
+	}
+}
+
 func TestYAMLParser_ResolveScope_PathNotFound_ReturnsEmpty(t *testing.T) {
 	doc, _ := (&YAMLParser{}).Parse(kubeDeploymentYAML)
 	scope, err := doc.ResolveScope("nonexistent.path")

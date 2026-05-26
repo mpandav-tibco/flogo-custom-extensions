@@ -764,3 +764,60 @@ func TestEvaluate_RecursiveRulesDir_SubdirRules(t *testing.T) {
 		t.Fatal("expected findings from rules loaded via recursive walk")
 	}
 }
+
+// ─── filterByParser ───────────────────────────────────────────────────────────
+
+// missingErrorHandlerRule has no parser field, so it runs against every parser.
+// This variant constrains it to the yaml parser only.
+const yamlOnlyMissingErrorHandlerRule = `
+rule:
+  id: YAML-ONLY-001
+  severity: ERROR
+  title: Flow Missing Error Handler (YAML only)
+  parser: yaml
+  scope: "$.resources[*].data"
+  match:
+    type: missing
+    path: "errorHandler.tasks"
+`
+
+func TestEvaluate_FilterByParser_YAMLRuleSkippedForJSONFile(t *testing.T) {
+	// flogoAppWithIssues is JSON (.flogo) — the yaml-only rule must be filtered out
+	// entirely and produce zero findings.  Without filterByParser this same rule
+	// (minus the parser: field) would fire on the two flows that lack errorHandler.
+	rulesDir := mkRulesDir(t)
+	addRule(t, rulesDir, "", "yaml-only-001.yaml", yamlOnlyMissingErrorHandlerRule)
+
+	result, err := engine.Evaluate(engine.Request{
+		Content:   flogoAppWithIssues,
+		FileName:  "app.flogo",
+		RulesPath: rulesDir,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.Findings) != 0 {
+		t.Fatalf("parser-constrained rule must not run against json parser, got %d findings", len(result.Findings))
+	}
+	if result.Overview["rules_run"].(int) != 0 {
+		t.Fatalf("expected rules_run=0 when all rules are filtered by parser, got %v", result.Overview["rules_run"])
+	}
+}
+
+func TestEvaluate_FilterByParser_UnconstrainedRuleRunsForAllParsers(t *testing.T) {
+	// A rule with no parser field must run regardless of the detected parser.
+	rulesDir := mkRulesDir(t)
+	addRule(t, rulesDir, "", "flogo-001.yaml", missingErrorHandlerRule) // no parser: field
+
+	result, err := engine.Evaluate(engine.Request{
+		Content:   flogoAppWithIssues,
+		FileName:  "app.flogo",
+		RulesPath: rulesDir,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Overview["rules_run"].(int) < 1 {
+		t.Fatalf("expected at least 1 rule to run for unconstrained rule, got %v", result.Overview["rules_run"])
+	}
+}

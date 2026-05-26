@@ -60,8 +60,15 @@ func (p *KVParser) Parse(content string) (Document, error) {
 		}
 		key := strings.TrimSpace(line[:sep])
 		val := strings.TrimSpace(line[sep+1:])
-		// Strip inline comments
-		if ci := strings.Index(val, " #"); ci >= 0 {
+		// Strip inline comments marked by " #" or "\t#".
+		// Find the earliest occurrence of either form.
+		ci := -1
+		for _, mark := range []string{" #", "\t#"} {
+			if i := strings.Index(val, mark); i >= 0 && (ci < 0 || i < ci) {
+				ci = i
+			}
+		}
+		if ci >= 0 {
 			val = strings.TrimSpace(val[:ci])
 		}
 		m[key] = val
@@ -83,7 +90,14 @@ func (d *kvDocument) ResolveScope(path string) ([]interface{}, error) {
 		}
 		return []interface{}{d.root}, nil
 	}
-	val, ok := dotGet(d.root, path)
+	// Strip a trailing [*] wildcard. Rule authors familiar with JSONPath may write
+	// "spec.containers[*]" to mean "iterate containers". For YAML/KV the bare path
+	// "spec.containers" is sufficient — the scope resolver expands arrays
+	// element-by-element. Without this stripping, dotGet fails silently because
+	// parseArrayIndex rejects the non-numeric "*" index, yielding an empty scope
+	// and zero findings with no error reported.
+	cleanedPath := strings.TrimSuffix(path, "[*]")
+	val, ok := dotGet(d.root, cleanedPath)
 	if !ok {
 		return nil, nil
 	}
@@ -147,6 +161,11 @@ func parseArrayIndex(part string) (int, string, bool) {
 	key := part[:open]
 	var idx int
 	if n, _ := fmt.Sscanf(part[open+1:close], "%d", &idx); n == 0 {
+		return 0, "", false
+	}
+	if idx < 0 {
+		// Negative indices are not supported; treat as not found to avoid
+		// an index-out-of-range panic in the caller.
 		return 0, "", false
 	}
 	return idx, key, true
