@@ -10,8 +10,7 @@ import (
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
 
-	// Import shared SSE types and registry from parent package
-	"github.com/mpandav-tibco/flogo-extensions/sse"
+	sse "github.com/mpandav-tibco/flogo-custom-extensions/sse/trigger"
 )
 
 // Activity represents the SSE Send activity

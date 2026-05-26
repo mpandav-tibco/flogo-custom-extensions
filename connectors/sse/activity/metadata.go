@@ -1,39 +1,61 @@
 package ssesend
 
 import (
+	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/coerce"
 )
 
-// Settings represents the activity settings
+var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
+
+// Settings hold activity-level configuration set at design time.
 type Settings struct {
+	// SSEServerRef is the registry name of the SSE trigger to send events to.
+	// Use "default" for single-server setups (the default).
 	SSEServerRef string `md:"sseServerRef"`
-	Retry        int    `md:"retry"`
-	Topic        string `md:"topic"`
-	EventType    string `md:"eventType"`
+	// Topic is the default topic/channel for events (overridable per input).
+	Topic string `md:"topic"`
+	// EventType is the default SSE event type (overridable per input).
+	EventType string `md:"eventType"`
+	// Retry is the SSE client reconnection timeout in milliseconds.
+	Retry int `md:"retry"`
 }
 
-// Input represents the activity input
+// TargetType distinguishes how an event is dispatched.
+type TargetType int
+
+const (
+	TargetAll        TargetType = iota // broadcast to all connections
+	TargetConnection                   // send to one specific connection ID
+	TargetTopic                        // broadcast to connections on a topic
+)
+
+// ParsedTarget holds the decoded routing directive.
+type ParsedTarget struct {
+	Type       TargetType
+	Identifier string
+}
+
+// Input holds the per-invocation inputs for the SSE Send activity.
 type Input struct {
-	ConnectionID     string      `md:"connectionId"`
-	Target           string      `md:"target"`
-	EventID          string      `md:"eventId"`
-	Topic            string      `md:"topic"`
-	EventType        string      `md:"eventType"`
-	Data             interface{} `md:"data,required"`
-	Format           string      `md:"format"`
-	EnableValidation bool        `md:"enableValidation"`
+	// ConnectionID targets a specific SSE connection (used when target is omitted).
+	ConnectionID string `md:"connectionId"`
+	// Target explicitly sets the dispatch target: "all", "connection:ID", "topic:NAME".
+	Target string `md:"target"`
+	// EventID is an optional unique event identifier.
+	EventID string `md:"eventId"`
+	// Topic overrides the default topic setting.
+	Topic string `md:"topic"`
+	// EventType overrides the default event type setting.
+	EventType string `md:"eventType"`
+	// Data is the event payload (object or string).
+	Data interface{} `md:"data"`
+	// Format controls data serialisation: "json", "string", or "auto" (default).
+	Format string `md:"format"`
+	// EnableValidation enables input validation before sending.
+	EnableValidation bool `md:"enableValidation"`
 }
 
-// Output represents the activity output
-type Output struct {
-	Success   bool   `md:"success"`
-	SentCount int    `md:"sentCount"`
-	EventID   string `md:"eventId"`
-	Timestamp string `md:"timestamp"`
-	Error     string `md:"error"`
-}
-
-// ToMap converts Input to map
+// ToMap serialises Input for the Flogo engine.
 func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"connectionId":     i.ConnectionID,
@@ -47,51 +69,47 @@ func (i *Input) ToMap() map[string]interface{} {
 	}
 }
 
-// FromMap populates Input from map
+// FromMap deserialises Input from the Flogo engine map.
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
-
-	i.ConnectionID, err = coerce.ToString(values["connectionId"])
-	if err != nil {
+	if i.ConnectionID, err = coerce.ToString(values["connectionId"]); err != nil {
 		return err
 	}
-
-	i.Target, err = coerce.ToString(values["target"])
-	if err != nil {
+	if i.Target, err = coerce.ToString(values["target"]); err != nil {
 		return err
 	}
-
-	i.EventID, err = coerce.ToString(values["eventId"])
-	if err != nil {
+	if i.EventID, err = coerce.ToString(values["eventId"]); err != nil {
 		return err
 	}
-
-	i.Topic, err = coerce.ToString(values["topic"])
-	if err != nil {
+	if i.Topic, err = coerce.ToString(values["topic"]); err != nil {
 		return err
 	}
-
-	i.EventType, err = coerce.ToString(values["eventType"])
-	if err != nil {
+	if i.EventType, err = coerce.ToString(values["eventType"]); err != nil {
 		return err
 	}
-
 	i.Data = values["data"]
-
-	i.Format, err = coerce.ToString(values["format"])
-	if err != nil {
+	if i.Format, err = coerce.ToString(values["format"]); err != nil {
 		return err
 	}
-
 	i.EnableValidation, err = coerce.ToBool(values["enableValidation"])
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-// ToMap converts Output to map
+// Output holds the per-invocation outputs of the SSE Send activity.
+type Output struct {
+	// Success indicates whether the event was dispatched without error.
+	Success bool `md:"success"`
+	// SentCount is the number of clients that received the event.
+	SentCount int `md:"sentCount"`
+	// EventID is the event identifier that was sent (generated if not provided).
+	EventID string `md:"eventId"`
+	// Timestamp is the ISO-8601 time at which the event was sent.
+	Timestamp string `md:"timestamp"`
+	// Error contains the error message when Success is false.
+	Error string `md:"error"`
+}
+
+// ToMap serialises Output for the Flogo engine.
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"success":   o.Success,
@@ -102,57 +120,23 @@ func (o *Output) ToMap() map[string]interface{} {
 	}
 }
 
-// FromMap populates Output from map
+// FromMap deserialises Output from the Flogo engine map.
 func (o *Output) FromMap(values map[string]interface{}) error {
 	var err error
-
-	o.Success, err = coerce.ToBool(values["success"])
+	if o.Success, err = coerce.ToBool(values["success"]); err != nil {
+		return err
+	}
+	sc, err := coerce.ToInt(values["sentCount"])
 	if err != nil {
 		return err
 	}
-
-	o.SentCount, err = coerce.ToInt(values["sentCount"])
-	if err != nil {
+	o.SentCount = sc
+	if o.EventID, err = coerce.ToString(values["eventId"]); err != nil {
 		return err
 	}
-
-	o.EventID, err = coerce.ToString(values["eventId"])
-	if err != nil {
+	if o.Timestamp, err = coerce.ToString(values["timestamp"]); err != nil {
 		return err
 	}
-
-	o.Timestamp, err = coerce.ToString(values["timestamp"])
-	if err != nil {
-		return err
-	}
-
 	o.Error, err = coerce.ToString(values["error"])
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// SSEEvent represents an SSE event structure
-type SSEEvent struct {
-	ID    string `json:"id,omitempty"`
-	Event string `json:"event,omitempty"`
-	Data  string `json:"data"`
-	Retry int    `json:"retry,omitempty"`
-}
-
-// TargetType represents the type of target for sending events
-type TargetType int
-
-const (
-	TargetAll TargetType = iota
-	TargetConnection
-	TargetTopic
-)
-
-// ParsedTarget represents a parsed target specification
-type ParsedTarget struct {
-	Type       TargetType
-	Identifier string
+	return err
 }

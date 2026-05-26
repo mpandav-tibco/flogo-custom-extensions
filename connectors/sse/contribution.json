@@ -1,0 +1,17 @@
+{
+  "name": "SSE",
+  "version": "1.0.0",
+  "category": "SSE",
+  "icon": "icons/sse.svg",
+  "description": "Server-Sent Events connector for real-time streaming. Provides an SSE trigger that starts an HTTP server to which browser clients connect, and an SSE Send activity that pushes events to those clients from any Flogo flow.",
+  "contributions": [
+    {
+      "type": "flogo:trigger",
+      "ref": "github.com/mpandav-tibco/flogo-custom-extensions/sse/trigger"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-custom-extensions/sse/activity"
+    }
+  ]
+}

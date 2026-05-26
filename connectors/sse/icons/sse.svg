@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- Broadcast tower base -->
+  <rect x="21" y="30" width="6" height="8" rx="1" fill="#5C6BC0"/>
+  <!-- Tower mast -->
+  <line x1="24" y1="30" x2="24" y2="20" stroke="#5C6BC0" stroke-width="2" stroke-linecap="round"/>
+  <!-- Signal arcs (three, expanding outward) -->
+  <path d="M19 22 Q19 14 24 14 Q29 14 29 22" fill="none" stroke="#5C6BC0" stroke-width="2" stroke-linecap="round"/>
+  <path d="M15 23 Q15 10 24 10 Q33 10 33 23" fill="none" stroke="#7C4DFF" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M11 24 Q11 6  24 6  Q37 6  37 24" fill="none" stroke="#7C4DFF" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+  <!-- Live dot at top of mast -->
+  <circle cx="24" cy="19" r="2" fill="#7C4DFF"/>
+  <!-- Ground platform -->
+  <line x1="16" y1="38" x2="32" y2="38" stroke="#5C6BC0" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Label -->
+  <text x="24" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="5.5" font-weight="bold" fill="#5C6BC0">SSE</text>
+</svg>

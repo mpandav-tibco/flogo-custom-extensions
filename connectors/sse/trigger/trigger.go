@@ -1,339 +1,412 @@
+// Package sse provides a Flogo trigger that starts an HTTP server for
+// Server-Sent Events (SSE) streaming.  Clients connect to the configured
+// path and receive real-time events pushed from the SSE Send activity.
+// The trigger also maintains a global registry so the SSE Send activity can
+// locate the running server instance at flow execution time.
 package sse
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"net"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
-	"github.com/project-flogo/core/support/trace"
 	"github.com/project-flogo/core/trigger"
 )
 
-// Trigger metadata
 var triggerMd = trigger.NewMetadata(&Settings{}, &HandlerSettings{}, &Output{})
 
 func init() {
 	_ = trigger.Register(&Trigger{}, &Factory{})
 }
 
-// Trigger represents the SSE trigger
+// ── Shared types ─────────────────────────────────────────────────────────────
+
+// SSEEventData is the data-transfer object exchanged between the SSE trigger
+// and the SSE Send activity via the shared registry.
+type SSEEventData struct {
+	ID    string
+	Event string
+	Data  string
+	Retry int
+}
+
+// ConnectionInfo describes an active SSE client connection.
+type ConnectionInfo struct {
+	ID       string
+	Topic    string
+	IsActive bool
+}
+
+// SSEServerInterface is the interface the SSE Send activity uses to dispatch events.
+type SSEServerInterface interface {
+	BroadcastEvent(event *SSEEventData) error
+	BroadcastEventToTopic(topic string, event *SSEEventData) error
+	SendEventToConnection(connectionID string, event *SSEEventData) error
+	GetActiveConnections() []ConnectionInfo
+}
+
+// ── Global registry ───────────────────────────────────────────────────────────
+
+var (
+	registry   = make(map[string]SSEServerInterface)
+	registryMu sync.RWMutex
+)
+
+// RegisterSSEServer registers an SSE server under the given name.
+func RegisterSSEServer(name string, srv SSEServerInterface) {
+	registryMu.Lock()
+	defer registryMu.Unlock()
+	registry[name] = srv
+}
+
+// GetSSEServer retrieves a registered SSE server by name.
+func GetSSEServer(name string) (SSEServerInterface, bool) {
+	registryMu.RLock()
+	defer registryMu.RUnlock()
+	srv, ok := registry[name]
+	return srv, ok
+}
+
+// UnregisterSSEServer removes a server from the registry.
+func UnregisterSSEServer(name string) {
+	registryMu.Lock()
+	defer registryMu.Unlock()
+	delete(registry, name)
+}
+
+// ListRegisteredServers returns the names of all currently registered servers.
+func ListRegisteredServers() []string {
+	registryMu.RLock()
+	defer registryMu.RUnlock()
+	names := make([]string, 0, len(registry))
+	for name := range registry {
+		names = append(names, name)
+	}
+	return names
+}
+
+// ── Internal connection ───────────────────────────────────────────────────────
+
+type connection struct {
+	id        string
+	topic     string
+	ch        chan *SSEEventData
+	done      chan struct{}
+	closeOnce sync.Once
+}
+
+func (c *connection) close() {
+	c.closeOnce.Do(func() { close(c.done) })
+}
+
+// ── Flogo trigger ─────────────────────────────────────────────────────────────
+
+// Trigger is the SSE Flogo trigger.
 type Trigger struct {
 	settings *Settings
-	logger   log.Logger
-	server   *SSEServer
 	handlers []trigger.Handler
-	ctx      context.Context
-	cancel   context.CancelFunc
-	mutex    sync.RWMutex
-	metrics  *Metrics
-	name     string // Trigger name for registration
+	logger   log.Logger
+	server   *http.Server
+	mu       sync.RWMutex
+	conns    map[string]*connection
+	stopOnce sync.Once
+	done     chan struct{}
 }
 
-// Factory is the trigger factory
+// Factory creates Trigger instances.
 type Factory struct{}
 
-// Metadata returns the trigger metadata
-func (*Factory) Metadata() *trigger.Metadata {
-	return triggerMd
-}
+// Metadata returns the trigger factory metadata.
+func (*Factory) Metadata() *trigger.Metadata { return triggerMd }
 
-// New creates a new trigger instance
+// New creates a new, uninitialised Trigger from the design-time config.
 func (*Factory) New(config *trigger.Config) (trigger.Trigger, error) {
 	s := &Settings{}
-	err := metadata.MapToStruct(config.Settings, s, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to map trigger settings: %v", err)
+	if err := metadata.MapToStruct(config.Settings, s, true); err != nil {
+		return nil, fmt.Errorf("sse-trigger: failed to map settings: %w", err)
 	}
-
-	// Validate settings using our enterprise validation framework
-	if validationErrors := ValidateSettings(config.Settings); len(validationErrors) > 0 {
-		var errorMessage string
-		for i, validationError := range validationErrors {
-			if i > 0 {
-				errorMessage += "; "
-			}
-			errorMessage += validationError.Error()
-		}
-		return nil, fmt.Errorf("trigger validation failed: %s", errorMessage)
+	if s.Port == 0 {
+		s.Port = 9998
 	}
-
+	if s.Path == "" {
+		s.Path = "/events"
+	}
+	if s.HeartbeatInterval == 0 {
+		s.HeartbeatInterval = 30
+	}
 	return &Trigger{
 		settings: s,
-		metrics:  &Metrics{},
-		name:     config.Id, // Use config ID as trigger name
+		conns:    make(map[string]*connection),
+		done:     make(chan struct{}),
 	}, nil
 }
 
-// Initialize initializes the trigger
+// Metadata returns the trigger metadata.
+func (t *Trigger) Metadata() *trigger.Metadata { return triggerMd }
+
+// Initialize wires up the handlers from the design-time config.
 func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 	t.logger = ctx.Logger()
-	t.ctx, t.cancel = context.WithCancel(context.Background())
-
-	// Validate settings
-	if err := t.validateSettings(); err != nil {
-		return fmt.Errorf("validation failed: %v", err)
-	}
-
-	// Store handlers
-	for _, handler := range ctx.GetHandlers() {
-		t.handlers = append(t.handlers, handler)
-	}
-
-	// Create SSE server
-	serverConfig := &SSEServerConfig{
-		Port:              t.settings.Port,
-		Path:              t.settings.Path,
-		MaxConnections:    t.settings.MaxConnections,
-		EnableCORS:        t.settings.EnableCORS,
-		CORSOrigins:       t.settings.CORSOrigins,
-		KeepAliveInterval: time.Duration(t.settings.KeepAliveInterval) * time.Second,
-		EnableEventStore:  t.settings.EnableEventStore,
-		EventStoreSize:    t.settings.EventStoreSize,
-		EventTTL:          time.Duration(t.settings.EventTTL) * time.Second,
-		Logger:            t.logger,
-	}
-
-	server, err := NewSSEServer(serverConfig)
-	if err != nil {
-		return fmt.Errorf("failed to create SSE server: %v", err)
-	}
-	t.server = server
-
-	// Set connection callback
-	t.server.SetConnectionCallback(t.handleNewConnection)
-
-	t.logger.Infof("SSE Trigger initialized on port %d, path %s", t.settings.Port, t.settings.Path)
+	t.handlers = ctx.GetHandlers()
 	return nil
 }
 
-// Start starts the trigger
+// Start launches the HTTP/SSE server and registers the trigger in the global registry.
 func (t *Trigger) Start() error {
-	t.logger.Info("Starting SSE Trigger")
-
-	// Start the SSE server
-	if err := t.server.Start(t.ctx); err != nil {
-		return fmt.Errorf("failed to start SSE server: %v", err)
+	mux := http.NewServeMux()
+	handler := http.HandlerFunc(t.handleSSE)
+	if t.settings.CORSEnabled {
+		mux.Handle(t.settings.Path, t.withCORS(handler))
+	} else {
+		mux.Handle(t.settings.Path, handler)
 	}
 
-	// Register the server with the global registry for SSE Send activity integration
-	adapter := &SSEServerAdapter{server: t.server}
-	RegisterSSEServerGlobal(t.name, adapter)
-
-	// Also register with "default" name for backward compatibility
-	if t.name != "default" {
-		RegisterSSEServerGlobal("default", adapter)
+	t.server = &http.Server{
+		Addr:    fmt.Sprintf(":%d", t.settings.Port),
+		Handler: mux,
 	}
 
-	t.logger.Infof("SSE Trigger started successfully on :%d%s and registered as '%s'", t.settings.Port, t.settings.Path, t.name)
+	ln, err := net.Listen("tcp", t.server.Addr)
+	if err != nil {
+		return fmt.Errorf("sse-trigger: cannot listen on %s: %w", t.server.Addr, err)
+	}
+
+	// Register under "default" so the SSE Send activity can find it without
+	// knowing the trigger instance name.
+	RegisterSSEServer("default", t)
+
+	go func() {
+		t.logger.Infof("SSE trigger listening on port %d path %s", t.settings.Port, t.settings.Path)
+		if err := t.server.Serve(ln); err != nil && err != http.ErrServerClosed {
+			t.logger.Errorf("SSE server error: %v", err)
+		}
+	}()
+
+	go t.runHeartbeat()
 	return nil
 }
 
-// Stop stops the trigger
+// Stop gracefully shuts down the HTTP server and removes the registry entry.
 func (t *Trigger) Stop() error {
-	t.logger.Info("Stopping SSE Trigger")
-
-	// Unregister from the global registry
-	UnregisterSSEServerGlobal(t.name)
-	if t.name != "default" {
-		UnregisterSSEServerGlobal("default")
-	}
-
-	if t.cancel != nil {
-		t.cancel()
-	}
-
-	if t.server != nil {
-		if err := t.server.Stop(); err != nil {
-			t.logger.Errorf("Error stopping SSE server: %v", err)
-			return err
-		}
-	}
-
-	t.logger.Info("SSE Trigger stopped")
+	t.stopOnce.Do(func() {
+		close(t.done)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = t.server.Shutdown(ctx)
+		UnregisterSSEServer("default")
+		t.logger.Info("SSE trigger stopped")
+	})
 	return nil
 }
 
-// validateSettings validates the trigger settings
-func (t *Trigger) validateSettings() error {
-	if t.settings.Port <= 0 || t.settings.Port > 65535 {
-		return fmt.Errorf("invalid port: %d", t.settings.Port)
-	}
+// ── HTTP handlers ─────────────────────────────────────────────────────────────
 
-	if t.settings.Path == "" {
-		return fmt.Errorf("path cannot be empty")
-	}
-
-	if t.settings.MaxConnections <= 0 {
-		t.settings.MaxConnections = 1000
-	}
-
-	if t.settings.KeepAliveInterval <= 0 {
-		t.settings.KeepAliveInterval = 30
-	}
-
-	if t.settings.EventStoreSize <= 0 {
-		t.settings.EventStoreSize = 100
-	}
-
-	if t.settings.EventTTL <= 0 {
-		t.settings.EventTTL = 3600
-	}
-
-	return nil
-}
-
-// handleNewConnection handles new SSE connections
-func (t *Trigger) handleNewConnection(conn *SSEConnection) {
-	t.mutex.Lock()
-	t.metrics.ActiveConnections++
-	t.metrics.TotalConnections++
-	t.mutex.Unlock()
-
-	t.logger.Debugf("New SSE connection: %s from %s", conn.ID, conn.ClientIP)
-
-	// Create output data
-	output := &Output{
-		ConnectionID: conn.ID,
-		ClientIP:     conn.ClientIP,
-		UserAgent:    conn.UserAgent,
-		Headers:      conn.Headers,
-		QueryParams:  conn.QueryParams,
-		Topic:        conn.Topic,
-		LastEventID:  conn.LastEventID,
-		Timestamp:    time.Now().Format(time.RFC3339),
-	}
-
-	// Trigger handlers for each registered handler
-	for _, handler := range t.handlers {
-		// Get handler settings
-		handlerSettings := &HandlerSettings{}
-		if err := metadata.MapToStruct(handler.Settings(), handlerSettings, true); err != nil {
-			t.logger.Errorf("Failed to map handler settings: %v", err)
-			continue
+func (t *Trigger) withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Last-Event-ID")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
 		}
-
-		// Check if topic matches (if specified)
-		if handlerSettings.Topic != "" && handlerSettings.Topic != conn.Topic {
-			continue
-		}
-
-		// Execute handler asynchronously
-		go func(h trigger.Handler, out *Output) {
-			defer func() {
-				if r := recover(); r != nil {
-					t.logger.Errorf("Handler panic: %v", r)
-				}
-			}()
-
-			// Propagate the OTel tracing context extracted at connection time,
-			// then attach SSE-specific event tags — mirrors the OOTB HTTP trigger pattern.
-			hCtx := conn.Ctx
-			if hCtx == nil {
-				hCtx = context.Background()
-			}
-			if trace.Enabled() {
-				tags := map[string]string{
-					"sse.connection_id": conn.ID,
-					"sse.client_ip":     conn.ClientIP,
-					"sse.topic":         conn.Topic,
-				}
-				hCtx = trigger.AppendEventDataToContext(hCtx, tags)
-			}
-
-			// Execute the handler directly with the data
-			_, err := h.Handle(hCtx, out.ToMap())
-			if err != nil {
-				t.logger.Errorf("Handler execution error: %v", err)
-			}
-		}(handler, output)
-	}
-
-	// Set up connection close callback
-	conn.SetCloseCallback(func(connID string) {
-		t.mutex.Lock()
-		t.metrics.ActiveConnections--
-		t.mutex.Unlock()
-		t.logger.Debugf("SSE connection closed: %s", connID)
+		next.ServeHTTP(w, r)
 	})
 }
 
-// GetMetrics returns current trigger metrics
-func (t *Trigger) GetMetrics() *Metrics {
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
+func (t *Trigger) handleSSE(w http.ResponseWriter, r *http.Request) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "streaming not supported", http.StatusInternalServerError)
+		return
+	}
 
-	return &Metrics{
-		ActiveConnections: t.metrics.ActiveConnections,
-		TotalConnections:  t.metrics.TotalConnections,
-		EventsSent:        t.metrics.EventsSent,
-		EventsBuffered:    t.metrics.EventsBuffered,
-		BytesSent:         t.metrics.BytesSent,
-		ErrorCount:        t.metrics.ErrorCount,
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+
+	connID := fmt.Sprintf("conn_%d", time.Now().UnixNano())
+	topic := r.URL.Query().Get("topic")
+	lastEventID := r.Header.Get("Last-Event-ID")
+	if lastEventID == "" {
+		lastEventID = r.URL.Query().Get("lastEventId")
+	}
+
+	conn := &connection{
+		id:    connID,
+		topic: topic,
+		ch:    make(chan *SSEEventData, 64),
+		done:  make(chan struct{}),
+	}
+
+	t.mu.Lock()
+	t.conns[connID] = conn
+	t.mu.Unlock()
+
+	defer func() {
+		conn.close()
+		t.mu.Lock()
+		delete(t.conns, connID)
+		t.mu.Unlock()
+	}()
+
+	// Fire the Flogo flow handlers for this new connection.
+	go t.fireHandlers(r, connID, topic, lastEventID)
+
+	bw := bufio.NewWriter(w)
+	for {
+		select {
+		case evt, ok := <-conn.ch:
+			if !ok {
+				return
+			}
+			writeSSEEvent(bw, evt)
+			bw.Flush()
+			flusher.Flush()
+		case <-conn.done:
+			return
+		case <-r.Context().Done():
+			return
+		case <-t.done:
+			return
+		}
 	}
 }
 
-// SendEvent sends an event to all connected clients
-func (t *Trigger) SendEvent(event *SSEEvent) error {
-	if t.server == nil {
-		return fmt.Errorf("server not initialized")
+func writeSSEEvent(w *bufio.Writer, evt *SSEEventData) {
+	if evt.ID != "" {
+		fmt.Fprintf(w, "id: %s\n", evt.ID)
 	}
-
-	return t.server.BroadcastEvent(event)
+	if evt.Event != "" && evt.Event != "message" {
+		fmt.Fprintf(w, "event: %s\n", evt.Event)
+	}
+	if evt.Retry > 0 {
+		fmt.Fprintf(w, "retry: %d\n", evt.Retry)
+	}
+	fmt.Fprintf(w, "data: %s\n\n", evt.Data)
 }
 
-// SendEventToTopic sends an event to clients subscribed to a specific topic
-func (t *Trigger) SendEventToTopic(topic string, event *SSEEvent) error {
-	if t.server == nil {
-		return fmt.Errorf("server not initialized")
+func (t *Trigger) fireHandlers(r *http.Request, connID, topic, lastEventID string) {
+	headers := make(map[string]interface{})
+	for k, vs := range r.Header {
+		if len(vs) == 1 {
+			headers[k] = vs[0]
+		} else {
+			headers[k] = vs
+		}
 	}
 
-	return t.server.BroadcastEventToTopic(topic, event)
-}
-
-// SendEventToConnection sends an event to a specific connection
-func (t *Trigger) SendEventToConnection(connectionID string, event *SSEEvent) error {
-	if t.server == nil {
-		return fmt.Errorf("server not initialized")
+	qp := make(map[string]interface{})
+	for k, vs := range r.URL.Query() {
+		if len(vs) == 1 {
+			qp[k] = vs[0]
+		} else {
+			qp[k] = vs
+		}
 	}
 
-	return t.server.SendEventToConnection(connectionID, event)
+	out := &Output{
+		ConnectionID: connID,
+		ClientIP:     r.RemoteAddr,
+		UserAgent:    r.UserAgent(),
+		Headers:      headers,
+		QueryParams:  qp,
+		Topic:        topic,
+		LastEventID:  lastEventID,
+		Timestamp:    time.Now().Format(time.RFC3339),
+	}
+
+	for _, h := range t.handlers {
+		if _, err := h.Handle(context.Background(), out.ToMap()); err != nil {
+			t.logger.Errorf("SSE handler error for connection %s: %v", connID, err)
+		}
+	}
 }
 
-// GetActiveConnections returns information about active connections
-func (t *Trigger) GetActiveConnections() []*ConnectionInfo {
-	if t.server == nil {
+func (t *Trigger) runHeartbeat() {
+	if t.settings.HeartbeatInterval <= 0 {
+		return
+	}
+	ticker := time.NewTicker(time.Duration(t.settings.HeartbeatInterval) * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			_ = t.BroadcastEvent(&SSEEventData{Event: "heartbeat", Data: "ping"})
+		case <-t.done:
+			return
+		}
+	}
+}
+
+// ── SSEServerInterface implementation ────────────────────────────────────────
+
+// BroadcastEvent sends an event to all active connections.
+func (t *Trigger) BroadcastEvent(event *SSEEventData) error {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	for _, conn := range t.conns {
+		select {
+		case conn.ch <- event:
+		default:
+			// Drop for slow consumers rather than blocking the caller.
+		}
+	}
+	return nil
+}
+
+// BroadcastEventToTopic sends an event to connections subscribed to a topic
+// (or to all connections that have no topic filter).
+func (t *Trigger) BroadcastEventToTopic(topic string, event *SSEEventData) error {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	for _, conn := range t.conns {
+		if conn.topic == topic || conn.topic == "" {
+			select {
+			case conn.ch <- event:
+			default:
+			}
+		}
+	}
+	return nil
+}
+
+// SendEventToConnection sends an event to a specific connection by ID.
+func (t *Trigger) SendEventToConnection(connectionID string, event *SSEEventData) error {
+	t.mu.RLock()
+	conn, ok := t.conns[connectionID]
+	t.mu.RUnlock()
+	if !ok {
+		return fmt.Errorf("sse-trigger: connection %q not found", connectionID)
+	}
+	select {
+	case conn.ch <- event:
 		return nil
+	case <-conn.done:
+		return fmt.Errorf("sse-trigger: connection %q is closed", connectionID)
+	default:
+		return fmt.Errorf("sse-trigger: send buffer full for connection %q", connectionID)
 	}
-
-	return t.server.GetActiveConnections()
 }
 
-// CloseConnection closes a specific connection
-func (t *Trigger) CloseConnection(connectionID string) error {
-	if t.server == nil {
-		return fmt.Errorf("server not initialized")
+// GetActiveConnections returns a snapshot of all active connections.
+func (t *Trigger) GetActiveConnections() []ConnectionInfo {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	infos := make([]ConnectionInfo, 0, len(t.conns))
+	for _, conn := range t.conns {
+		infos = append(infos, ConnectionInfo{
+			ID:       conn.id,
+			Topic:    conn.topic,
+			IsActive: true,
+		})
 	}
-
-	return t.server.CloseConnection(connectionID)
-}
-
-// HealthCheck returns the health status of the trigger
-func (t *Trigger) HealthCheck() map[string]interface{} {
-	status := map[string]interface{}{
-		"status": "healthy",
-		"port":   t.settings.Port,
-		"path":   t.settings.Path,
-	}
-
-	if t.server != nil {
-		metrics := t.GetMetrics()
-		status["activeConnections"] = metrics.ActiveConnections
-		status["totalConnections"] = metrics.TotalConnections
-		status["eventsSent"] = metrics.EventsSent
-	}
-
-	return status
+	return infos
 }

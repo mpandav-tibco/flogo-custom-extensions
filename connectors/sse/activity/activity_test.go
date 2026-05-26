@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mpandav-tibco/flogo-extensions/sse"
+	sse "github.com/mpandav-tibco/flogo-custom-extensions/sse/trigger"
 )
 
 // SimpleSSEServer implements SSEServerInterface for testing

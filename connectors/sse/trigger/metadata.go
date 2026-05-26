@@ -1,41 +1,46 @@
 package sse
 
-import (
-	"github.com/project-flogo/core/data/coerce"
-)
+import "github.com/project-flogo/core/data/coerce"
 
-// Settings represents the trigger settings
+// Settings hold trigger-level configuration.
 type Settings struct {
-	Port              int    `md:"port,required"`
-	Path              string `md:"path,required"`
-	MaxConnections    int    `md:"maxConnections"`
-	EnableCORS        bool   `md:"enableCORS"`
-	CORSOrigins       string `md:"corsOrigins"`
-	KeepAliveInterval int    `md:"keepAliveInterval"`
-	EnableEventStore  bool   `md:"enableEventStore"`
-	EventStoreSize    int    `md:"eventStoreSize"`
-	EventTTL          int    `md:"eventTTL"`
+	// Port is the HTTP server port for SSE connections.
+	Port int `md:"port,required"`
+	// Path is the endpoint path for SSE connections (default: /events).
+	Path string `md:"path"`
+	// CORSEnabled enables Cross-Origin Resource Sharing headers.
+	CORSEnabled bool `md:"corsEnabled"`
+	// HeartbeatInterval is the keep-alive heartbeat interval in seconds (0 = disabled).
+	HeartbeatInterval int `md:"heartbeatInterval"`
 }
 
-// HandlerSettings represents the handler-specific settings
+// HandlerSettings define per-handler configuration.
 type HandlerSettings struct {
-	Topic     string `md:"topic"`
+	// EventType is the default SSE event type for this handler (default: message).
 	EventType string `md:"eventType"`
 }
 
-// Output represents the data sent to the flow when a new connection is established
+// Output is emitted to the Flogo flow for each new SSE client connection.
 type Output struct {
-	ConnectionID string                 `md:"connectionId"`
-	ClientIP     string                 `md:"clientIP"`
-	UserAgent    string                 `md:"userAgent"`
-	Headers      map[string]interface{} `md:"headers"`
-	QueryParams  map[string]interface{} `md:"queryParams"`
-	Topic        string                 `md:"topic"`
-	LastEventID  string                 `md:"lastEventId"`
-	Timestamp    string                 `md:"timestamp"`
+	// ConnectionID is a unique identifier for this SSE connection.
+	ConnectionID string `md:"connectionId"`
+	// ClientIP is the remote address of the connecting client.
+	ClientIP string `md:"clientIP"`
+	// UserAgent is the HTTP User-Agent header sent by the client.
+	UserAgent string `md:"userAgent"`
+	// Headers contains all HTTP request headers as a key-value map.
+	Headers map[string]interface{} `md:"headers"`
+	// QueryParams contains all URL query parameters.
+	QueryParams map[string]interface{} `md:"queryParams"`
+	// Topic is the topic the client subscribed to (from ?topic= query param).
+	Topic string `md:"topic"`
+	// LastEventID is the Last-Event-ID header sent for reconnection resumption.
+	LastEventID string `md:"lastEventId"`
+	// Timestamp is the ISO-8601 connection time.
+	Timestamp string `md:"timestamp"`
 }
 
-// ToMap converts Output to map
+// ToMap serialises Output for the Flogo trigger handler.
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"connectionId": o.ConnectionID,
@@ -49,82 +54,26 @@ func (o *Output) ToMap() map[string]interface{} {
 	}
 }
 
-// FromMap populates Output from map
+// FromMap deserialises Output from the Flogo trigger handler map.
 func (o *Output) FromMap(values map[string]interface{}) error {
 	var err error
-
-	o.ConnectionID, err = coerce.ToString(values["connectionId"])
-	if err != nil {
+	if o.ConnectionID, err = coerce.ToString(values["connectionId"]); err != nil {
 		return err
 	}
-
-	o.ClientIP, err = coerce.ToString(values["clientIP"])
-	if err != nil {
+	if o.ClientIP, err = coerce.ToString(values["clientIP"]); err != nil {
 		return err
 	}
-
-	o.UserAgent, err = coerce.ToString(values["userAgent"])
-	if err != nil {
+	if o.UserAgent, err = coerce.ToString(values["userAgent"]); err != nil {
 		return err
 	}
-
-	if headers, ok := values["headers"]; ok {
-		o.Headers, err = coerce.ToObject(headers)
-		if err != nil {
-			return err
-		}
-	}
-
-	if queryParams, ok := values["queryParams"]; ok {
-		o.QueryParams, err = coerce.ToObject(queryParams)
-		if err != nil {
-			return err
-		}
-	}
-
-	o.Topic, err = coerce.ToString(values["topic"])
-	if err != nil {
+	o.Headers, _ = coerce.ToObject(values["headers"])
+	o.QueryParams, _ = coerce.ToObject(values["queryParams"])
+	if o.Topic, err = coerce.ToString(values["topic"]); err != nil {
 		return err
 	}
-
-	o.LastEventID, err = coerce.ToString(values["lastEventId"])
-	if err != nil {
+	if o.LastEventID, err = coerce.ToString(values["lastEventId"]); err != nil {
 		return err
 	}
-
 	o.Timestamp, err = coerce.ToString(values["timestamp"])
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// SSEEvent represents an event to be sent to SSE clients
-type SSEEvent struct {
-	ID    string `json:"id,omitempty"`
-	Event string `json:"event,omitempty"`
-	Data  string `json:"data"`
-	Retry int    `json:"retry,omitempty"`
-}
-
-// ConnectionInfo represents information about an active SSE connection
-type ConnectionInfo struct {
-	ID          string
-	ClientIP    string
-	UserAgent   string
-	Topic       string
-	LastEventID string
-	ConnectedAt string
-	IsActive    bool
-}
-
-// Metrics represents SSE trigger metrics
-type Metrics struct {
-	ActiveConnections int64
-	TotalConnections  int64
-	EventsSent        int64
-	EventsBuffered    int64
-	BytesSent         int64
-	ErrorCount        int64
+	return err
 }
