@@ -492,3 +492,60 @@ func TestValidateRule_InvalidSeverities(t *testing.T) {
 		}
 	}
 }
+
+// ─── filterByParser ───────────────────────────────────────────────────────────
+
+func TestFilterByParser_NoParserField_AlwaysIncluded(t *testing.T) {
+	rules := []*model.RuleDef{{ID: "X-001", Severity: "ERROR", Title: "no parser"}}
+	out := filterByParser(rules, "json")
+	if len(out) != 1 {
+		t.Fatal("rule with no parser field should always be included regardless of active parser")
+	}
+}
+
+func TestFilterByParser_MatchingParser_Included(t *testing.T) {
+	rules := []*model.RuleDef{{ID: "X-002", Severity: "ERROR", Title: "json only", Parser: "json"}}
+	out := filterByParser(rules, "json")
+	if len(out) != 1 {
+		t.Fatal("rule with matching parser should be included")
+	}
+}
+
+func TestFilterByParser_MismatchedParser_Excluded(t *testing.T) {
+	// A rule scoped to "yaml" must not run when the active parser is "json".
+	rules := []*model.RuleDef{{ID: "X-003", Severity: "ERROR", Title: "yaml only", Parser: "yaml"}}
+	out := filterByParser(rules, "json")
+	if len(out) != 0 {
+		t.Fatalf("rule with parser=yaml must be excluded when active parser is json; got %d", len(out))
+	}
+}
+
+func TestFilterByParser_Mixed(t *testing.T) {
+	rules := []*model.RuleDef{
+		{ID: "X-001", Severity: "ERROR", Title: "no restriction"},       // no restriction
+		{ID: "X-002", Severity: "ERROR", Title: "json only", Parser: "json"}, // json only
+		{ID: "X-003", Severity: "ERROR", Title: "yaml only", Parser: "yaml"}, // yaml only
+	}
+	out := filterByParser(rules, "json")
+	if len(out) != 2 {
+		t.Fatalf("expected 2 rules for json parser (no-restriction + json), got %d", len(out))
+	}
+	if out[0].ID != "X-001" || out[1].ID != "X-002" {
+		t.Fatalf("unexpected rule IDs: %v, %v", out[0].ID, out[1].ID)
+	}
+}
+
+func TestFilterByParser_EmptyParserName_OnlyUnrestrictedPass(t *testing.T) {
+	// resolveParser always returns a named parser when it succeeds, so parserName=""
+	// won't occur in normal operation. If it did, only rules without a parser
+	// restriction would pass (since no parser name can match a non-empty restriction).
+	rules := []*model.RuleDef{
+		{ID: "X-001", Parser: "yaml"},
+		{ID: "X-002", Parser: "json"},
+		{ID: "X-003"}, // no restriction → always passes
+	}
+	out := filterByParser(rules, "")
+	if len(out) != 1 || out[0].ID != "X-003" {
+		t.Fatalf("expected only the unrestricted rule when parserName is empty, got %d rules", len(out))
+	}
+}

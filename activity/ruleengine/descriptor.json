@@ -62,12 +62,40 @@
         {
             "name": "findings",
             "type": "array",
-            "description": "Array of issue/warning findings from matched rules"
+            "description": "Array of issue/warning findings from matched rules",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "rule_id":        { "type": "string" },
+                    "severity":       { "type": "string" },
+                    "category":       { "type": "string" },
+                    "title":          { "type": "string" },
+                    "location":       { "type": "string" },
+                    "message":        { "type": "string" },
+                    "recommendation": { "type": "string" },
+                    "tags":           { "type": "array", "items": { "type": "string" } },
+                    "root_causes":    { "type": "array", "items": { "type": "string" } },
+                    "fixes":          { "type": "array", "items": { "type": "string" } }
+                }
+            }
         },
         {
             "name": "positives",
             "type": "array",
-            "description": "Array of positive/strength findings (GOOD severity rules)"
+            "description": "Array of positive/strength findings (GOOD severity rules)",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "rule_id":        { "type": "string" },
+                    "severity":       { "type": "string" },
+                    "category":       { "type": "string" },
+                    "title":          { "type": "string" },
+                    "location":       { "type": "string" },
+                    "message":        { "type": "string" },
+                    "recommendation": { "type": "string" },
+                    "tags":           { "type": "array", "items": { "type": "string" } }
+                }
+            }
         },
         {
             "name": "errorCount",

@@ -38,6 +38,7 @@ func Evaluate(req Request) (*model.Result, error) {
 	allRules, warnings := loadRules(req.RulesPath)
 	ext := strings.ToLower(filepath.Ext(req.FileName))
 	rules := filterRules(allRules, ext, req.DisabledRules, req.Tags)
+	rules = filterByParser(rules, parserName)
 
 	// 3. Run evaluation
 	findings, positives := evaluator.Run(rules, doc, req.FileName)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/model"
@@ -18,38 +19,47 @@ func loadRules(rulesPath string) ([]*model.RuleDef, []string) {
 	var warnings []string
 	seen := make(map[string]string) // rule ID → first file that defined it
 
-	err := filepath.Walk(rulesPath, func(path string, info os.FileInfo, err error) error {
+	// Collect all YAML file paths first, then sort them explicitly.
+	// filepath.Walk order is filesystem-dependent and not guaranteed to be
+	// alphabetical — sorting here ensures deterministic dedup ("first loaded wins")
+	// across all operating systems and filesystem types.
+	var yamlPaths []string
+	walkErr := filepath.Walk(rulesPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			warnings = append(warnings, fmt.Sprintf("cannot access %s: %v", path, err))
 			return nil // continue walking
 		}
-		if info.IsDir() || !strings.EqualFold(filepath.Ext(path), ".yaml") {
-			return nil
+		if !info.IsDir() && strings.EqualFold(filepath.Ext(path), ".yaml") {
+			yamlPaths = append(yamlPaths, path)
 		}
+		return nil
+	})
+	if walkErr != nil {
+		warnings = append(warnings, fmt.Sprintf("rules directory walk error: %v", walkErr))
+	}
 
+	sort.Strings(yamlPaths)
+
+	for _, path := range yamlPaths {
 		rule, warn := parseRuleFile(path)
 		if warn != "" {
 			warnings = append(warnings, warn)
-			return nil
+			continue
 		}
 		if !rule.IsEnabled() {
-			return nil
+			continue
 		}
 
-		// Deduplication: first loaded wins (alphabetical walk order)
+		// Deduplication: first loaded wins (deterministic alphabetical order)
 		if prev, dup := seen[rule.ID]; dup {
 			warnings = append(warnings, fmt.Sprintf(
 				"duplicate rule ID %q in %s — already loaded from %s, skipping", rule.ID, path, prev))
-			return nil
+			continue
 		}
 		seen[rule.ID] = path
 		rules = append(rules, rule)
-		return nil
-	})
-
-	if err != nil {
-		warnings = append(warnings, fmt.Sprintf("rules directory walk error: %v", err))
 	}
+
 	return rules, warnings
 }
 
@@ -143,4 +153,17 @@ func toSet(slice []string) map[string]bool {
 		m[s] = true
 	}
 	return m
+}
+
+// filterByParser removes rules whose parser field explicitly names a parser
+// different from the one actually used for this evaluation.
+// Rules with no parser restriction (parser: "") always pass through.
+func filterByParser(rules []*model.RuleDef, parserName string) []*model.RuleDef {
+	var out []*model.RuleDef
+	for _, r := range rules {
+		if r.Parser == "" || r.Parser == parserName {
+			out = append(out, r)
+		}
+	}
+	return out
 }
