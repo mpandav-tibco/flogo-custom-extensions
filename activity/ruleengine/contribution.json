@@ -1,7 +1,7 @@
 {
     "name": "Rule Engine",
     "version": "1.0.0",
-    "category": "AI Agent",
+    "category": "Default",
     "description": "Generic YAML-driven document analysis engine. Evaluates externalized rules against any structured document and returns structured findings.",
     "contributions": [
         {

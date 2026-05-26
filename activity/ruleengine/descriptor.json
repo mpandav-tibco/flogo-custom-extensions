@@ -45,13 +45,17 @@
             "name": "disabledRules",
             "type": "array",
             "required": false,
-            "items": { "type": "string" }
+            "items": {
+                "type": "string"
+            }
         },
         {
             "name": "tags",
             "type": "array",
             "required": false,
-            "items": { "type": "string" }
+            "items": {
+                "type": "string"
+            }
         }
     ],
     "output": [
