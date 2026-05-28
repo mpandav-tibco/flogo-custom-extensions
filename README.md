@@ -10,7 +10,12 @@ This repository provides custom Flogo extensions including activities, triggers,
 |-----------|---------|------|-------------|
 | [SSE Connector](connectors/sse/) | 1.0.0 | Connector | Server-Sent Events real-time streaming with event buffering and topic filtering |
 | [Kafka Stream Connector](connectors/KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, content-based routing, and event-time processing |
-| [VectorDB Connector](connectors/VectorDB/) | 1.0.0 | Connector | Multi-provider vector database connector supporting Qdrant, Weaviate, Chroma, and Milvus — purpose-built for RAG and agentic AI pipelines |
+| [VectorDB — Qdrant](connectors/VectorDB/qdrant/) | 1.0.0 | Connector | Qdrant connector — high-performance ANN search via REST and gRPC, TLS support, purpose-built for RAG and agentic AI pipelines |
+| [VectorDB — Weaviate](connectors/VectorDB/weaviate/) | 1.0.0 | Connector | Weaviate connector — native hybrid (BM25 + vector) search, GraphQL-backed, purpose-built for RAG pipelines |
+| [VectorDB — Chroma](connectors/VectorDB/chroma/) | 1.0.0 | Connector | Chroma connector — lightweight embedding-first store via REST v2, purpose-built for RAG pipelines |
+| [VectorDB — Milvus](connectors/VectorDB/milvus/) | 1.0.0 | Connector | Milvus connector — enterprise-grade, cloud-native, high-throughput gRPC-backed store for large-scale AI |
+
+> See [connectors/VectorDB/README.md](connectors/VectorDB/README.md) for the full feature matrix and connector guide.
 
 ### 🧮 Functions
 
@@ -37,23 +42,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Avro Schema Transform](activity/schema-transform/avroschematransform/) | 1.0.0 | Schema Transform | Transform Avro schemas to JSON Schema and/or XSD formats |
 | [JSON Schema Transform](activity/schema-transform/jsonschematransform/) | 1.0.0 | Schema Transform | Transform JSON Schema to XSD and Avro formats |
 | [XSD Schema Transform](activity/schema-transform/xsdschematransform/) | 1.0.0 | Schema Transform | Transform XSD schemas to JSON Schema and Avro formats |
-| [Kafka Stream Filter](connectors/KafkaStream/activity/filter/) | 1.0.0 | Kafka Stream | Evaluate single or multi-predicate AND/OR chains against Kafka message fields; supports deduplication and rate limiting |
-| [Kafka Stream Aggregate](connectors/KafkaStream/activity/aggregate/) | 1.0.0 | Kafka Stream | Accumulate a numeric message field into tumbling or sliding windows and emit sum/count/avg/min/max on window close |
 | [SOAP Client](activity/soapclient/) | 1.0.0 | Web Services | SOAP 1.1/1.2 client with WSDL support, JSON/XML modes, mutual TLS, WS-Security headers, OpenTelemetry tracing, and Flogo retry/circuit-breaker |
-| [VectorDB Create Collection](connectors/VectorDB/activity/createCollection/) | 1.0.0 | VectorDB | Create a new vector collection / index |
-| [VectorDB Delete Collection](connectors/VectorDB/activity/deleteCollection/) | 1.0.0 | VectorDB | Permanently delete a collection and all its data |
-| [VectorDB List Collections](connectors/VectorDB/activity/listCollections/) | 1.0.0 | VectorDB | List all collections in the database |
-| [VectorDB Upsert Documents](connectors/VectorDB/activity/upsertDocuments/) | 1.0.0 | VectorDB | Insert or update documents with pre-computed vectors |
-| [VectorDB Ingest Documents](connectors/VectorDB/activity/ingestDocuments/) | 1.0.0 | VectorDB | Embed text and upsert in one step — recommended for ingestion pipelines |
-| [VectorDB Get Document](connectors/VectorDB/activity/getDocument/) | 1.0.0 | VectorDB | Retrieve a single document by ID |
-| [VectorDB Delete Documents](connectors/VectorDB/activity/deleteDocuments/) | 1.0.0 | VectorDB | Delete documents by ID list or metadata filter |
-| [VectorDB Scroll Documents](connectors/VectorDB/activity/scrollDocuments/) | 1.0.0 | VectorDB | Paginate through all documents without a query vector |
-| [VectorDB Count Documents](connectors/VectorDB/activity/countDocuments/) | 1.0.0 | VectorDB | Count documents, with optional metadata filter |
-| [VectorDB Vector Search](connectors/VectorDB/activity/vectorSearch/) | 1.0.0 | VectorDB | Semantic ANN search with a dense query vector |
-| [VectorDB Hybrid Search](connectors/VectorDB/activity/hybridSearch/) | 1.0.0 | VectorDB | Combined dense + BM25 keyword search |
-| [VectorDB RAG Query](connectors/VectorDB/activity/ragQuery/) | 1.0.0 | VectorDB | Full RAG pipeline: embed → search → format context |
-| [VectorDB Create Embeddings](connectors/VectorDB/activity/createEmbeddings/) | 1.0.0 | VectorDB | Generate text embeddings via OpenAI, Cohere, Ollama, and other providers |
-| [VectorDB Rerank Documents](connectors/VectorDB/activity/rerank/) | 1.0.0 | VectorDB | Cross-encoder reranking for improved search precision |
 
 ### 🎯 Triggers
 
@@ -86,14 +75,13 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 | [PostgreSQL Listener Demo](examples/postgrelistener/) | PostgreSQL Listener Trigger, Write Log Activity | Database change notification demo with NOTIFY/LISTEN and logging |
 | [MySQL Binlog Listener Demo](examples/mysqllistener/) | MySQL Binlog Listener Trigger, Write Log Activity | Real-time MySQL/MariaDB binlog streaming demo for change data capture |
-| [Universal Database Listener Demo](examples/universaldblistener/) | Universal Database Listener Trigger, Write Log Activity | Multi-database listener demo supporting PostgreSQL, MySQL, MariaDB with unified event handling |
 | [AWS SQS Delete Demo](examples/aws_signature4/) | AWS Signature V4 Generator, REST Invoke Activity | AWS SQS message deletion demo using Signature V4 authentication |
 | [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |
 | [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger, Kafka Stream Split Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, join readings with alert thresholds across two topics, and route messages to branches via content-based split |
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 | [SOAP Client Demo](examples/soap-client/) | SOAP Client Activity | Timer-triggered SOAP 1.1 call to a public calculator service in both JSON mode and XML mode with namespace attributes |
-| [VectorDB Demo](examples/vectordb/) | VectorDB Connector, VectorDB Activities | End-to-end RAG demo: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
+| [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (Qdrant, Weaviate, Chroma, Milvus) | End-to-end RAG demo across all 4 connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
 
 ## 🤝 Contributing
 

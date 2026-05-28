@@ -1,0 +1,82 @@
+"use strict";
+var __extends = this && this.__extends || function () { var t = function (e, i) { return (t = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function (t, e) { t.__proto__ = e } || function (t, e) { for (var i in e) Object.prototype.hasOwnProperty.call(e, i) && (t[i] = e[i]) })(e, i) }; return function (e, i) { if ("function" != typeof i && null !== i) throw new TypeError("Class extends value " + String(i) + " is not a constructor or null"); function n() { this.constructor = e } t(e, i), e.prototype = null === i ? Object.create(i) : (n.prototype = i.prototype, new n) } }(),
+    __decorate = this && this.__decorate || function (t, e, i, n) { var r, o = arguments.length, a = o < 3 ? e : null === n ? n = Object.getOwnPropertyDescriptor(e, i) : n; if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) a = Reflect.decorate(t, e, i, n); else for (var s = t.length - 1; s >= 0; s--)(r = t[s]) && (a = (o < 3 ? r(a) : o > 3 ? r(e, i, a) : r(e, i)) || a); return o > 3 && a && Object.defineProperty(e, i, a), a },
+    __metadata = this && this.__metadata || function (t, e) { if ("object" == typeof Reflect && "function" == typeof Reflect.metadata) return Reflect.metadata(t, e) };
+Object.defineProperty(exports, "__esModule", { value: !0 }), exports.RAGQueryActivityHandler = void 0;
+var core_1 = require("@angular/core"),
+    http_1 = require("@angular/http"),
+    rxjs_1 = require("wi-studio/common/rxjs-extensions"),
+    wi_contrib_1 = require("wi-studio/app/contrib/wi-contrib"),
+
+    // These fields are hidden when useConnectorEmbedding=true (inherited from connector)
+    CONNECTOR_INHERITED_FIELDS = ["embeddingProvider", "embeddingAPIKey", "embeddingBaseURL"],
+
+    // These fields are only visible when enableLLMGenerate=true
+    // Note: systemPrompt is intentionally excluded — both the design-time default (settings)
+    // and the per-request override (input) are always visible so users can prepare/override
+    // the prompt regardless of whether LLM generation is currently enabled.
+    LLM_FIELDS = ["llmProvider", "llmBaseURL", "llmAPIKey", "llmModel", "maxTokens", "temperature"],
+
+    RAGQueryActivityHandler = function (t) {
+        function e(e, i) {
+            var n = t.call(this, e, i) || this;
+            n.injector = e;
+            n.http = i;
+            n.value = function (fieldName, ctx) {
+                if (fieldName === "connection") {
+                    return rxjs_1.Observable.create(function (observer) {
+                        var connections = [];
+                        wi_contrib_1.WiContributionUtils.getConnections(n.http, "VectorDB", "chroma-connector").subscribe(
+                            function (conns) {
+                                conns.forEach(function (conn) {
+                                    for (var i = 0; i < conn.settings.length; i++) {
+                                        if ("name" === conn.settings[i].name) {
+                                            connections.push({ unique_id: wi_contrib_1.WiContributionUtils.getUniqueId(conn), name: conn.settings[i].value });
+                                        }
+                                    }
+                                });
+                                observer.next(connections);
+                            },
+                            function () { observer.next([]); },
+                            function () { observer.complete(); }
+                        );
+                    });
+                }
+                return null;
+            };
+            n.validate = function (fieldName, ctx) {
+                var useConnector = n.getContextVar(ctx, "useConnectorEmbedding");
+                var inherit = useConnector === true || useConnector === "true";
+
+                // --- Embedding credential fields: hide when connector-level settings are in use ---
+                if (CONNECTOR_INHERITED_FIELDS.indexOf(fieldName) !== -1) {
+                    return wi_contrib_1.ValidationResult.newValidationResult().setVisible(!inherit);
+                }
+
+                // --- Hybrid alpha: only relevant when hybrid search is enabled ---
+                if (fieldName === "hybridAlpha") {
+                    var useHybrid = n.getContextVar(ctx, "useHybridSearch");
+                    var hybrid = useHybrid === true || useHybrid === "true";
+                    return wi_contrib_1.ValidationResult.newValidationResult().setVisible(hybrid);
+                }
+
+                // --- LLM fields: only visible when enableLLMGenerate=true ---
+                if (LLM_FIELDS.indexOf(fieldName) !== -1) {
+                    var enableLLM = n.getContextVar(ctx, "enableLLMGenerate");
+                    var llmOn = enableLLM === true || enableLLM === "true";
+                    return wi_contrib_1.ValidationResult.newValidationResult().setVisible(llmOn);
+                }
+
+                return null;
+            };
+            n.action = function (t, e) { return null };
+            return n;
+        }
+        __extends(e, t);
+        e.prototype.getContextVar = function (ctx, name) {
+            return ctx.getField(name) ? void 0 === ctx.getField(name).value ? "" : ctx.getField(name).value : "";
+        };
+        e = __decorate([wi_contrib_1.WiContrib({}), core_1.Injectable(), __metadata("design:paramtypes", [core_1.Injector, http_1.Http])], e);
+        return e;
+    }(wi_contrib_1.WiServiceHandlerContribution);
+exports.RAGQueryActivityHandler = RAGQueryActivityHandler;

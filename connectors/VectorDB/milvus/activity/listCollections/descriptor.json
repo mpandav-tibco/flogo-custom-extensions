@@ -1,0 +1,53 @@
+{
+  "name": "tibco-vectordb-list-cols",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus/activity/listCollections",
+  "title": "List Collections",
+  "image": "icons/list.svg",
+  "description": "List all collections / indexes available in the connected VectorDB.",
+  "display": {
+    "category": "Milvus",
+    "visible": true,
+    "smallIcon": "icons/list.svg"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the VectorDB connector to use",
+        "type": "connection"
+      },
+      "allowed": [
+        "milvus-connector"
+      ]
+    }
+  ],
+  "input": [],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "collections",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}"
+    },
+    {
+      "name": "totalCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ]
+}
