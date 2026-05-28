@@ -1,0 +1,1076 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteCollection",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/rerank",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
+  ],
+  "name": "milvus-connector-test",
+  "description": "Live connector test app for Milvus vector database \u2014 CRUD cycle, RAG ingest/query, embeddings, rerank",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "REST trigger for Milvus connector live tests (port 18084)",
+      "settings": {
+        "port": 18084,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "TestTrigger",
+      "handlers": [
+        {
+          "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/test/crud",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:crud_cycle"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "crud_cycle"
+        },
+        {
+          "description": "RAG cycle: createCollection \u2192 ingestDocuments (with Ollama embeddings) \u2192 ragQuery \u2192 deleteCollection",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/test/rag",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:rag_cycle"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "rag_cycle"
+        },
+        {
+          "description": "Test createEmbeddings activity with Ollama provider",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/test/embed",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:embed_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "embed_test"
+        },
+        {
+          "description": "Test rerank activity \u2014 calls Cohere rerank API",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/test/rerank",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:rerank_test"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "rerank_test"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:crud_cycle",
+      "data": {
+        "name": "crud_cycle",
+        "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListBefore",
+            "type": "label",
+            "label": "StartActivity to ListBefore"
+          },
+          {
+            "id": 2,
+            "from": "ListBefore",
+            "to": "CreateCollection",
+            "type": "label",
+            "label": "ListBefore to CreateCollection"
+          },
+          {
+            "id": 3,
+            "from": "CreateCollection",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "CreateCollection to IngestDocs"
+          },
+          {
+            "id": 4,
+            "from": "IngestDocs",
+            "to": "CountDocs1",
+            "type": "label",
+            "label": "IngestDocs to CountDocs1"
+          },
+          {
+            "id": 5,
+            "from": "CountDocs1",
+            "to": "GetDoc",
+            "type": "label",
+            "label": "CountDocs1 to GetDoc"
+          },
+          {
+            "id": 6,
+            "from": "GetDoc",
+            "to": "ScrollDocs",
+            "type": "label",
+            "label": "GetDoc to ScrollDocs"
+          },
+          {
+            "id": 7,
+            "from": "ScrollDocs",
+            "to": "DeleteDocs",
+            "type": "label",
+            "label": "ScrollDocs to DeleteDocs"
+          },
+          {
+            "id": 8,
+            "from": "DeleteDocs",
+            "to": "CountDocs2",
+            "type": "label",
+            "label": "DeleteDocs to CountDocs2"
+          },
+          {
+            "id": 9,
+            "from": "CountDocs2",
+            "to": "DeleteCollection",
+            "type": "label",
+            "label": "CountDocs2 to DeleteCollection"
+          },
+          {
+            "id": 10,
+            "from": "DeleteCollection",
+            "to": "ListAfter",
+            "type": "label",
+            "label": "DeleteCollection to ListAfter"
+          },
+          {
+            "id": 11,
+            "from": "ListAfter",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "ListAfter to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListBefore",
+            "name": "ListBefore",
+            "description": "",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              }
+            }
+          },
+          {
+            "id": "CreateCollection",
+            "name": "CreateCollection",
+            "description": "",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "Ingest documents with auto-embedding into the collection",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 120,
+                "embeddingBatchSize": 8
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "crud-001",
+                      "text": "The quick brown fox jumps over the lazy dog in the park."
+                    },
+                    {
+                      "id": "crud-002",
+                      "text": "Machine learning enables computers to learn from data without explicit programming."
+                    },
+                    {
+                      "id": "crud-003",
+                      "text": "Vector databases store high-dimensional embeddings and enable fast similarity search."
+                    },
+                    {
+                      "id": "crud-004",
+                      "text": "The Flogo framework provides visual programming for IoT and microservices."
+                    },
+                    {
+                      "id": "crud-005",
+                      "text": "Artificial intelligence is transforming many industries with automation and insights."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs1",
+            "name": "CountDocs1",
+            "description": "",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "GetDoc",
+            "name": "GetDoc",
+            "description": "",
+            "activity": {
+              "ref": "#getDocument",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "documentId": "crud-001"
+              }
+            }
+          },
+          {
+            "id": "ScrollDocs",
+            "name": "ScrollDocs",
+            "description": "",
+            "activity": {
+              "ref": "#scrollDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "limit": 10,
+                "offset": "",
+                "withVectors": false
+              }
+            }
+          },
+          {
+            "id": "DeleteDocs",
+            "name": "DeleteDocs",
+            "description": "",
+            "activity": {
+              "ref": "#deleteDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo",
+                "ids": {
+                  "mapping": [
+                    "crud-003",
+                    "crud-004"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountDocs2",
+            "name": "CountDocs2",
+            "description": "",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "DeleteCollection",
+            "name": "DeleteCollection",
+            "description": "",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "flogodemo"
+              }
+            }
+          },
+          {
+            "id": "ListAfter",
+            "name": "ListAfter",
+            "description": "",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "=string.concat('Milvus CRUD COMPLETE - count_before=', coerce.toString($activity[CountDocs1].count), ' count_after_delete=', coerce.toString($activity[CountDocs2].count))",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTGlzdEJlZm9yZSI6eyJ4IjoyMDAsInkiOjUwfSwiQ3JlYXRlQ29sbGVjdGlvbiI6eyJ4IjozNTAsInkiOjUwfSwiSW5nZXN0RG9jcyI6eyJ4Ijo1MDAsInkiOjUwfSwiQ291bnREb2NzMSI6eyJ4Ijo2NTAsInkiOjUwfSwiR2V0RG9jIjp7IngiOjExMDAsInkiOjUwfSwiU2Nyb2xsRG9jcyI6eyJ4IjoxMjUwLCJ5Ijo1MH0sIkRlbGV0ZURvY3MiOnsieCI6MTQwMCwieSI6NTB9LCJDb3VudERvY3MyIjp7IngiOjE1NTAsInkiOjUwfSwiRGVsZXRlQ29sbGVjdGlvbiI6eyJ4IjoxNzAwLCJ5Ijo1MH0sIkxpc3RBZnRlciI6eyJ4IjoxODUwLCJ5Ijo1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MjAwMCwieSI6NTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:rag_cycle",
+      "data": {
+        "name": "rag_cycle",
+        "description": "RAG cycle: createCollection \u2192 ingestDocuments (with Ollama embeddings) \u2192 ragQuery \u2192 deleteCollection",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateRAGCol",
+            "type": "label",
+            "label": "StartActivity to CreateRAGCol"
+          },
+          {
+            "id": 2,
+            "from": "CreateRAGCol",
+            "to": "IngestDocs",
+            "type": "label",
+            "label": "CreateRAGCol to IngestDocs"
+          },
+          {
+            "id": 3,
+            "from": "IngestDocs",
+            "to": "RAGQuery",
+            "type": "label",
+            "label": "IngestDocs to RAGQuery"
+          },
+          {
+            "id": 4,
+            "from": "RAGQuery",
+            "to": "DeleteRAGCol",
+            "type": "label",
+            "label": "RAGQuery to DeleteRAGCol"
+          },
+          {
+            "id": 5,
+            "from": "DeleteRAGCol",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "DeleteRAGCol to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateRAGCol",
+            "name": "CreateRAGCol",
+            "description": "",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "IngestDocs",
+            "name": "IngestDocs",
+            "description": "",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "contentField": "text",
+                "timeoutSeconds": 60,
+                "embeddingBatchSize": 8
+              },
+              "input": {
+                "collectionName": "ragdemo",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "rag-001",
+                      "text": "Transformers use self-attention mechanisms to process sequential data in parallel, enabling massive parallelization during training."
+                    },
+                    {
+                      "id": "rag-002",
+                      "text": "The attention mechanism allows neural networks to focus on relevant parts of the input when generating output."
+                    },
+                    {
+                      "id": "rag-003",
+                      "text": "BERT (Bidirectional Encoder Representations from Transformers) pre-trains deep bidirectional representations using masked language modeling."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "RAGQuery",
+            "name": "RAGQuery",
+            "description": "",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://milvus-conn",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
+                "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
+                "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "embeddingModel": "=$property[\"EMBED_MODEL\"]",
+                "embeddingDimensions": 0,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 60,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5,
+                "enableLLMGenerate": false,
+                "llmProvider": "Ollama",
+                "llmBaseURL": "http://localhost:11434",
+                "llmModel": "llama3.1:8b",
+                "systemPrompt": "You are a helpful assistant. Answer the question using only the provided context. If the context does not contain enough information, say so.",
+                "maxTokens": 1024,
+                "temperature": 0.1
+              },
+              "input": {
+                "queryText": "How does the attention mechanism work in transformer models?",
+                "collectionName": "ragdemo",
+                "topK": 3
+              }
+            }
+          },
+          {
+            "id": "DeleteRAGCol",
+            "name": "DeleteRAGCol",
+            "description": "",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://milvus-conn"
+              },
+              "input": {
+                "collectionName": "ragdemo"
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "=string.concat('Milvus RAG COMPLETE - ingested=', coerce.toString($activity[IngestDocs].ingestedCount), ' found=', coerce.toString($activity[RAGQuery].totalFound))",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:embed_test",
+      "data": {
+        "name": "embed_test",
+        "description": "Test createEmbeddings activity with Ollama provider",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "EmbedSingle",
+            "type": "label",
+            "label": "StartActivity to EmbedSingle"
+          },
+          {
+            "id": 2,
+            "from": "EmbedSingle",
+            "to": "EmbedBatch",
+            "type": "label",
+            "label": "EmbedSingle to EmbedBatch"
+          },
+          {
+            "id": 3,
+            "from": "EmbedBatch",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "EmbedBatch to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "EmbedSingle",
+            "name": "EmbedSingle",
+            "description": "",
+            "activity": {
+              "ref": "#createEmbeddings",
+              "settings": {
+                "useConnectorEmbedding": true,
+                "provider": "=$property[\"EMBED_PROVIDER\"]",
+                "apiKey": "=$property[\"EMBED_API_KEY\"]",
+                "baseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "model": "=$property[\"EMBED_MODEL\"]",
+                "dimensions": 0,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "inputText": "Flogo vector connector test \u2014 single embedding"
+              }
+            }
+          },
+          {
+            "id": "EmbedBatch",
+            "name": "EmbedBatch",
+            "description": "",
+            "activity": {
+              "ref": "#createEmbeddings",
+              "settings": {
+                "useConnectorEmbedding": true,
+                "provider": "=$property[\"EMBED_PROVIDER\"]",
+                "apiKey": "=$property[\"EMBED_API_KEY\"]",
+                "baseURL": "=$property[\"EMBED_BASE_URL\"]",
+                "model": "=$property[\"EMBED_MODEL\"]",
+                "dimensions": 0,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "inputTexts": {
+                  "mapping": [
+                    "The quick brown fox",
+                    "Machine learning is powerful",
+                    "Vector similarity search"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "=string.concat('Milvus Embed COMPLETE - single_dims=', coerce.toString($activity[EmbedSingle].dimensions), ' batch_dims=', coerce.toString($activity[EmbedBatch].dimensions))",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkVtYmVkU2luZ2xlIjp7IngiOjI1MCwieSI6MTUwfSwiRW1iZWRCYXRjaCI6eyJ4Ijo0NTAsInkiOjI1MH0sIkxvZ1N1bW1hcnkiOnsieCI6NjUwLCJ5IjozNTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:rerank_test",
+      "data": {
+        "name": "rerank_test",
+        "description": "Test rerank activity \u2014 calls Cohere rerank API",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "RerankDocs",
+            "type": "label",
+            "label": "StartActivity to RerankDocs"
+          },
+          {
+            "id": 2,
+            "from": "RerankDocs",
+            "to": "LogSummary",
+            "type": "label",
+            "label": "RerankDocs to LogSummary"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "RerankDocs",
+            "name": "RerankDocs",
+            "description": "",
+            "activity": {
+              "ref": "#rerank",
+              "settings": {
+                "rerankEndpoint": "=$property[\"RERANK_ENDPOINT\"]",
+                "model": "rerank-english-v3.0",
+                "topN": 3,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "query": "Which sentence is about machine learning?",
+                "documents": {
+                  "mapping": [
+                    "The quick brown fox jumps over the lazy dog",
+                    "Machine learning enables computers to learn from data automatically",
+                    "Vector databases store high-dimensional embeddings"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "LogSummary",
+            "name": "LogSummary",
+            "description": "",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": true,
+                "message": "=string.concat('Milvus Rerank - success=', coerce.toString($activity[RerankDocs].success), ' total=', coerce.toString($activity[RerankDocs].totalCount))",
+                "logLevel": "INFO"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlJlcmFua0RvY3MiOnsieCI6MjUwLCJ5IjoxNTB9LCJMb2dTdW1tYXJ5Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "EMBED_PROVIDER",
+      "type": "string",
+      "value": "Ollama"
+    },
+    {
+      "name": "EMBED_API_KEY",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "EMBED_BASE_URL",
+      "type": "string",
+      "value": "http://localhost:11434"
+    },
+    {
+      "name": "EMBED_MODEL",
+      "type": "string",
+      "value": "nomic-embed-text"
+    },
+    {
+      "name": "EMBED_DIMS",
+      "type": "float64",
+      "value": "768"
+    },
+    {
+      "name": "RERANK_ENDPOINT",
+      "type": "string",
+      "value": "https://api.cohere.ai/v1/rerank"
+    },
+    {
+      "name": "RERANK_API_KEY",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "RERANK_MODEL",
+      "type": "string",
+      "value": "rerank-english-v3.0"
+    }
+  ],
+  "connections": {
+    "milvus-conn": {
+      "id": "milvus-conn",
+      "name": "$property[\"VectorDB.milvus-conn.Connection_Name\"]",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "milvus-conn",
+        "dbType": "milvus",
+        "host": "localhost",
+        "port": 19530,
+        "grpcPort": 19530,
+        "apiKey": "",
+        "useTLS": false,
+        "tlsInsecureSkipVerify": false,
+        "tlsServerName": "",
+        "caCert": "",
+        "clientCert": "",
+        "clientKey": "",
+        "timeoutSeconds": 30,
+        "maxRetries": 3,
+        "retryBackoffMs": 500,
+        "scheme": "http",
+        "username": "",
+        "password": "",
+        "dbName": "default",
+        "defaultMetricType": "cosine",
+        "enableEmbedding": false,
+        "embeddingProvider": "Ollama",
+        "embeddingAPIKey": "",
+        "embeddingBaseURL": "http://localhost:11434"
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "18084",
+        "spec": {
+          "name": "milvus-connector-test",
+          "version": "1.0.0"
+        },
+        "title": "TestTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "milvus-connector-test",
+            "version": "1.0.0",
+            "description": "REST trigger for Milvus connector live tests (port 18084)"
+          },
+          "paths": {
+            "/api/test/crud": {
+              "get": {
+                "summary": "crud_cycle",
+                "operationId": "get_api_test_crud",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection"
+              }
+            },
+            "/api/test/rag": {
+              "get": {
+                "summary": "rag_cycle",
+                "operationId": "get_api_test_rag",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "RAG cycle: createCollection \u2192 ingestDocuments (with Ollama embeddings) \u2192 ragQuery \u2192 deleteCollection"
+              }
+            },
+            "/api/test/embed": {
+              "get": {
+                "summary": "embed_test",
+                "operationId": "get_api_test_embed",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Test createEmbeddings activity with Ollama provider"
+              }
+            },
+            "/api/test/rerank": {
+              "get": {
+                "summary": "rerank_test",
+                "operationId": "get_api_test_rerank",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Test rerank activity \u2014 calls Cohere rerank API"
+              }
+            }
+          },
+          "definitions": {}
+        }
+      }
+    ],
+    "flogoVersion": "2.26.3"
+  }
+}

@@ -1,0 +1,90 @@
+# VectorDB Connector Test Infrastructure
+# Usage: docker compose up -d
+# All 4 providers run locally; Ollama must be running separately for embedding tests.
+
+version: "3.9"
+
+services:
+  # ── Qdrant ────────────────────────────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.13.6
+    container_name: vdb-test-qdrant
+    ports:
+      - "16333:6333" # REST / HTTP (avoids conflict with qdrant-dev)
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://localhost:6333/healthz" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Weaviate ───────────────────────────────────────────────────────────────
+  weaviate:
+    image: semitechnologies/weaviate:1.29.0
+    container_name: vdb-test-weaviate
+    ports:
+      - "18080:8080" # REST / HTTP
+      - "50051:50051" # gRPC
+    environment:
+      QUERY_DEFAULTS_LIMIT: "25"
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      DEFAULT_VECTORIZER_MODULE: "none"
+      ENABLE_MODULES: ""
+      CLUSTER_HOSTNAME: "node1"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://localhost:8080/v1/.well-known/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # ── ChromaDB ───────────────────────────────────────────────────────────────
+  chroma:
+    image: chromadb/chroma:0.6.3
+    container_name: vdb-test-chroma
+    ports:
+      - "8000:8000"
+    environment:
+      CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER: ""
+      ANONYMIZED_TELEMETRY: "false"
+    volumes:
+      - chroma_data:/chroma/chroma
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://localhost:8000/api/v2/heartbeat" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Milvus Standalone ─────────────────────────────────────────────────────
+  milvus:
+    image: milvusdb/milvus:v2.4.0
+    container_name: vdb-test-milvus
+    command: milvus run standalone
+    ports:
+      - "19530:19530" # gRPC SDK port
+      - "19091:9091" # HTTP health port
+    environment:
+      ETCD_USE_EMBED: "true"
+      ETCD_DATA_DIR: "/var/lib/milvus/etcd"
+      COMMON_STORAGETYPE: "local"
+    volumes:
+      - milvus_data:/var/lib/milvus
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://localhost:9091/healthz" ]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  qdrant_data:
+  weaviate_data:
+  chroma_data:
+  milvus_data:
