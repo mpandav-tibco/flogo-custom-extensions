@@ -5,6 +5,330 @@ Evaluates declarative YAML rules against structured documents (`.flogo`, `.bwp`,
 Supports:
 - YAML-driven rules — no code required; rules are externalised files loaded at runtime
 - Five built-in parsers — JSON/Flogo (JSONPath), XML/BWP (XPath), YAML/Helm (dot-path), Key-Value (`.properties`/`.env`), and plain-text log lines
+- 21 match types — existence, equality, string, regex, numeric, composite, and security-specific extended types
+- Flexible scope targeting — full JSONPath (including nested wildcards), XPath, or dot-path; `$.spec.containers[*]` and `spec.containers` are equivalent for YAML/KV
+- Tag and disable filters — run only a tagged subset of rules, or skip specific rule IDs at call time
+- Go template interpolation — `{{.Scope.*}}`, `{{.Root.*}}`, `{{.File.*}}`, `{{.Match}}` in descriptions and locations; template syntax errors are reported in the finding output
+- Parallel rule evaluation — rules run concurrently; safe because all Document implementations are read-only after parsing
+- Rule set caching — parsed rules are cached in memory and re-read only when the directory's modification time changes
+
+---
+
+## Settings (design-time)
+
+| Setting | Type | Required | Description |
+|---------|------|----------|-------------|
+| `defaultRulesPath` | string | | Default directory path used when the `rulesPath` input is empty at runtime. Allows a bundled rule set to be overridden per invocation. |
+
+---
+
+## Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `content` | string | Yes | Raw file content to analyse |
+| `fileName` | string | Yes | Original filename — drives parser auto-detection and template context |
+| `rulesPath` | string | | Directory of `.yaml` rule files; searched recursively. Falls back to `defaultRulesPath` setting when empty. |
+| `parserOverride` | string | | Force a parser: `json`, `xml`, `yaml`, `kv`, `lines` |
+| `disabledRules` | array | | Rule IDs to skip for this call (e.g. `["FLOGO-001"]`) |
+| `tags` | array | | Only evaluate rules that carry at least one of these tags |
+
+---
+
+## Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `findings` | array | Issues found — each item has `rule_id`, `severity`, `title`, `location`, `message`, `recommendation`, `category`, `tags`, `root_causes`, `fixes` |
+| `positives` | array | Rules with `severity: GOOD` that matched |
+| `errorCount` | integer | Number of ERROR findings |
+| `warningCount` | integer | Number of WARNING findings |
+| `infoCount` | integer | Number of INFO findings (includes suppression summaries and diagnostic errors) |
+| `markdown` | string | Pre-formatted markdown analysis report (Findings table + Strengths table) |
+| `overview` | object | File metadata: `file`, `extension`, `parser`, `rules_run`, `name`, `version`, `warnings` |
+| `success` | boolean | `false` when a fatal error prevented evaluation |
+| `error` | string | Error message when `success` is `false` |
+
+---
+
+## Rule Schema
+
+Each rule is a `.yaml` file anywhere under `rulesPath`. Minimum viable rule requires `id`, `severity`, `title`, and `match`.
+
+```yaml
+rule:
+  # Required
+  id: RULE-001                        # Unique. Duplicate IDs are warned and skipped (first loaded wins, sorted alphabetically).
+  severity: ERROR                     # ERROR | WARNING | INFO | GOOD
+  title: "Short display title"
+  match:                              # Main condition — see Match Types below
+    type: missing
+    path: "errorHandler.tasks"
+
+  # Targeting
+  scope: "$.resources[*].data"       # Expand to sub-objects. JSON: JSONPath, XML: XPath, YAML/KV: dot-path ($.prefix and [*] suffix are stripped automatically).
+  applies_to: [.json, .flogo]        # Limit to file extensions or parser names. Omit to match all formats.
+  parser: yaml                        # Restrict this rule to a specific parser (independent of applies_to).
+
+  # Filtering
+  enabled: true                       # Set false to permanently skip (default: true)
+  tags: [flogo, reliability]          # Used with the `tags` input filter
+  max_occurrences: 5                  # Cap findings per evaluation run. 0 means unlimited. A summary INFO finding is added when the cap is hit.
+
+  # Optional pre-filter — evaluated before match; skips scope items that don't match
+  when:
+    type: contains
+    path: "activity.ref"
+    substring: "rest"
+
+  # Templates — support {{.Scope.*}}, {{.Root.*}}, {{.File.*}}, {{.Match}}
+  # Invalid template syntax is caught at rule load time; errors are reported as a warning.
+  description: "Flow {{.Scope.name}} has no error handler."
+  location: "flow:{{.Scope.name}}"
+  recommendation: "Add an errorHandler section."
+
+  # Log-analysis fields
+  root_causes: ["Connection pool exhausted"]
+  fixes: ["Increase pool size in ems.conf"]
+```
+
+---
+
+## Match Types
+
+### Existence
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `missing` | `path` | Path absent, null, empty string, or empty array |
+| `exists` | `path` | Path present and non-empty |
+| `not_exists` | `path` | Path is completely absent from the document (empty strings and zero values do **not** match — use `missing` for those) |
+| `all_missing` | `paths` (list) | Every path in the list is absent or empty |
+
+### Equality
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `equals` | `value` | Deep-equal or string match |
+| `not_equals` | `value` | Does not match |
+
+### String
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `contains` | `substring` | Value contains the substring |
+| `not_contains` | `substring` | Value does not contain the substring |
+| `contains_any` | `substrings` | Value contains at least one entry in the list |
+| `regex` | `pattern`, `flags` | Value matches the regex pattern (`flags: [i]` for case-insensitive) |
+| `regex_not_match` | `pattern`, `requires_contains` | Value does **not** match the pattern. When `requires_contains` is set, the rule is skipped (no finding) unless the value first contains that string — avoids false positives on unrelated values. |
+
+### Numeric
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `greater_than` | `value` | Numeric value > threshold |
+| `less_than` | `value` | Numeric value < threshold |
+| `count_exceeds` | `value` **or** `min_count` | Array length > threshold. Accepts either `value: 5` (interface{}) or `min_count: 5` (int). |
+| `count_greater_than` | `value` **or** `min_count` | Alias of `count_exceeds` — semantically identical, choose for readability. |
+
+### Composite (recursive)
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `any_of` | `conditions` | At least one sub-condition matches |
+| `all_of` | `conditions` | All sub-conditions match |
+| `none_of` | `conditions` | No sub-condition matches |
+| `none_contain` | `path` + `keys` **or** `substrings` | Object has none of the given keys (key-based), or no array element contains any of the given substrings (substring-based) |
+
+### Security
+
+| Type | Field | Matches when |
+|------|-------|-------------|
+| `credential_header_literal` | `path`, `header_names` | Any header in `header_names` at `path` has a hard-coded literal value (not a Flogo `=$` expression). The finding value is `header: [REDACTED]` — the secret is never surfaced. |
+| `duplicate_values` | `path`, `min_count` | Array at `path` contains the same value ≥ `min_count` times (default 2). Useful for detecting duplicate rule IDs, duplicate activity refs, etc. |
+
+### Aliases
+
+| Alias | Resolves to |
+|-------|------------|
+| `not_empty`, `not_missing` | `exists` |
+| `regex_match` | `regex` |
+| `count_greater_than` | `count_exceeds` |
+
+---
+
+## Parsers
+
+| Parser | Extensions | Scope syntax | Path syntax in `match` |
+|--------|------------|-------------|------------------------|
+| `json` | `.json`, `.flogo` | JSONPath: `$.resources[*].data` | Dot-notation: `activity.ref` |
+| `xml` | `.xml`, `.bwp` | XPath: `//process[@enabled='true']` | XPath from node: `@name`, `status/text()` |
+| `yaml` | `.yaml`, `.yml` | Dot-path: `spec.template.spec.containers` or `$.spec.template.spec.containers[*]` | Dot-path: `image` |
+| `kv` | `.conf`, `.properties`, `.env` | Empty (whole document) or dot-path | Key: `server.url` |
+| `lines` | `.log`, `.txt`, `.out` | Empty or `$[*]` | `line` (text), `number` (1-based int) |
+
+Auto-detection is based on file extension. Use `parserOverride` or the rule's `parser` field to override.
+
+**`applies_to` accepts both file extensions and parser names.** For example, `applies_to: [yaml, .yml]` matches files with extension `.yml` and any file evaluated by the YAML parser (including when `parserOverride: yaml` is set).
+
+---
+
+## Template Variables
+
+Available in `description`, `location`, and `recommendation` fields. Missing keys render as empty string (`missingkey=zero`). Invalid template syntax is detected at rule load time and reported in the overview warnings.
+
+| Variable | Description |
+|----------|-------------|
+| `{{.Scope.<field>}}` | Field from the current scope item |
+| `{{.Root.<field>}}` | Field from the document root |
+| `{{.File.Name}}` | Base filename, e.g. `myapp.flogo` |
+| `{{.File.Extension}}` | Lowercase extension, e.g. `.flogo` |
+| `{{.Match}}` | The value that triggered the match |
+
+If a template executes with an error (e.g. a valid template that fails due to a type mismatch), the field is rendered as `[template error: <details>]` rather than an empty or raw literal.
+
+---
+
+## Rule Caching
+
+Parsed rule sets are cached in memory keyed by `rulesPath`. The cache is invalidated only when the directory's own modification time changes (i.e., when files are added or removed). Changes to the **content** of existing rule files require a service restart to take effect — rules are treated as static at runtime.
+
+---
+
+## max_occurrences
+
+When a rule could match hundreds of scope items (e.g., every container in a large manifest), `max_occurrences` limits the number of findings emitted per evaluation run:
+
+```yaml
+rule:
+  id: KUBE-001
+  max_occurrences: 3
+  ...
+```
+
+After emitting the first 3 findings, a single `INFO` finding is appended: `"[KUBE-001] 47 additional occurrence(s) suppressed"`. This keeps the output readable without losing information about how many issues were found.
+
+---
+
+## Examples
+
+### Flogo — missing error handler
+
+```yaml
+rule:
+  id: FLOGO-001
+  severity: ERROR
+  title: Flow Missing Error Handler
+  description: "Flow {{.Scope.name}} has no error handler tasks."
+  tags: [flogo, reliability]
+  applies_to: [.json, .flogo]
+  scope: "$.resources[*].data"
+  match:
+    type: missing
+    path: "errorHandler.tasks"
+  location: "flow:{{.Scope.name}}"
+  recommendation: "Add an errorHandler section with at least one task."
+```
+
+### Kubernetes — unpinned container image
+
+```yaml
+rule:
+  id: KUBE-001
+  severity: ERROR
+  title: Container Uses latest or Untagged Image
+  description: "Container {{.Scope.name}} uses image {{.Match}} with no pinned version."
+  tags: [kubernetes, deployment]
+  applies_to: [.yaml, .yml]
+  scope: "spec.template.spec.containers"
+  max_occurrences: 10
+  match:
+    type: any_of
+    conditions:
+      - type: regex
+        path: image
+        pattern: ":latest$"
+      - type: not_exists
+        path: image
+  location: "container:{{.Scope.name}}"
+  recommendation: "Pin the image to a specific digest or version tag."
+```
+
+### Log file — error/fatal entries
+
+```yaml
+rule:
+  id: LOG-001
+  severity: ERROR
+  title: Error or Fatal Log Entry
+  description: "Line {{.Scope.number}}: {{.Scope.line}}"
+  tags: [logs, operations]
+  applies_to: [.log, .txt]
+  match:
+    type: regex
+    path: line
+    pattern: "ERROR|FATAL|PANIC"
+    flags: [i]
+  location: "line:{{.Scope.number}}"
+  root_causes: ["Application exception", "Unhandled panic"]
+  fixes: ["Check stack trace in surrounding lines"]
+```
+
+### Count threshold — too many retries configured
+
+```yaml
+rule:
+  id: FLOGO-010
+  severity: WARNING
+  title: Excessive Retry Count
+  description: "Activity {{.Scope.name}} has {{.Match}} retries configured."
+  scope: "$.resources[*].data.tasks[*]"
+  match:
+    type: count_exceeds
+    path: "activityCfg.retryOnError.count"
+    value: 5
+  location: "activity:{{.Scope.name}}"
+```
+
+---
+
+## Limitations
+
+| Area | Limitation |
+|------|------------|
+| **XML path resolution** | Scope items are `*xmlquery.Node`; match paths must be valid XPath from that node. Dot-notation does not apply to XML. |
+| **Rule content hot-reload** | Content changes to existing rule files require a service restart; only directory-level changes (files added/removed) are picked up automatically via mtime invalidation. |
+| **Expression match type** | `type: expression` (JavaScript sandbox via goja) is reserved for Phase 2 and returns a clear error if used: `"expression match type is not supported in this build; use regex, any_of, or all_of for complex conditions"`. |
+| **GOOD rule suppression summary** | When a GOOD (strength) rule hits `max_occurrences`, the suppression summary finding still goes to `findings` (not `positives`) because it is a meta-finding about the cap, not an actual strength. |
+
+---
+
+## Running Tests
+
+```bash
+cd activity/ruleengine
+
+# Unit and engine tests (no external services required)
+go test ./engine/... -v
+
+# All packages
+go test ./... -count=1
+
+# With race detector (rules evaluate in parallel — important to verify)
+go test ./engine/... -race
+```
+
+Integration tests use a local HTTP server — see `integration/cmd/server/main.go`. Required because `flogobuild` cannot resolve sub-module replace directives.
+
+```bash
+cd activity/ruleengine/integration
+go run ./cmd/server        # starts on :7000
+```
+
+
+Supports:
+- YAML-driven rules — no code required; rules are externalised files loaded at runtime
+- Five built-in parsers — JSON/Flogo (JSONPath), XML/BWP (XPath), YAML/Helm (dot-path), Key-Value (`.properties`/`.env`), and plain-text log lines
 - 20 match types — existence, equality, string, regex, numeric, composite, and security-specific extended types
 - Flexible scope targeting — full JSONPath (including nested wildcards), XPath, or dot-path to narrow rules to specific sub-objects
 - Tag and disable filters — run only a tagged subset of rules, or skip specific rule IDs at call time
