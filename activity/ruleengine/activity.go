@@ -10,7 +10,7 @@ import (
 	"github.com/project-flogo/core/support/trace"
 )
 
-var activityMd = activity.ToMetadata(&Input{}, &Output{})
+var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 
 func init() {
 	_ = activity.Register(&Activity{}, New)
