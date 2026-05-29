@@ -37,7 +37,7 @@ func Evaluate(req Request) (*model.Result, error) {
 	// 2. Load + filter rules
 	allRules, warnings := loadRules(req.RulesPath)
 	ext := strings.ToLower(filepath.Ext(req.FileName))
-	rules := filterRules(allRules, ext, req.DisabledRules, req.Tags)
+	rules := filterRules(allRules, ext, parserName, req.DisabledRules, req.Tags)
 	rules = filterByParser(rules, parserName)
 
 	// 3. Run evaluation
@@ -131,9 +131,13 @@ func buildMarkdown(result *model.Result, fileName string) string {
 
 	if len(result.Positives) > 0 {
 		sb.WriteString("### Strengths\n\n")
+		sb.WriteString("| Rule | Title | Location |\n")
+		sb.WriteString("|------|-------|------------|\n")
 		for _, f := range result.Positives {
-			sb.WriteString(fmt.Sprintf("- **%s** — %s\n", f.RuleID, f.Title))
+			sb.WriteString(fmt.Sprintf("| %s | %s | %s |\n",
+				f.RuleID, mdEscape(f.Title), mdEscape(f.Location)))
 		}
+		sb.WriteString("\n")
 	}
 
 	return sb.String()

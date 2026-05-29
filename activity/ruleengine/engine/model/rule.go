@@ -32,6 +32,11 @@ type RuleDef struct {
 	// Log-specific
 	RootCauses []string `yaml:"root_causes"`
 	Fixes      []string `yaml:"fixes"`
+
+	// MaxOccurrences caps the number of findings emitted for this rule per
+	// evaluation run. 0 means unlimited. When the cap is hit, a single INFO
+	// summary finding is appended to indicate suppressed matches.
+	MaxOccurrences int `yaml:"max_occurrences"`
 }
 
 // IsEnabled returns true when the rule is active (default true when field is absent).

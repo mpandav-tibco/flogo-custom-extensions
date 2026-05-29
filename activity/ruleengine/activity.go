@@ -1,6 +1,8 @@
 package ruleengine
 
 import (
+	"fmt"
+
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/coerce"
@@ -12,6 +14,16 @@ var activityMd = activity.ToMetadata(&Input{}, &Output{})
 
 func init() {
 	_ = activity.Register(&Activity{}, New)
+}
+
+// ─── Settings ────────────────────────────────────────────────────────────────
+
+// Settings holds design-time configuration for the activity.
+type Settings struct {
+	// DefaultRulesPath is the fallback rules directory used when the rulesPath
+	// input is left empty at runtime. Useful for deploying with a bundled rule
+	// set that flows can override on a per-invocation basis.
+	DefaultRulesPath string `md:"defaultRulesPath"`
 }
 
 // ─── Input ────────────────────────────────────────────────────────────────────
@@ -132,11 +144,19 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 // ─── Activity ─────────────────────────────────────────────────────────────────
 
 type Activity struct {
-	logger log.Logger
+	logger           log.Logger
+	defaultRulesPath string
 }
 
 func New(ctx activity.InitContext) (activity.Activity, error) {
-	return &Activity{logger: ctx.Logger()}, nil
+	defaultRulesPath := ""
+	if v, ok := ctx.Settings()["defaultRulesPath"]; ok && v != nil {
+		defaultRulesPath = fmt.Sprintf("%v", v)
+	}
+	return &Activity{
+		logger:           ctx.Logger(),
+		defaultRulesPath: defaultRulesPath,
+	}, nil
 }
 
 func (a *Activity) Metadata() *activity.Metadata {
@@ -147,6 +167,11 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	in := &Input{}
 	if err := ctx.GetInputObject(in); err != nil {
 		return false, err
+	}
+
+	// Fall back to the design-time default when rulesPath is not provided at runtime.
+	if in.RulesPath == "" && a.defaultRulesPath != "" {
+		in.RulesPath = a.defaultRulesPath
 	}
 
 	// OTel tracing: start a child span for this rule evaluation.

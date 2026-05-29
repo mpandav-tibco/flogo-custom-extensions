@@ -316,7 +316,7 @@ func TestFilterRules_NoFilters_PassesAll(t *testing.T) {
 	writeRuleFile(t, dir, "b.yaml", ruleValidWarning) // no applies_to restriction
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".json", nil, nil)
+	filtered := filterRules(rules, ".json", "", nil, nil)
 	if len(filtered) != 2 {
 		t.Fatalf("expected 2 rules for .json, got %d", len(filtered))
 	}
@@ -328,7 +328,7 @@ func TestFilterRules_Extension_Matches(t *testing.T) {
 	rules, _ := loadRules(dir)
 
 	for _, ext := range []string{".json", ".flogo"} {
-		filtered := filterRules(rules, ext, nil, nil)
+		filtered := filterRules(rules, ext, "", nil, nil)
 		if len(filtered) != 1 {
 			t.Fatalf("expected 1 rule for ext %s, got %d", ext, len(filtered))
 		}
@@ -340,7 +340,7 @@ func TestFilterRules_Extension_NoMatch(t *testing.T) {
 	writeRuleFile(t, dir, "a.yaml", ruleValid) // applies_to: [.json, .flogo]
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".yaml", nil, nil)
+	filtered := filterRules(rules, ".yaml", "", nil, nil)
 	if len(filtered) != 0 {
 		t.Fatalf("expected 0 rules for .yaml extension, got %d", len(filtered))
 	}
@@ -352,7 +352,7 @@ func TestFilterRules_NoAppliesTo_MatchesAllExtensions(t *testing.T) {
 	rules, _ := loadRules(dir)
 
 	for _, ext := range []string{".json", ".yaml", ".xml", ".log", ".conf"} {
-		filtered := filterRules(rules, ext, nil, nil)
+		filtered := filterRules(rules, ext, "", nil, nil)
 		if len(filtered) != 1 {
 			t.Fatalf("expected rule with no applies_to to match %s, got %d", ext, len(filtered))
 		}
@@ -365,7 +365,7 @@ func TestFilterRules_DisabledList_ExcludesRule(t *testing.T) {
 	writeRuleFile(t, dir, "b.yaml", ruleValidWarning) // TEST-002
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".json", []string{"TEST-001"}, nil)
+	filtered := filterRules(rules, ".json", "", []string{"TEST-001"}, nil)
 	if len(filtered) != 1 || filtered[0].ID != "TEST-002" {
 		t.Fatalf("expected only TEST-002, got %d rules", len(filtered))
 	}
@@ -377,7 +377,7 @@ func TestFilterRules_DisabledList_AllRules(t *testing.T) {
 	writeRuleFile(t, dir, "b.yaml", ruleValidWarning)
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".json", []string{"TEST-001", "TEST-002"}, nil)
+	filtered := filterRules(rules, ".json", "", []string{"TEST-001", "TEST-002"}, nil)
 	if len(filtered) != 0 {
 		t.Fatalf("expected 0 rules when all disabled, got %d", len(filtered))
 	}
@@ -389,7 +389,7 @@ func TestFilterRules_TagFilter_Match(t *testing.T) {
 	rules, _ := loadRules(dir)
 
 	for _, tag := range []string{"test", "unit"} {
-		filtered := filterRules(rules, ".json", nil, []string{tag})
+		filtered := filterRules(rules, ".json", "", nil, []string{tag})
 		if len(filtered) != 1 {
 			t.Fatalf("expected 1 rule for tag %q, got %d", tag, len(filtered))
 		}
@@ -401,7 +401,7 @@ func TestFilterRules_TagFilter_NoMatch(t *testing.T) {
 	writeRuleFile(t, dir, "a.yaml", ruleValid) // tags: [test, unit]
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".json", nil, []string{"kubernetes"})
+	filtered := filterRules(rules, ".json", "", nil, []string{"kubernetes"})
 	if len(filtered) != 0 {
 		t.Fatalf("expected 0 rules for non-matching tag, got %d", len(filtered))
 	}
@@ -412,7 +412,7 @@ func TestFilterRules_TagFilter_RuleWithNoTags_ExcludedWhenTagFilterSet(t *testin
 	writeRuleFile(t, dir, "no-tags.yaml", ruleValidWarning) // no tags on rule
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".json", nil, []string{"flogo"})
+	filtered := filterRules(rules, ".json", "", nil, []string{"flogo"})
 	if len(filtered) != 0 {
 		t.Fatalf("expected rule with no tags to be excluded when tag filter set, got %d", len(filtered))
 	}
@@ -424,7 +424,7 @@ func TestFilterRules_EmptyTagFilter_ReturnsAll(t *testing.T) {
 	writeRuleFile(t, dir, "b.yaml", ruleValidWarning)
 	rules, _ := loadRules(dir)
 
-	filtered := filterRules(rules, ".json", nil, []string{})
+	filtered := filterRules(rules, ".json", "", nil, []string{})
 	if len(filtered) != 2 {
 		t.Fatalf("expected 2 rules with empty tag filter, got %d", len(filtered))
 	}

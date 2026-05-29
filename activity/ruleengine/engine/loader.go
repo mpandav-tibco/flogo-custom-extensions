@@ -6,15 +6,60 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
+	"text/template"
+	"time"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/model"
 	"gopkg.in/yaml.v3"
 )
 
-// loadRules reads all .yaml files from rulesPath (recursively) and returns
+// ── Rule cache ────────────────────────────────────────────────────────────────
+
+type rulesEntry struct {
+	rules    []*model.RuleDef
+	warnings []string
+	dirMtime time.Time
+}
+
+// rulesCache stores parsed rule sets keyed by rulesPath.
+// Entries are invalidated when the directory's own modification time changes
+// (i.e., when files are added or removed). For content changes inside existing
+// files the service must be restarted — rules are treated as static at runtime.
+var rulesCache sync.Map // rulesPath → *rulesEntry
+
+// loadRules returns the rules for rulesPath, using a directory-mtime cache to
+// avoid re-parsing on every Flogo activity invocation.
+func loadRules(rulesPath string) ([]*model.RuleDef, []string) {
+	// Stat the directory first so we can check the cache.
+	info, statErr := os.Stat(rulesPath)
+
+	if statErr == nil {
+		if cached, ok := rulesCache.Load(rulesPath); ok {
+			entry := cached.(*rulesEntry)
+			if !info.ModTime().After(entry.dirMtime) {
+				return entry.rules, entry.warnings
+			}
+		}
+	}
+
+	// Cache miss or stale — load fresh.
+	rules, warnings := loadRulesFresh(rulesPath)
+
+	if statErr == nil {
+		rulesCache.Store(rulesPath, &rulesEntry{
+			rules:    rules,
+			warnings: warnings,
+			dirMtime: info.ModTime(),
+		})
+	}
+	return rules, warnings
+}
+
+// loadRulesFresh reads all .yaml files from rulesPath (recursively) and returns
 // the validated rule definitions. Invalid rules are collected as errors and
 // skipped — they never crash the engine or affect other rules.
-func loadRules(rulesPath string) ([]*model.RuleDef, []string) {
+func loadRulesFresh(rulesPath string) ([]*model.RuleDef, []string) {
 	var rules []*model.RuleDef
 	var warnings []string
 	seen := make(map[string]string) // rule ID → first file that defined it
@@ -101,11 +146,22 @@ func validateRule(r *model.RuleDef, path string) error {
 	if !validSeverities[r.Severity] {
 		return fmt.Errorf("rule %s in %s has invalid severity %q (must be ERROR|WARNING|INFO|GOOD)", r.ID, path, r.Severity)
 	}
+	// Validate Go template syntax at load time so authors get immediate feedback
+	// rather than seeing unexpanded template literals like "flow:{{.Scope.nmae}}" in output.
+	for _, tmplStr := range []string{r.Location, r.Recommendation} {
+		if tmplStr != "" && strings.Contains(tmplStr, "{{") {
+			if _, err := template.New("").Option("missingkey=zero").Parse(tmplStr); err != nil {
+				return fmt.Errorf("rule %s in %s has invalid template syntax: %v", r.ID, path, err)
+			}
+		}
+	}
 	return nil
 }
 
-// filterRules applies disabled list and tag filter to a loaded rule set.
-func filterRules(rules []*model.RuleDef, ext string, disabled []string, tags []string) []*model.RuleDef {
+// filterRules applies disabled list, applies_to, and tag filter to a loaded rule set.
+// Both ext (e.g. ".yaml") and parserName (e.g. "yaml") are checked against applies_to
+// so rules can target by extension OR by parser name.
+func filterRules(rules []*model.RuleDef, ext, parserName string, disabled []string, tags []string) []*model.RuleDef {
 	disabledSet := toSet(disabled)
 	tagsSet := toSet(tags)
 
@@ -114,7 +170,7 @@ func filterRules(rules []*model.RuleDef, ext string, disabled []string, tags []s
 		if disabledSet[r.ID] {
 			continue
 		}
-		if !appliesToExt(r, ext) {
+		if !appliesToExt(r, ext, parserName) {
 			continue
 		}
 		if len(tagsSet) > 0 && !hasAnyTag(r, tagsSet) {
@@ -125,13 +181,15 @@ func filterRules(rules []*model.RuleDef, ext string, disabled []string, tags []s
 	return out
 }
 
-func appliesToExt(r *model.RuleDef, ext string) bool {
+func appliesToExt(r *model.RuleDef, ext, parserName string) bool {
 	if len(r.AppliesTo) == 0 {
 		return true // no restriction — applies to all
 	}
 	ext = strings.ToLower(ext)
+	parserName = strings.ToLower(parserName)
 	for _, e := range r.AppliesTo {
-		if strings.ToLower(e) == ext {
+		e = strings.ToLower(e)
+		if e == ext || e == parserName {
 			return true
 		}
 	}

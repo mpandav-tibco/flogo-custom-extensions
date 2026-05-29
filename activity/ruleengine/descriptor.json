@@ -10,8 +10,18 @@
         "visible": true,
         "smallIcon": "icons/ruleengine.svg",
         "largeIcon": "icons/ruleengine.svg",
-        "description": "Evaluate YAML rules against structured documents \u2014 JSON, XML, YAML, config files, logs"
+        "description": "Evaluate YAML rules against structured documents — JSON, XML, YAML, config files, logs"
     },
+    "settings": [
+        {
+            "name": "defaultRulesPath",
+            "type": "string",
+            "required": false,
+            "display": {
+                "description": "Default directory path to load rules from when the rulesPath input is empty at runtime. Allows a bundled rule set to be overridden per-invocation."
+            }
+        }
+    ],
     "inputs": [
         {
             "name": "content",
@@ -26,7 +36,7 @@
         {
             "name": "rulesPath",
             "type": "string",
-            "required": true
+            "required": false
         },
         {
             "name": "parserOverride",
