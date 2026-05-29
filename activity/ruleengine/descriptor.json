@@ -76,16 +76,45 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "rule_id":        { "type": "string" },
-                    "severity":       { "type": "string" },
-                    "category":       { "type": "string" },
-                    "title":          { "type": "string" },
-                    "location":       { "type": "string" },
-                    "message":        { "type": "string" },
-                    "recommendation": { "type": "string" },
-                    "tags":           { "type": "array", "items": { "type": "string" } },
-                    "root_causes":    { "type": "array", "items": { "type": "string" } },
-                    "fixes":          { "type": "array", "items": { "type": "string" } }
+                    "rule_id": {
+                        "type": "string"
+                    },
+                    "severity": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "recommendation": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "root_causes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "fixes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
@@ -96,14 +125,33 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "rule_id":        { "type": "string" },
-                    "severity":       { "type": "string" },
-                    "category":       { "type": "string" },
-                    "title":          { "type": "string" },
-                    "location":       { "type": "string" },
-                    "message":        { "type": "string" },
-                    "recommendation": { "type": "string" },
-                    "tags":           { "type": "array", "items": { "type": "string" } }
+                    "rule_id": {
+                        "type": "string"
+                    },
+                    "severity": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "recommendation": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
@@ -121,6 +169,11 @@
             "name": "infoCount",
             "type": "integer",
             "description": "Number of INFO severity findings"
+        },
+        {
+            "name": "goodCount",
+            "type": "integer",
+            "description": "Number of GOOD severity findings (strengths)"
         },
         {
             "name": "markdown",

@@ -59,6 +59,7 @@ func Evaluate(req Request) (*model.Result, error) {
 			result.InfoCount++
 		}
 	}
+	result.GoodCount = len(positives)
 	result.Markdown = buildMarkdown(result, req.FileName)
 
 	return result, nil

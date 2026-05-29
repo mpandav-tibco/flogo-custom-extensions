@@ -148,7 +148,7 @@ func validateRule(r *model.RuleDef, path string) error {
 	}
 	// Validate Go template syntax at load time so authors get immediate feedback
 	// rather than seeing unexpanded template literals like "flow:{{.Scope.nmae}}" in output.
-	for _, tmplStr := range []string{r.Location, r.Recommendation} {
+	for _, tmplStr := range []string{r.Location, r.Recommendation, r.Description} {
 		if tmplStr != "" && strings.Contains(tmplStr, "{{") {
 			if _, err := template.New("").Option("missingkey=zero").Parse(tmplStr); err != nil {
 				return fmt.Errorf("rule %s in %s has invalid template syntax: %v", r.ID, path, err)

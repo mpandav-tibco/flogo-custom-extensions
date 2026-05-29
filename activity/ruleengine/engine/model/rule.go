@@ -16,7 +16,7 @@ type Rule struct {
 // RuleDef holds the full definition of a single analysis rule.
 type RuleDef struct {
 	ID             string     `yaml:"id"`
-	Enabled        *bool      `yaml:"enabled"` // pointer so we can distinguish false from absent
+	Enabled        *bool      `yaml:"enabled"`  // pointer so we can distinguish false from absent
 	Severity       string     `yaml:"severity"` // ERROR | WARNING | INFO | GOOD
 	Category       string     `yaml:"category"`
 	Title          string     `yaml:"title"`
@@ -56,13 +56,13 @@ type Condition struct {
 	Substrings []string    `yaml:"substrings"`
 	Pattern    string      `yaml:"pattern"`
 	Flags      []string    `yaml:"flags"`
-	JS         string      `yaml:"js"` // for expression type (Phase 2)
+	JS         string      `yaml:"js"`         // for expression type (Phase 2)
 	Conditions []Condition `yaml:"conditions"` // for any_of / all_of / none_of
 
 	// Extended fields used by newer match types.
-	Paths           []string `yaml:"paths"`            // all_missing: list of paths to check
-	Keys            []string `yaml:"keys"`             // none_contain: object keys to look for
-	HeaderNames     []string `yaml:"header_names"`     // credential_header_literal
-	MinCount        int      `yaml:"min_count"`        // count_greater_than, duplicate_values
-	RequiresContains string  `yaml:"requires_contains"` // regex_not_match pre-guard
+	Paths            []string `yaml:"paths"`             // all_missing: list of paths to check
+	Keys             []string `yaml:"keys"`              // none_contain: object keys to look for
+	HeaderNames      []string `yaml:"header_names"`      // credential_header_literal
+	MinCount         int      `yaml:"min_count"`         // count_greater_than, duplicate_values
+	RequiresContains string   `yaml:"requires_contains"` // regex_not_match pre-guard
 }

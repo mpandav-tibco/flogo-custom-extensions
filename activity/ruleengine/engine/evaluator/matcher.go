@@ -135,11 +135,15 @@ func evalEquals(cond model.Condition, doc parser.Document, scope interface{}) (M
 }
 
 func evalNotEquals(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
-	r, err := evalEquals(cond, doc, scope)
-	if err != nil {
-		return r, err
+	val, found := doc.ResolvePath(scope, cond.Path)
+	// A missing field is not a match: "not_equals" means the field exists but has a different value.
+	// Delegating to evalEquals and inverting would incorrectly fire on objects that lack the field.
+	if !found {
+		return MatchResult{Matched: false}, nil
 	}
-	return MatchResult{Matched: !r.Matched, Value: r.Value}, nil
+	matched := !(reflect.DeepEqual(val, cond.Value) ||
+		fmt.Sprintf("%v", val) == fmt.Sprintf("%v", cond.Value))
+	return MatchResult{Matched: matched, Value: val}, nil
 }
 
 func evalContains(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
@@ -152,11 +156,14 @@ func evalContains(cond model.Condition, doc parser.Document, scope interface{}) 
 }
 
 func evalNotContains(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
-	r, err := evalContains(cond, doc, scope)
-	if err != nil {
-		return r, err
+	val, found := doc.ResolvePath(scope, cond.Path)
+	// A missing field is not a match: "not_contains" means the field exists but lacks the substring.
+	// Delegating to evalContains and inverting would incorrectly fire on objects that lack the field.
+	if !found || val == nil {
+		return MatchResult{Matched: false}, nil
 	}
-	return MatchResult{Matched: !r.Matched, Value: r.Value}, nil
+	s := stringify(val)
+	return MatchResult{Matched: !strings.Contains(s, cond.Substring), Value: val}, nil
 }
 
 func evalContainsAny(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
@@ -490,6 +497,12 @@ func stringify(v interface{}) string {
 		return s
 	case json.Number:
 		return s.String()
+	}
+	// Use JSON marshalling for maps and slices — encoding/json sorts map keys
+	// alphabetically (since Go 1.12), ensuring deterministic output for
+	// contains/not_contains/contains_any applied to structured objects.
+	if b, err := json.Marshal(v); err == nil {
+		return string(b)
 	}
 	return fmt.Sprintf("%v", v)
 }

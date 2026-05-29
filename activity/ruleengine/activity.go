@@ -95,6 +95,7 @@ type Output struct {
 	ErrorCount   int                    `md:"errorCount"`
 	WarningCount int                    `md:"warningCount"`
 	InfoCount    int                    `md:"infoCount"`
+	GoodCount    int                    `md:"goodCount"`
 	Markdown     string                 `md:"markdown"`
 	Overview     map[string]interface{} `md:"overview"`
 	Success      bool                   `md:"success"`
@@ -108,6 +109,7 @@ func (o *Output) ToMap() map[string]interface{} {
 		"errorCount":   o.ErrorCount,
 		"warningCount": o.WarningCount,
 		"infoCount":    o.InfoCount,
+		"goodCount":    o.GoodCount,
 		"markdown":     o.Markdown,
 		"overview":     o.Overview,
 		"success":      o.Success,
@@ -124,6 +126,9 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 		return err
 	}
 	if o.InfoCount, err = coerce.ToInt(values["infoCount"]); err != nil {
+		return err
+	}
+	if o.GoodCount, err = coerce.ToInt(values["goodCount"]); err != nil {
 		return err
 	}
 	if o.Markdown, err = coerce.ToString(values["markdown"]); err != nil {
@@ -174,6 +179,14 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		in.RulesPath = a.defaultRulesPath
 	}
 
+	// Both sources are empty: fail fast rather than silently walking the CWD.
+	if in.RulesPath == "" {
+		return true, ctx.SetOutputObject(&Output{
+			Success: false,
+			Error:   "rulesPath is required; provide it as an input or configure defaultRulesPath as a setting",
+		})
+	}
+
 	// OTel tracing: start a child span for this rule evaluation.
 	// Uses the Flogo trace abstraction so it delegates to whichever backend
 	// (OTel, Jaeger, no-op) is registered at runtime.
@@ -184,10 +197,10 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		spanCtx, spanErr = tracer.StartTrace(trace.Config{
 			Operation: "RuleEngine.Evaluate",
 			Tags: map[string]interface{}{
-				"ruleengine.file_name":   in.FileName,
-				"ruleengine.rules_path":  in.RulesPath,
-				"ruleengine.tags":        in.Tags,
-				"ruleengine.parser":      in.ParserOverride,
+				"ruleengine.file_name":  in.FileName,
+				"ruleengine.rules_path": in.RulesPath,
+				"ruleengine.tags":       in.Tags,
+				"ruleengine.parser":     in.ParserOverride,
 			},
 			Logger: a.logger,
 		}, ctx.GetTracingContext())
@@ -210,11 +223,11 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	if spanCtx != nil {
 		if evalErr == nil {
 			spanCtx.SetTags(map[string]interface{}{
-				"ruleengine.rules_run":    result.Overview["rules_run"],
-				"ruleengine.parser_used":  result.Overview["parser"],
-				"ruleengine.error_count":  result.ErrorCount,
+				"ruleengine.rules_run":     result.Overview["rules_run"],
+				"ruleengine.parser_used":   result.Overview["parser"],
+				"ruleengine.error_count":   result.ErrorCount,
 				"ruleengine.warning_count": result.WarningCount,
-				"ruleengine.info_count":   result.InfoCount,
+				"ruleengine.info_count":    result.InfoCount,
 			})
 		}
 		_ = trace.GetTracer().FinishTrace(spanCtx, evalErr)
@@ -233,6 +246,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	out.ErrorCount = result.ErrorCount
 	out.WarningCount = result.WarningCount
 	out.InfoCount = result.InfoCount
+	out.GoodCount = result.GoodCount
 	out.Markdown = result.Markdown
 	out.Overview = result.Overview
 

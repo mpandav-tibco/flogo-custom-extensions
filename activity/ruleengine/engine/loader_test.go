@@ -170,7 +170,7 @@ func TestLoadRules_DisabledRule_Skipped(t *testing.T) {
 func TestLoadRules_DuplicateID_FirstWins(t *testing.T) {
 	dir := t.TempDir()
 	// alphabetical walk: a_ loads first
-	writeRuleFile(t, dir, "a_first.yaml", ruleValid)       // TEST-001 ERROR
+	writeRuleFile(t, dir, "a_first.yaml", ruleValid)           // TEST-001 ERROR
 	writeRuleFile(t, dir, "b_duplicate.yaml", ruleDuplicateID) // TEST-001 WARNING
 
 	rules, warnings := loadRules(dir)
@@ -522,7 +522,7 @@ func TestFilterByParser_MismatchedParser_Excluded(t *testing.T) {
 
 func TestFilterByParser_Mixed(t *testing.T) {
 	rules := []*model.RuleDef{
-		{ID: "X-001", Severity: "ERROR", Title: "no restriction"},       // no restriction
+		{ID: "X-001", Severity: "ERROR", Title: "no restriction"},            // no restriction
 		{ID: "X-002", Severity: "ERROR", Title: "json only", Parser: "json"}, // json only
 		{ID: "X-003", Severity: "ERROR", Title: "yaml only", Parser: "yaml"}, // yaml only
 	}
