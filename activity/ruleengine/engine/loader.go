@@ -86,45 +86,77 @@ func loadRulesFresh(rulesPath string) ([]*model.RuleDef, []string) {
 	sort.Strings(yamlPaths)
 
 	for _, path := range yamlPaths {
-		rule, warn := parseRuleFile(path)
+		fileRules, warn := parseRuleFile(path)
 		if warn != "" {
 			warnings = append(warnings, warn)
 			continue
 		}
-		if !rule.IsEnabled() {
-			continue
-		}
+		for _, rule := range fileRules {
+			if !rule.IsEnabled() {
+				continue
+			}
 
-		// Deduplication: first loaded wins (deterministic alphabetical order)
-		if prev, dup := seen[rule.ID]; dup {
-			warnings = append(warnings, fmt.Sprintf(
-				"duplicate rule ID %q in %s — already loaded from %s, skipping", rule.ID, path, prev))
-			continue
+			// Deduplication: first loaded wins (deterministic alphabetical order)
+			if prev, dup := seen[rule.ID]; dup {
+				warnings = append(warnings, fmt.Sprintf(
+					"duplicate rule ID %q in %s — already loaded from %s, skipping", rule.ID, path, prev))
+				continue
+			}
+			seen[rule.ID] = path
+			rules = append(rules, rule)
 		}
-		seen[rule.ID] = path
-		rules = append(rules, rule)
 	}
 
 	return rules, warnings
 }
 
-func parseRuleFile(path string) (*model.RuleDef, string) {
+// parseRuleFile reads a YAML rule file and returns all rules it defines. A file
+// may declare a single rule under `rule:` (legacy) or a list under `rules:`.
+// Each rule is normalised (severity upper-cased, title defaulted) and validated.
+func parseRuleFile(path string) ([]*model.RuleDef, string) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Sprintf("cannot read %s: %v", path, err)
 	}
 
-	var wrapper model.Rule
-	if err := yaml.Unmarshal(data, &wrapper); err != nil {
+	var file model.RuleFile
+	if err := yaml.Unmarshal(data, &file); err != nil {
 		return nil, fmt.Sprintf("YAML error in %s: %v", path, err)
 	}
 
-	rule := &wrapper.Rule
-
-	if err := validateRule(rule, path); err != nil {
-		return nil, err.Error()
+	var collected []*model.RuleDef
+	if file.Rule != nil {
+		collected = append(collected, file.Rule)
 	}
-	return rule, ""
+	collected = append(collected, file.Rules...)
+
+	if len(collected) == 0 {
+		return nil, fmt.Sprintf("no rules found in %s (expected a `rule:` or `rules:` block)", path)
+	}
+
+	for _, rule := range collected {
+		normalizeRule(rule)
+		if err := validateRule(rule, path); err != nil {
+			return nil, err.Error()
+		}
+	}
+	return collected, ""
+}
+
+// normalizeRule applies lenient-input conveniences before strict validation:
+// severity is upper-cased (so `error`/`Error`/`ERROR` all work) and the title
+// falls back to the description, then the id, when not explicitly provided.
+func normalizeRule(r *model.RuleDef) {
+	if r.Severity != "" {
+		r.Severity = strings.ToUpper(strings.TrimSpace(r.Severity))
+	}
+	if r.Title == "" {
+		if r.Description != "" {
+			r.Title = r.Description
+		} else {
+			r.Title = r.ID
+		}
+	}
 }
 
 func validateRule(r *model.RuleDef, path string) error {
@@ -134,8 +166,8 @@ func validateRule(r *model.RuleDef, path string) error {
 	if r.Title == "" {
 		return fmt.Errorf("rule %s in %s is missing required field: title", r.ID, path)
 	}
-	if r.Match.Type == "" {
-		return fmt.Errorf("rule %s in %s is missing match.type", r.ID, path)
+	if r.Match.Type == "" && r.Condition == "" {
+		return fmt.Errorf("rule %s in %s must define either match.type or condition", r.ID, path)
 	}
 	validSeverities := map[string]bool{
 		model.SeverityError:   true,

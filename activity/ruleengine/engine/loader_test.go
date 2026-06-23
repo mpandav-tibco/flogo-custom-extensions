@@ -211,16 +211,18 @@ func TestLoadRules_MissingID_WarningEmitted(t *testing.T) {
 	}
 }
 
-func TestLoadRules_MissingTitle_WarningEmitted(t *testing.T) {
+func TestLoadRules_MissingTitle_DefaultsToID(t *testing.T) {
 	dir := t.TempDir()
 	writeRuleFile(t, dir, "no-title.yaml", ruleMissingTitle)
 
 	rules, warnings := loadRules(dir)
-	if len(rules) != 0 {
-		t.Fatalf("expected 0 rules, got %d", len(rules))
+	// Title is now optional — it defaults to the description (or id) rather than
+	// erroring, so the rule loads successfully.
+	if len(rules) != 1 {
+		t.Fatalf("expected 1 rule, got %d (warnings: %v)", len(rules), warnings)
 	}
-	if len(warnings) == 0 {
-		t.Fatal("expected warning for missing title")
+	if rules[0].Title != "NO-TITLE-001" {
+		t.Fatalf("expected title to default to id %q, got %q", "NO-TITLE-001", rules[0].Title)
 	}
 }
 
