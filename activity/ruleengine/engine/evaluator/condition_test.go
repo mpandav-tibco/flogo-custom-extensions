@@ -117,11 +117,11 @@ func TestConditionDSL_AppRules(t *testing.T) {
 
 func TestConditionDSL_Errors(t *testing.T) {
 	bad := []string{
-		`source_system ==`,             // missing right operand
-		`source_system is`,             // incomplete is-null
-		`interface_type in`,            // missing list
-		`source_system matches`,        // missing regex
-		`source_system === "x"`,        // bad operator
+		`source_system ==`,      // missing right operand
+		`source_system is`,      // incomplete is-null
+		`interface_type in`,     // missing list
+		`source_system matches`, // missing regex
+		`source_system === "x"`, // bad operator
 	}
 	doc := docFromJSON(t, `{"source_system":"x"}`)
 	scope, _ := doc.ResolveScope("")
