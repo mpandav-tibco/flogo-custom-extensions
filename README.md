@@ -14,8 +14,15 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [VectorDB — Weaviate](connectors/VectorDB/weaviate/) | 1.0.0 | Connector | Weaviate connector — native hybrid (BM25 + vector) search, GraphQL-backed, purpose-built for RAG pipelines |
 | [VectorDB — Chroma](connectors/VectorDB/chroma/) | 1.0.0 | Connector | Chroma connector — lightweight embedding-first store via REST v2, purpose-built for RAG pipelines |
 | [VectorDB — Milvus](connectors/VectorDB/milvus/) | 1.0.0 | Connector | Milvus connector — enterprise-grade, cloud-native, high-throughput gRPC-backed store for large-scale AI |
+| [VectorDB — pgvector](connectors/VectorDB/pgvector/) | 1.0.0 | Connector | pgvector connector — PostgreSQL + pgvector extension; ACID guarantees, JSONB metadata, native full-text hybrid search |
+| [VectorDB — Pinecone](connectors/VectorDB/pinecone/) | 1.0.0 | Connector | Pinecone connector — fully-managed serverless vector database with native sparse-dense hybrid search |
+| [VectorDB — Redis](connectors/VectorDB/redis/) | 1.0.0 | Connector | Redis Stack connector — HNSW vector search + RediSearch BM25 hybrid, sub-millisecond latency |
+| [VectorDB — Elasticsearch](connectors/VectorDB/elasticsearch/) | 1.0.0 | Connector | Elasticsearch 8.x connector — `dense_vector` HNSW with native k-NN + BM25 hybrid search |
+| [VectorDB — OpenSearch](connectors/VectorDB/opensearch/) | 1.0.0 | Connector | OpenSearch 2.x connector — `knn_vector` HNSW with native k-NN + BM25 hybrid search |
+| [VectorDB — Azure AI Search](connectors/VectorDB/azureaisearch/) | 1.0.0 | Connector | Azure AI Search connector — managed cloud vector search with RRF hybrid ranking |
+| [VectorDB — LanceDB](connectors/VectorDB/lancedb/) | 1.0.0 | Connector | LanceDB connector — embedded columnar vector store with RRF hybrid (dense + FTS) via custom REST server |
 
-> See [connectors/VectorDB/README.md](connectors/VectorDB/README.md) for the full feature matrix and connector guide.
+> See [connectors/VectorDB/README.md](connectors/VectorDB/README.md) for the full feature matrix, Tier 1 vs Tier 2 comparison, and connector selection guide.
 
 ### 🧮 Functions
 
@@ -81,7 +88,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger, Kafka Stream Split Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, join readings with alert thresholds across two topics, and route messages to branches via content-based split |
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 | [SOAP Client Demo](examples/soap-client/) | SOAP Client Activity | Timer-triggered SOAP 1.1 call to a public calculator service in both JSON mode and XML mode with namespace attributes |
-| [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (Qdrant, Weaviate, Chroma, Milvus) | End-to-end RAG demo across all 4 connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
+| [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (Qdrant, Weaviate, Chroma, Milvus, pgvector, Pinecone, Redis, Elasticsearch, OpenSearch, Azure AI Search, LanceDB) | End-to-end RAG demo across all 11 dedicated connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
 
 ## 🤝 Contributing
 
