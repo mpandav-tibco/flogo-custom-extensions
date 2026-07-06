@@ -1,0 +1,69 @@
+{
+  "name": "Pinecone VectorDB Connector",
+  "version": "1.0.0",
+  "category": "VectorDB",
+  "description": "Dedicated Pinecone vector database connector for RAG and agentic AI use cases. Uses Pinecone serverless REST API with pure stdlib HTTP — no external SDK required.",
+  "image": "connector/icons/vectordb.svg",
+  "contributions": [
+    {
+      "type": "flogo:connector",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/connector"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/upsertDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/vectorSearch"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/hybridSearch"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/deleteDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/createCollection"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/deleteCollection"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/listCollections"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/scrollDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/getDocument"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/countDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/rerank"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/ingestDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/createEmbeddings"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/activity/ragQuery"
+    }
+  ]
+}

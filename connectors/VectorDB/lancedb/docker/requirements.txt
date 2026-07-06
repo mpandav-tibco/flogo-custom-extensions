@@ -1,0 +1,5 @@
+fastapi==0.115.4
+uvicorn[standard]==0.32.0
+lancedb>=0.17.0
+pyarrow>=17.0.0
+tantivy>=0.22.0

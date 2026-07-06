@@ -1,0 +1,186 @@
+{
+    "name": "opensearch-connector",
+    "title": "OpenSearch Connector",
+    "version": "1.0.0",
+    "type": "flogo:connector",
+    "image": "icons/vectordb.svg",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/connector",
+    "display": {
+        "category": "VectorDB",
+        "visible": true,
+        "connectionsupport": true,
+        "smallIcon": "icons/vectordb.svg",
+        "description": "OpenSearch vector database connector for k-NN vector similarity search and RAG use cases"
+    },
+    "keyfield": "name",
+    "settings": [
+        {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Connection Name",
+                "description": "Unique name for this connection (used as registry key)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "host",
+            "type": "string",
+            "required": false,
+            "value": "localhost",
+            "display": {
+                "name": "Host",
+                "description": "OpenSearch server hostname or IP address (default: localhost)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "port",
+            "type": "integer",
+            "required": false,
+            "value": 9200,
+            "display": {
+                "name": "Port",
+                "description": "OpenSearch port (default: 9200)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "username",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Username",
+                "description": "Optional basic auth username",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Password",
+                "description": "Optional basic auth password",
+                "type": "password",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "useTLS",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "display": {
+                "name": "Use TLS (HTTPS)",
+                "description": "Enable HTTPS transport. When false, plain HTTP is used.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "tlsInsecureSkipVerify",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "display": {
+                "name": "Skip TLS Certificate Verification",
+                "description": "Disable TLS certificate verification (insecure — use only for development/testing)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "timeoutSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 30,
+            "display": {
+                "name": "Timeout (seconds)",
+                "description": "Per-operation timeout in seconds (default: 30)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxRetries",
+            "type": "integer",
+            "required": false,
+            "value": 3,
+            "display": {
+                "name": "Max Retries",
+                "description": "Maximum retries on transient errors (default: 3)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "retryBackoffMs",
+            "type": "integer",
+            "required": false,
+            "value": 500,
+            "display": {
+                "name": "Retry Backoff (ms)",
+                "description": "Milliseconds to wait between retries (default: 500)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "enableEmbedding",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "display": {
+                "name": "Configure Embedding Provider",
+                "description": "Enable shared AI embedding configuration for this connection. When checked, activities (RAG Query, Ingest Documents) can inherit the provider, API key, and base URL from here — so you only set the secret once.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "embeddingProvider",
+            "type": "string",
+            "required": false,
+            "value": "OpenAI",
+            "allowed": [
+                "OpenAI",
+                "Azure OpenAI",
+                "Cohere",
+                "Ollama",
+                "Custom"
+            ],
+            "display": {
+                "name": "Embedding Provider",
+                "description": "AI service used to generate vector embeddings",
+                "type": "dropdown",
+                "selection": "single",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "embeddingAPIKey",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Embedding API Key",
+                "description": "API key for the embedding service. Use $property[MY_KEY] to inject from an app property at runtime — the secret never appears in flogo.json.",
+                "type": "password",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "embeddingBaseURL",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Embedding Base URL",
+                "description": "Override the default provider endpoint. Azure: full deployment URL. Ollama: http://localhost:11434. Custom: your endpoint. Leave blank for default OpenAI / Cohere endpoints.",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "actions": [
+        {
+            "name": "Connect"
+        }
+    ]
+}

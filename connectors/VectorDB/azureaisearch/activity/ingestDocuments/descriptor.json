@@ -1,0 +1,208 @@
+{
+  "name": "tibco-vectordb-azureaisearch-ingest-documents",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/ingestDocuments",
+  "title": "Ingest Documents",
+  "image": "icons/ingest.svg",
+  "description": "Embed text documents and store them in Azure AI Search in one step.",
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "smallIcon": "icons/ingest.svg",
+    "description": "Embed + store documents in one step — ideal for RAG ingestion pipelines"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the Azure AI Search VectorDB connector to store the documents",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
+    },
+    {
+      "name": "enableChunking",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Enable Chunking",
+        "description": "Automatically split each document's text into smaller segments before embedding.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "chunkStrategy",
+      "type": "string",
+      "required": false,
+      "value": "paragraph",
+      "allowed": ["fixed", "sentence", "paragraph", "heading"],
+      "display": {
+        "name": "Chunk Strategy",
+        "description": "fixed: sliding character window | sentence: accumulate sentences | paragraph: split on blank lines | heading: split on Markdown headings",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "chunkSize",
+      "type": "integer",
+      "required": false,
+      "value": 1000,
+      "display": {
+        "name": "Chunk Size (chars)",
+        "description": "Target chunk length in characters.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "chunkOverlap",
+      "type": "integer",
+      "required": false,
+      "value": 200,
+      "display": {
+        "name": "Chunk Overlap (chars)",
+        "description": "Characters shared between consecutive chunks. Only used by 'fixed' strategy.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "useConnectorEmbedding",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Use Connector Embedding Settings",
+        "description": "Inherit the embedding provider, API key, and base URL from the VectorDB connection.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingProvider",
+      "type": "string",
+      "required": false,
+      "value": "OpenAI",
+      "allowed": ["OpenAI", "Azure OpenAI", "Cohere", "Ollama", "Custom"],
+      "display": {
+        "name": "Embedding Provider",
+        "description": "API provider used to generate vector embeddings from document text.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding API Key",
+        "description": "API key for the embedding provider.",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBaseURL",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding Base URL",
+        "description": "Override the default provider URL.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingModel",
+      "type": "string",
+      "required": true,
+      "value": "text-embedding-3-small",
+      "display": {
+        "name": "Embedding Model",
+        "description": "Model used to generate vectors. Must match the model used at query time.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingDimensions",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Embedding Dimensions",
+        "description": "Output vector size. 0 = model default.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Collection to use when the input does not supply one.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "contentField",
+      "type": "string",
+      "required": false,
+      "value": "text",
+      "display": {
+        "name": "Content Field",
+        "description": "Key inside each document object whose value is the text to embed.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 60,
+      "display": {
+        "name": "Timeout (s)",
+        "description": "Total operation timeout covering embedding call + VectorDB upsert",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBatchSize",
+      "type": "integer",
+      "required": false,
+      "value": 100,
+      "display": {
+        "name": "Embedding Batch Size",
+        "description": "Number of document texts sent to the embedding API per request.",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {"name": "collectionName", "type": "string"},
+    {
+      "name": "documents",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"text\": {\"type\": \"string\"}, \"metadata\": {\"type\": \"object\"}}}}"
+    },
+    {"name": "fileName", "type": "string"},
+    {"name": "fileContent", "type": "any"}
+  ],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "ingestedCount", "type": "integer"},
+    {
+      "name": "ids",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}"
+    },
+    {"name": "dimensions", "type": "integer"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"},
+    {"name": "sourceDocumentCount", "type": "integer"},
+    {"name": "chunksCreated", "type": "integer"}
+  ]
+}

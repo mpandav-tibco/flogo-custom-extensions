@@ -1,0 +1,24 @@
+{
+  "name": "LanceDB VectorDB Connector",
+  "version": "1.0.0",
+  "category": "VectorDB",
+  "description": "LanceDB connector for vector similarity search and RAG use cases — supports self-hosted and LanceDB Cloud.",
+  "image": "connector/icons/vectordb.svg",
+  "contributions": [
+    {"type": "flogo:connector", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/connector"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/upsertDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/vectorSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/hybridSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/deleteDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/createCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/deleteCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/listCollections"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/scrollDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/getDocument"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/countDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/rerank"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/ingestDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/createEmbeddings"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/ragQuery"}
+  ]
+}

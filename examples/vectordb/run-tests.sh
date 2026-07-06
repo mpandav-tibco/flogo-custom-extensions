@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # =============================================================================
-# run-tests.sh — Live integration tests for VectorDB connector
-# Tests all 4 providers: Qdrant, Weaviate, Chroma, Milvus
+# run-tests.sh — Live integration tests for VectorDB connectors
+# Tier 1: Qdrant, Weaviate, Chroma, Milvus (connector binaries)
+# Tier 2: Elasticsearch, OpenSearch, Azure AI Search, LanceDB (dedicated binaries)
 # =============================================================================
 set -euo pipefail
 
@@ -50,7 +51,8 @@ sleep 15
 echo ""
 echo "► Starting Flogo test apps…"
 
-declare -A APP_PORTS=(
+# Tier 1: monolith connector binaries (ports 18081–18084)
+declare -A T1_PORTS=(
   ["qdrant"]=18081
   ["weaviate"]=18082
   ["chroma"]=18083
@@ -60,7 +62,7 @@ declare -A APP_PORTS=(
 for db in qdrant weaviate chroma milvus; do
   bin="$BINDIR/${db}-connector-test"
   log="$LOGDIR/${db}.log"
-  port="${APP_PORTS[$db]}"
+  port="${T1_PORTS[$db]}"
 
   if [[ ! -x "$bin" ]]; then
     skip "$db binary not found at $bin — run the build first"
@@ -70,6 +72,29 @@ for db in qdrant weaviate chroma milvus; do
   "$bin" > "$log" 2>&1 &
   APP_PIDS+=($!)
   info "Started $db-connector-test (PID $!, port $port, log $log)"
+done
+
+# Tier 2: dedicated connector binaries (ports 19085–19088)
+declare -A T2_PORTS=(
+  ["elasticsearch"]=19085
+  ["opensearch"]=19086
+  ["azureaisearch"]=19087
+  ["lancedb"]=19088
+)
+
+for db in elasticsearch opensearch azureaisearch lancedb; do
+  bin="$BINDIR/${db}-dedicated-test"
+  log="$LOGDIR/${db}.log"
+  port="${T2_PORTS[$db]}"
+
+  if [[ ! -x "$bin" ]]; then
+    skip "$db binary not found at $bin — run the build first"
+    continue
+  fi
+
+  "$bin" > "$log" 2>&1 &
+  APP_PIDS+=($!)
+  info "Started ${db}-dedicated-test (PID $!, port $port, log $log)"
 done
 
 echo ""
@@ -143,6 +168,43 @@ run_test milvus 18084 crud   "CRUD cycle"
 run_test milvus 18084 rag    "RAG cycle"
 run_test milvus 18084 embed  "Embeddings"
 run_test milvus 18084 rerank "Rerank"
+
+echo ""
+echo "─────────────────────────────────────────────────"
+echo " ELASTICSEARCH (port 19085)"
+echo "─────────────────────────────────────────────────"
+run_test elasticsearch 19085 crud   "CRUD cycle"
+run_test elasticsearch 19085 rag    "RAG cycle"
+run_test elasticsearch 19085 embed  "Embeddings"
+run_test elasticsearch 19085 rerank "Rerank"
+
+echo ""
+echo "─────────────────────────────────────────────────"
+echo " OPENSEARCH (port 19086)"
+echo "─────────────────────────────────────────────────"
+run_test opensearch 19086 crud   "CRUD cycle"
+run_test opensearch 19086 rag    "RAG cycle"
+run_test opensearch 19086 embed  "Embeddings"
+run_test opensearch 19086 rerank "Rerank"
+
+echo ""
+echo "─────────────────────────────────────────────────"
+echo " AZURE AI SEARCH (port 19087)"
+echo " NOTE: requires AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_API_KEY"
+echo "─────────────────────────────────────────────────"
+run_test azureaisearch 19087 crud   "CRUD cycle"
+run_test azureaisearch 19087 rag    "RAG cycle"
+run_test azureaisearch 19087 embed  "Embeddings"
+run_test azureaisearch 19087 rerank "Rerank"
+
+echo ""
+echo "─────────────────────────────────────────────────"
+echo " LANCEDB (port 19088)"
+echo "─────────────────────────────────────────────────"
+run_test lancedb 19088 crud   "CRUD cycle"
+run_test lancedb 19088 rag    "RAG cycle"
+run_test lancedb 19088 embed  "Embeddings"
+run_test lancedb 19088 rerank "Rerank"
 
 # ─── 5. Summary ───────────────────────────────────────────────────────────────
 echo ""

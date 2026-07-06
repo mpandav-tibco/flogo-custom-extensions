@@ -1,0 +1,164 @@
+{
+    "name": "redis-connector",
+    "title": "Redis Stack Connector",
+    "version": "1.0.0",
+    "type": "flogo:connector",
+    "image": "icons/vectordb.svg",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/connector",
+    "display": {
+        "category": "VectorDB",
+        "visible": true,
+        "connectionsupport": true,
+        "smallIcon": "icons/vectordb.svg",
+        "description": "Redis Stack (RediSearch + vector module) connector for vector similarity search and RAG use cases"
+    },
+    "keyfield": "name",
+    "settings": [
+        {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Connection Name",
+                "description": "Unique name for this connection (used as registry key)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "host",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "Host",
+                "description": "Hostname or IP address of the Redis Stack server (default: localhost)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "port",
+            "type": "integer",
+            "required": false,
+            "value": 6379,
+            "display": {
+                "name": "Port",
+                "description": "TCP port for Redis (default: 6379)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Password",
+                "description": "Redis AUTH password (leave blank for no authentication)",
+                "type": "password",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "redisDB",
+            "type": "integer",
+            "required": false,
+            "value": 0,
+            "display": {
+                "name": "Redis Database",
+                "description": "Redis database index (0-15, default: 0)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "timeoutSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 30,
+            "display": {
+                "name": "Timeout (seconds)",
+                "description": "Per-operation timeout in seconds (default: 30)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxRetries",
+            "type": "integer",
+            "required": false,
+            "value": 3,
+            "display": {
+                "name": "Max Retries",
+                "description": "Maximum retries on transient errors (default: 3)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "retryBackoffMs",
+            "type": "integer",
+            "required": false,
+            "value": 500,
+            "display": {
+                "name": "Retry Backoff (ms)",
+                "description": "Milliseconds to wait between retries (default: 500)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "enableEmbedding",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "display": {
+                "name": "Configure Embedding Provider",
+                "description": "Enable shared AI embedding configuration for this connection. When checked, activities (RAG Query, Ingest Documents) can inherit the provider, API key, and base URL from here — so you only set the secret once.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "embeddingProvider",
+            "type": "string",
+            "required": false,
+            "value": "OpenAI",
+            "allowed": [
+                "OpenAI",
+                "Azure OpenAI",
+                "Cohere",
+                "Ollama",
+                "Custom"
+            ],
+            "display": {
+                "name": "Embedding Provider",
+                "description": "AI service used to generate vector embeddings",
+                "type": "dropdown",
+                "selection": "single",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "embeddingAPIKey",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Embedding API Key",
+                "description": "API key for the embedding service. Use $property[MY_KEY] to inject from an app property at runtime — the secret never appears in flogo.json.",
+                "type": "password",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "embeddingBaseURL",
+            "type": "string",
+            "required": false,
+            "display": {
+                "name": "Embedding Base URL",
+                "description": "Override the default provider endpoint. Azure: full deployment URL. Ollama: http://localhost:11434. Custom: your endpoint. Leave blank for default OpenAI / Cohere endpoints.",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "actions": [
+        {
+            "name": "Connect"
+        }
+    ]
+}

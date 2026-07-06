@@ -1,0 +1,24 @@
+{
+  "name": "Elasticsearch VectorDB Connector",
+  "version": "1.0.0",
+  "category": "VectorDB",
+  "description": "Elasticsearch connector for vector similarity search and RAG use cases.",
+  "image": "connector/icons/vectordb.svg",
+  "contributions": [
+    {"type": "flogo:connector", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/connector"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/upsertDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/vectorSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/hybridSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/deleteDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/createCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/deleteCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/listCollections"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/scrollDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/getDocument"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/countDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/rerank"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ingestDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/createEmbeddings"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ragQuery"}
+  ]
+}

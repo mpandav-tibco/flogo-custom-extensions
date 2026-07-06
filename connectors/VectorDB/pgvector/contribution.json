@@ -1,0 +1,24 @@
+{
+  "name": "pgvector VectorDB Connector",
+  "version": "1.0.0",
+  "category": "VectorDB",
+  "description": "PostgreSQL pgvector connector for vector similarity search and RAG use cases.",
+  "image": "connector/icons/vectordb.svg",
+  "contributions": [
+    {"type": "flogo:connector", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/connector"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/upsertDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/vectorSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/hybridSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/deleteDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/createCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/deleteCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/listCollections"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/scrollDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/getDocument"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/countDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/rerank"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/ingestDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/createEmbeddings"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/ragQuery"}
+  ]
+}

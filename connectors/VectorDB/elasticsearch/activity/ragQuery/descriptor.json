@@ -1,0 +1,40 @@
+{
+  "name": "tibco-vectordb-rag",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ragQuery",
+  "title": "RAG Query",
+  "image": "icons/rag.svg",
+  "description": "Full RAG pipeline: embed query → vector search → format context → LLM generate.",
+  "display": {"category": "elasticsearch","visible": true,"smallIcon": "icons/rag.svg"},
+  "settings": [
+    {"name": "connection","type": "connection","required": true,"display": {"name": "VectorDB Connection","description": "Select the elasticsearch VectorDB connector","type": "connection"},"allowed": ["elasticsearch-connector"]},
+    {"name": "defaultCollection","type": "string","required": false,"display": {"name": "Default Collection","appPropertySupport": true}},
+    {"name": "defaultTopK","type": "integer","value": 5,"display": {"name": "Default Top-K"}},
+    {"name": "scoreThreshold","type": "number","value": 0.0,"display": {"name": "Score Threshold","description": "Minimum similarity score (0-1)"}},
+    {"name": "hybridAlpha","type": "number","value": 0.0,"display": {"name": "Hybrid Alpha","description": "0=pure vector, 0.5=balanced hybrid. Set 0 to disable hybrid search."}},
+    {"name": "embeddingProvider","type": "string","value": "","allowed": ["","openai","azure-openai","cohere","ollama"],"display": {"name": "Embedding Provider","appPropertySupport": true}},
+    {"name": "embeddingAPIKey","type": "string","display": {"name": "Embedding API Key","appPropertySupport": true}},
+    {"name": "embeddingBaseURL","type": "string","display": {"name": "Embedding Base URL","appPropertySupport": true}},
+    {"name": "embeddingModel","type": "string","display": {"name": "Embedding Model","appPropertySupport": true}},
+    {"name": "llmEndpoint","type": "string","display": {"name": "LLM Endpoint","description": "OpenAI-compatible /chat/completions endpoint URL","appPropertySupport": true}},
+    {"name": "llmAPIKey","type": "string","display": {"name": "LLM API Key","appPropertySupport": true}},
+    {"name": "llmModel","type": "string","display": {"name": "LLM Model","appPropertySupport": true}},
+    {"name": "llmTimeoutSeconds","type": "integer","value": 30,"display": {"name": "LLM Timeout (s)"}}
+  ],
+  "input": [
+    {"name": "collectionName","type": "string"},
+    {"name": "query","type": "string"},
+    {"name": "topK","type": "integer","value": 0},
+    {"name": "filters","type": "object","schema": "{\"type\": \"object\", \"additionalProperties\": true}"}
+  ],
+  "output": [
+    {"name": "success","type": "boolean"},
+    {"name": "answer","type": "string"},
+    {"name": "context","type": "string"},
+    {"name": "searchResults","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\"}}"},
+    {"name": "searchResultCount","type": "integer"},
+    {"name": "duration","type": "string"},
+    {"name": "error","type": "string"}
+  ]
+}

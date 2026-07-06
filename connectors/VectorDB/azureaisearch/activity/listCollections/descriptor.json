@@ -1,0 +1,24 @@
+{
+  "name": "tibco-vectordb-azureaisearch-list",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/listCollections",
+  "title": "List Indexes",
+  "description": "List all Azure AI Search indexes.",
+  "display": {"category": "azureaisearch", "visible": true},
+  "settings": [
+    {
+      "name": "connection", "type": "connection", "required": true,
+      "display": {"name": "Azure AI Search Connection", "type": "connection"},
+      "allowed": ["azureaisearch-connector"]
+    }
+  ],
+  "input": [],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "collections", "type": "array"},
+    {"name": "totalCount", "type": "integer"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}

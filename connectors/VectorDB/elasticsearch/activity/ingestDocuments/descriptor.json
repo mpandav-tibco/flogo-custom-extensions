@@ -1,0 +1,94 @@
+{
+  "name": "tibco-vectordb-ingest",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ingestDocuments",
+  "title": "Ingest Documents",
+  "image": "icons/ingest.svg",
+  "description": "Chunk, embed, and upsert documents into a VectorDB collection.",
+  "display": {
+    "category": "elasticsearch",
+    "visible": true,
+    "smallIcon": "icons/ingest.svg",
+    "description": "Chunk, embed, and upsert documents into a VectorDB collection"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the elasticsearch VectorDB connector",
+        "type": "connection"
+      },
+      "allowed": ["elasticsearch-connector"]
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {"name": "Default Collection","description": "Fallback collection name","appPropertySupport": true}
+    },
+    {
+      "name": "chunkStrategy",
+      "type": "string",
+      "value": "fixed",
+      "allowed": ["fixed","sentence","paragraph","heading"],
+      "display": {"name": "Chunk Strategy","description": "How to split documents into chunks"}
+    },
+    {
+      "name": "chunkSize",
+      "type": "integer",
+      "value": 512,
+      "display": {"name": "Chunk Size","description": "Max chunk size in characters"}
+    },
+    {
+      "name": "chunkOverlap",
+      "type": "integer",
+      "value": 64,
+      "display": {"name": "Chunk Overlap","description": "Overlap between adjacent chunks in characters"}
+    },
+    {
+      "name": "embeddingProvider",
+      "type": "string",
+      "value": "",
+      "allowed": ["","openai","azure-openai","cohere","ollama"],
+      "display": {"name": "Embedding Provider","description": "Override connector embedding provider","appPropertySupport": true}
+    },
+    {
+      "name": "embeddingAPIKey",
+      "type": "string",
+      "display": {"name": "Embedding API Key","description": "Override embedding API key","appPropertySupport": true}
+    },
+    {
+      "name": "embeddingBaseURL",
+      "type": "string",
+      "display": {"name": "Embedding Base URL","description": "Override embedding base URL","appPropertySupport": true}
+    },
+    {
+      "name": "embeddingModel",
+      "type": "string",
+      "display": {"name": "Embedding Model","description": "Model name (e.g. text-embedding-3-small)","appPropertySupport": true}
+    },
+    {
+      "name": "batchSize",
+      "type": "integer",
+      "value": 100,
+      "display": {"name": "Batch Size","description": "Documents per upsert batch"}
+    }
+  ],
+  "input": [
+    {"name": "collectionName","type": "string"},
+    {"name": "documents","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"content\": {\"type\": \"string\"}, \"payload\": {\"type\": \"object\"}}}}"},
+    {"name": "fileName","type": "string","display": {"name": "File Name","description": "Original filename (for extension detection)"}},
+    {"name": "fileContent","type": "string","display": {"name": "File Content","description": "Raw file bytes as string (base64 or plain text)"}}
+  ],
+  "output": [
+    {"name": "success","type": "boolean"},
+    {"name": "ingestedCount","type": "integer"},
+    {"name": "ids","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}"},
+    {"name": "duration","type": "string"},
+    {"name": "error","type": "string"}
+  ]
+}

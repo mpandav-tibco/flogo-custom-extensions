@@ -1,0 +1,34 @@
+{
+    "name": "elasticsearch-connector",
+    "title": "Elasticsearch Connector",
+    "version": "1.0.0",
+    "type": "flogo:connector",
+    "image": "icons/vectordb.svg",
+    "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/connector",
+    "display": {
+        "category": "VectorDB",
+        "visible": true,
+        "connectionsupport": true,
+        "smallIcon": "icons/vectordb.svg",
+        "description": "Elasticsearch vector database connector for dense vector search"
+    },
+    "keyfield": "name",
+    "settings": [
+        {"name":"name","type":"string","required":true,"display":{"name":"Connection Name","description":"Unique name for this connection","appPropertySupport":true}},
+        {"name":"host","type":"string","required":false,"value":"localhost","display":{"name":"Host","description":"Elasticsearch host","appPropertySupport":true}},
+        {"name":"port","type":"integer","required":false,"value":9200,"display":{"name":"Port","description":"Elasticsearch HTTP port (default 9200)","appPropertySupport":true}},
+        {"name":"username","type":"string","required":false,"display":{"name":"Username","description":"Basic auth username (leave blank for API key auth)","appPropertySupport":true}},
+        {"name":"password","type":"string","required":false,"display":{"name":"Password","type":"password","description":"Basic auth password","appPropertySupport":true}},
+        {"name":"apiKey","type":"string","required":false,"display":{"name":"API Key","type":"password","description":"Base64-encoded Elasticsearch API key (id:key). Takes precedence over username/password.","appPropertySupport":true}},
+        {"name":"useTLS","type":"boolean","required":false,"value":false,"display":{"name":"Enable TLS","description":"Use HTTPS","appPropertySupport":true}},
+        {"name":"tlsInsecureSkipVerify","type":"boolean","required":false,"value":false,"display":{"name":"Skip TLS Verify","description":"Skip TLS certificate verification (dev only)","appPropertySupport":true}},
+        {"name":"timeoutSeconds","type":"integer","required":false,"value":30,"display":{"name":"Timeout (seconds)","appPropertySupport":true}},
+        {"name":"maxRetries","type":"integer","required":false,"value":3,"display":{"name":"Max Retries","appPropertySupport":true}},
+        {"name":"retryBackoffMs","type":"integer","required":false,"value":500,"display":{"name":"Retry Backoff (ms)","appPropertySupport":true}},
+        {"name":"enableEmbedding","type":"boolean","required":false,"value":false,"display":{"name":"Configure Embedding Provider","description":"Enable shared AI embedding configuration for this connection","appPropertySupport":true}},
+        {"name":"embeddingProvider","type":"string","required":false,"value":"OpenAI","allowed":["OpenAI","Azure OpenAI","Cohere","Ollama","Custom"],"display":{"name":"Embedding Provider","description":"AI service used to generate vector embeddings","type":"dropdown","selection":"single","visible":false,"appPropertySupport":true}},
+        {"name":"embeddingAPIKey","type":"string","required":false,"display":{"name":"Embedding API Key","description":"API key for the embedding service","type":"password","visible":false,"appPropertySupport":true}},
+        {"name":"embeddingBaseURL","type":"string","required":false,"display":{"name":"Embedding Base URL","description":"Override the default provider endpoint","visible":false,"appPropertySupport":true}}
+    ],
+    "actions": [{"name": "Connect"}]
+}

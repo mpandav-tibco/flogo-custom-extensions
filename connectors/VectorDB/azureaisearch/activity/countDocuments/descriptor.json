@@ -1,0 +1,27 @@
+{
+  "name": "tibco-vectordb-azureaisearch-count",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/countDocuments",
+  "title": "Count Documents",
+  "description": "Count documents in an Azure AI Search index.",
+  "display": {"category": "azureaisearch", "visible": true},
+  "settings": [
+    {
+      "name": "connection", "type": "connection", "required": true,
+      "display": {"name": "Azure AI Search Connection", "type": "connection"},
+      "allowed": ["azureaisearch-connector"]
+    },
+    {"name": "defaultCollection", "type": "string", "required": false}
+  ],
+  "input": [
+    {"name": "collectionName", "type": "string"},
+    {"name": "filters", "type": "object"}
+  ],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "count", "type": "integer"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}

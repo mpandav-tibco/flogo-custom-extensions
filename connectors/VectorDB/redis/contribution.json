@@ -1,0 +1,69 @@
+{
+  "name": "Redis Stack VectorDB Connector",
+  "version": "1.0.0",
+  "category": "VectorDB",
+  "description": "Redis Stack (RediSearch + vector module) connector for vector similarity search and RAG use cases.",
+  "image": "connector/icons/vectordb.svg",
+  "contributions": [
+    {
+      "type": "flogo:connector",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/connector"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/upsertDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/vectorSearch"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/hybridSearch"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/deleteDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/createCollection"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/deleteCollection"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/listCollections"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/scrollDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/getDocument"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/countDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/rerank"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/ingestDocuments"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/createEmbeddings"
+    },
+    {
+      "type": "flogo:activity",
+      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/ragQuery"
+    }
+  ]
+}

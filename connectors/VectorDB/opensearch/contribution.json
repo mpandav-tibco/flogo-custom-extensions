@@ -1,0 +1,24 @@
+{
+  "name": "OpenSearch VectorDB Connector",
+  "version": "1.0.0",
+  "category": "VectorDB",
+  "description": "OpenSearch connector for vector similarity search and RAG use cases using k-NN plugin.",
+  "image": "connector/icons/vectordb.svg",
+  "contributions": [
+    {"type": "flogo:connector", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/connector"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/upsertDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/vectorSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/hybridSearch"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/deleteDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/createCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/deleteCollection"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/listCollections"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/scrollDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/getDocument"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/countDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/rerank"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/ingestDocuments"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/createEmbeddings"},
+    {"type": "flogo:activity", "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/ragQuery"}
+  ]
+}

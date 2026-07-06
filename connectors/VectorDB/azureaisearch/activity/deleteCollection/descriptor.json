@@ -1,0 +1,22 @@
+{
+  "name": "tibco-vectordb-azureaisearch-delete-collection",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/deleteCollection",
+  "title": "Delete Index",
+  "description": "Delete an Azure AI Search vector index.",
+  "display": {"category": "azureaisearch", "visible": true},
+  "settings": [
+    {
+      "name": "connection", "type": "connection", "required": true,
+      "display": {"name": "Azure AI Search Connection", "type": "connection"},
+      "allowed": ["azureaisearch-connector"]
+    }
+  ],
+  "input": [{"name": "collectionName", "type": "string"}],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}

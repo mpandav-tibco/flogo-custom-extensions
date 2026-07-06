@@ -1,0 +1,24 @@
+{
+  "name": "tibco-vectordb-count",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/countDocuments",
+  "title": "Count Documents",
+  "image": "icons/count.svg",
+  "description": "Count documents in a collection, optionally filtered.",
+  "display": {"category": "elasticsearch","visible": true,"smallIcon": "icons/count.svg"},
+  "settings": [
+    {"name": "connection","type": "connection","required": true,"display": {"name": "VectorDB Connection","type": "connection"},"allowed": ["elasticsearch-connector"]},
+    {"name": "defaultCollection","type": "string","required": false,"display": {"name": "Default Collection","appPropertySupport": true}}
+  ],
+  "input": [
+    {"name": "collectionName","type": "string"},
+    {"name": "filters","type": "object","schema": "{\"type\": \"object\", \"additionalProperties\": true}"}
+  ],
+  "output": [
+    {"name": "success","type": "boolean"},
+    {"name": "count","type": "integer"},
+    {"name": "duration","type": "string"},
+    {"name": "error","type": "string"}
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "tibco-vectordb-rerank",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/rerank",
+  "title": "Rerank",
+  "image": "icons/rerank.svg",
+  "description": "Re-rank a list of documents against a query using a cross-encoder rerank API (Cohere, Jina, Voyage, etc.).",
+  "display": {"category": "elasticsearch","visible": true,"smallIcon": "icons/rerank.svg"},
+  "settings": [
+    {"name": "rerankEndpoint","type": "string","required": true,"display": {"name": "Rerank API Endpoint","description": "Full URL of the rerank endpoint (e.g. https://api.cohere.com/v1/rerank)","appPropertySupport": true}},
+    {"name": "apiKey","type": "string","display": {"name": "API Key","appPropertySupport": true}},
+    {"name": "model","type": "string","display": {"name": "Model","description": "Model name (e.g. rerank-english-v3.0)","appPropertySupport": true}},
+    {"name": "topN","type": "integer","value": 5,"display": {"name": "Default Top-N","description": "Default number of top results to return"}},
+    {"name": "timeoutSeconds","type": "integer","value": 30,"display": {"name": "Timeout (s)"}}
+  ],
+  "input": [
+    {"name": "query","type": "string"},
+    {"name": "documents","type": "array","schema": "{\"type\": \"array\", \"items\": {\"oneOf\": [{\"type\": \"string\"}, {\"type\": \"object\", \"properties\": {\"content\": {\"type\": \"string\"}, \"text\": {\"type\": \"string\"}}}]}}"},
+    {"name": "topN","type": "integer","value": 0,"display": {"name": "Top-N Override","description": "Override the setting-level topN for this call"}}
+  ],
+  "output": [
+    {"name": "success","type": "boolean"},
+    {"name": "results","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"index\": {\"type\": \"integer\"}, \"relevance_score\": {\"type\": \"number\"}, \"document\": {}}}}"},
+    {"name": "duration","type": "string"},
+    {"name": "error","type": "string"}
+  ]
+}

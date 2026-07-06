@@ -1,0 +1,35 @@
+{
+  "name": "tibco-vectordb-create-embeddings",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/createEmbeddings",
+  "title": "Create Embeddings",
+  "image": "icons/embed.svg",
+  "description": "Generate embedding vectors for a list of texts.",
+  "display": {"category": "elasticsearch","visible": true,"smallIcon": "icons/embed.svg"},
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": false,
+      "display": {"name": "VectorDB Connection (optional)","description": "Select the elasticsearch VectorDB connector to inherit embedding settings","type": "connection"},
+      "allowed": ["elasticsearch-connector"]
+    },
+    {"name": "embeddingProvider","type": "string","value": "","allowed": ["","openai","azure-openai","cohere","ollama"],"display": {"name": "Embedding Provider","appPropertySupport": true}},
+    {"name": "embeddingAPIKey","type": "string","display": {"name": "Embedding API Key","appPropertySupport": true}},
+    {"name": "embeddingBaseURL","type": "string","display": {"name": "Embedding Base URL","appPropertySupport": true}},
+    {"name": "embeddingModel","type": "string","display": {"name": "Embedding Model","appPropertySupport": true}},
+    {"name": "dimensions","type": "integer","value": 0,"display": {"name": "Dimensions","description": "Override output dimensions (if provider supports it)"}},
+    {"name": "timeoutSeconds","type": "integer","value": 60,"display": {"name": "Timeout (s)"}}
+  ],
+  "input": [
+    {"name": "texts","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}"}
+  ],
+  "output": [
+    {"name": "success","type": "boolean"},
+    {"name": "vectors","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"array\", \"items\": {\"type\": \"number\"}}}"},
+    {"name": "dimensions","type": "integer"},
+    {"name": "duration","type": "string"},
+    {"name": "error","type": "string"}
+  ]
+}

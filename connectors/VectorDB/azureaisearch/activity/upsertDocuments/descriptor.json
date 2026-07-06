@@ -1,0 +1,31 @@
+{
+  "name": "tibco-vectordb-azureaisearch-upsert",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/upsertDocuments",
+  "title": "Upsert Documents",
+  "description": "Insert or update documents in an Azure AI Search index.",
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "description": "Upsert documents into Azure AI Search"
+  },
+  "settings": [
+    {
+      "name": "connection", "type": "connection", "required": true,
+      "display": {"name": "Azure AI Search Connection", "type": "connection"},
+      "allowed": ["azureaisearch-connector"]
+    },
+    {"name": "defaultCollection", "type": "string", "required": false}
+  ],
+  "input": [
+    {"name": "collectionName", "type": "string"},
+    {"name": "documents", "type": "array"}
+  ],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "upsertedCount", "type": "integer"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}

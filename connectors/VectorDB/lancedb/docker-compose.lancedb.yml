@@ -1,0 +1,34 @@
+# LanceDB local REST server for integration testing.
+#
+# LanceDB does not publish a standalone server Docker image.
+# This compose file builds a minimal FastAPI wrapper (docker/server.py) that
+# runs LanceDB in embedded mode and exposes the REST API used by the Go connector.
+#
+# Build and start:
+#   docker compose -f docker-compose.lancedb.yml up -d --build
+# Stop and remove:
+#   docker compose -f docker-compose.lancedb.yml down -v
+
+version: '3.8'
+
+services:
+  lancedb:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    container_name: vectordb-lancedb
+    ports:
+      - "18181:8181"
+    volumes:
+      - lancedb_data:/data
+    environment:
+      - LANCEDB_DATA_DIR=/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8181/v1/table/ || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 90s
+
+volumes:
+  lancedb_data:

@@ -1,0 +1,29 @@
+{
+  "name": "tibco-vectordb-scroll",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/scrollDocuments",
+  "title": "Scroll Documents",
+  "image": "icons/scroll.svg",
+  "description": "Paginate through documents without a query vector. Ideal for memory iteration.",
+  "display": {"category": "elasticsearch","visible": true,"smallIcon": "icons/scroll.svg"},
+  "settings": [
+    {"name": "connection","type": "connection","required": true,"display": {"name": "VectorDB Connection","type": "connection"},"allowed": ["elasticsearch-connector"]},
+    {"name": "defaultCollection","type": "string","required": false,"display": {"name": "Default Collection","appPropertySupport": true}}
+  ],
+  "input": [
+    {"name": "collectionName","type": "string"},
+    {"name": "limit","type": "integer","value": 100},
+    {"name": "offset","type": "string","value": ""},
+    {"name": "filters","type": "object","schema": "{\"type\": \"object\", \"additionalProperties\": true}"},
+    {"name": "withVectors","type": "boolean","value": false}
+  ],
+  "output": [
+    {"name": "success","type": "boolean"},
+    {"name": "documents","type": "array","schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\"}}"},
+    {"name": "nextOffset","type": "string"},
+    {"name": "total","type": "integer"},
+    {"name": "duration","type": "string"},
+    {"name": "error","type": "string"}
+  ]
+}

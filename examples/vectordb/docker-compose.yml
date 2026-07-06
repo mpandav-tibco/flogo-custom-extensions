@@ -1,6 +1,8 @@
 # VectorDB Connector Test Infrastructure
 # Usage: docker compose up -d
-# All 4 providers run locally; Ollama must be running separately for embedding tests.
+# Tier 1: Qdrant, Weaviate, Chroma, Milvus
+# Tier 2: Elasticsearch, OpenSearch, LanceDB  (Azure AI Search is cloud-only)
+# Ollama must be running separately for embedding tests.
 
 version: "3.9"
 
@@ -83,8 +85,63 @@ services:
       retries: 12
       start_period: 30s
 
+  # ── Elasticsearch 8 ───────────────────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: vdb-test-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ── OpenSearch 2 ───────────────────────────────────────────────────────────
+  opensearch:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: vdb-test-opensearch
+    ports:
+      - "19201:9200"
+    environment:
+      - DISABLE_SECURITY_PLUGIN=true
+      - discovery.type=single-node
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ── LanceDB (custom FastAPI server) ────────────────────────────────────────
+  lancedb:
+    build:
+      context: ../../connectors/VectorDB/lancedb/docker
+      dockerfile: Dockerfile
+    container_name: vdb-test-lancedb
+    ports:
+      - "18181:8181"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8181/v1/table/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
 volumes:
   qdrant_data:
   weaviate_data:
   chroma_data:
   milvus_data:
+  elasticsearch_data:
+  opensearch_data:

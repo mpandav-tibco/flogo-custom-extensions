@@ -1,0 +1,28 @@
+{
+  "name": "tibco-vectordb-azureaisearch-get",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/getDocument",
+  "title": "Get Document",
+  "description": "Retrieve a document by ID from an Azure AI Search index.",
+  "display": {"category": "azureaisearch", "visible": true},
+  "settings": [
+    {
+      "name": "connection", "type": "connection", "required": true,
+      "display": {"name": "Azure AI Search Connection", "type": "connection"},
+      "allowed": ["azureaisearch-connector"]
+    },
+    {"name": "defaultCollection", "type": "string", "required": false}
+  ],
+  "input": [
+    {"name": "collectionName", "type": "string"},
+    {"name": "documentId", "type": "string"}
+  ],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "document", "type": "object"},
+    {"name": "found", "type": "boolean"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}

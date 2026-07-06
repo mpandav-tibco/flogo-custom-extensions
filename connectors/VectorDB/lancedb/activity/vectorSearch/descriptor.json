@@ -1,0 +1,81 @@
+{
+  "name": "tibco-lancedb-vectorsearch",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/vectorSearch",
+  "title": "Vector Search",
+  "image": "icons/search.svg",
+  "description": "Semantic vector similarity search in a LanceDB table.",
+  "display": {
+    "category": "lancedb",
+    "visible": true,
+    "smallIcon": "icons/search.svg",
+    "description": "Semantic vector search (dense ANN)"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "LanceDB Connection",
+        "description": "Select the LanceDB connector to use",
+        "type": "connection"
+      },
+      "allowed": ["lancedb-connector"]
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultTopK",
+      "type": "integer",
+      "required": false,
+      "value": 10,
+      "display": {
+        "name": "Default Top-K",
+        "description": "Default number of results when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {"name": "collectionName", "type": "string"},
+    {"name": "queryVector", "type": "array", "schema": "{\"type\": \"array\", \"items\": {\"type\": \"number\"}}"},
+    {"name": "topK", "type": "integer", "value": 0},
+    {"name": "scoreThreshold", "type": "number", "value": 0.0},
+    {
+      "name": "filters",
+      "type": "object",
+      "schema": "{\"type\": \"object\", \"additionalProperties\": true}"
+    },
+    {"name": "withVectors", "type": "boolean", "value": false},
+    {
+      "name": "skipPayload",
+      "type": "boolean",
+      "value": false,
+      "display": {
+        "name": "Skip Payload",
+        "description": "When true, omits document payload and content from results."
+      }
+    }
+  ],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {
+      "name": "results",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"score\": {\"type\": \"number\"}, \"content\": {\"type\": \"string\"}, \"payload\": {\"type\": \"object\"}}}}"
+    },
+    {"name": "totalCount", "type": "integer"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}

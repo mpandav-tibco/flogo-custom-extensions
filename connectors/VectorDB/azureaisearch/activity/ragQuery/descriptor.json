@@ -1,0 +1,302 @@
+{
+  "name": "tibco-vectordb-azureaisearch-rag-query",
+  "version": "1.0.0",
+  "type": "flogo:activity",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/ragQuery",
+  "title": "RAG Query",
+  "image": "icons/rag.svg",
+  "description": "Full RAG pipeline: embed query text → vector search → format context for LLM. Combines embedding generation and semantic retrieval in one activity.",
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "smallIcon": "icons/rag.svg",
+    "description": "Retrieval-Augmented Generation: embed → search → format context"
+  },
+  "settings": [
+    {
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "VectorDB Connection",
+        "description": "Select the Azure AI Search VectorDB connector to use for retrieval",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
+    },
+    {
+      "name": "useConnectorEmbedding",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Use Connector Embedding Settings",
+        "description": "Inherit the embedding provider, API key, and base URL from the VectorDB connection.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingProvider",
+      "type": "string",
+      "required": false,
+      "value": "OpenAI",
+      "allowed": ["OpenAI", "Azure OpenAI", "Cohere", "Ollama", "Custom"],
+      "display": {
+        "name": "Embedding Provider",
+        "description": "API provider used to embed the query text.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding API Key",
+        "description": "API key for the embedding provider.",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingBaseURL",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Embedding Base URL",
+        "description": "Override the default provider URL.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingModel",
+      "type": "string",
+      "required": true,
+      "value": "text-embedding-3-small",
+      "display": {
+        "name": "Embedding Model",
+        "description": "Embedding model used to encode the query. Must match the model used during document ingestion.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "embeddingDimensions",
+      "type": "integer",
+      "required": false,
+      "value": 0,
+      "display": {
+        "name": "Embedding Dimensions",
+        "description": "Output dimensions (0 = model default). Must match the collection's vector dimension.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "Default Collection",
+        "description": "Fallback collection name when not provided in the activity input",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "defaultTopK",
+      "type": "integer",
+      "required": false,
+      "value": 5,
+      "display": {
+        "name": "Default Top-K",
+        "description": "Default number of documents to retrieve",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "scoreThreshold",
+      "type": "number",
+      "required": false,
+      "value": 0.0,
+      "display": {
+        "name": "Score Threshold",
+        "description": "Minimum similarity score (0.0 = no filter).",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "contentField",
+      "type": "string",
+      "required": false,
+      "value": "text",
+      "display": {
+        "name": "Content Field",
+        "description": "Payload field name containing the document text.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "contextFormat",
+      "type": "string",
+      "required": false,
+      "value": "numbered",
+      "allowed": ["numbered", "markdown", "xml", "plain", "json"],
+      "display": {
+        "name": "Context Format",
+        "description": "Format of formattedContext output.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "timeoutSeconds",
+      "type": "integer",
+      "required": false,
+      "value": 30,
+      "display": {
+        "name": "Timeout (s)",
+        "description": "Total timeout covering embedding API + vector search",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "useHybridSearch",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Use Hybrid Search",
+        "description": "Enable hybrid (BM25 + dense vector) search for improved recall.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "hybridAlpha",
+      "type": "number",
+      "required": false,
+      "value": 0.5,
+      "display": {
+        "name": "Hybrid Alpha",
+        "description": "Blend weight: 0.0 = pure BM25, 1.0 = pure dense vector, 0.5 = balanced.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "enableLLMGenerate",
+      "type": "boolean",
+      "required": false,
+      "value": false,
+      "display": {
+        "name": "Enable LLM Generation",
+        "description": "When enabled, the retrieved context is passed to an LLM to generate an answer.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmProvider",
+      "type": "string",
+      "required": false,
+      "value": "Ollama",
+      "allowed": ["Ollama", "OpenAI", "Azure OpenAI", "Custom"],
+      "display": {
+        "name": "LLM Provider",
+        "description": "LLM provider for answer generation.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmBaseURL",
+      "type": "string",
+      "required": false,
+      "value": "http://localhost:11434",
+      "display": {
+        "name": "LLM Base URL",
+        "description": "Base URL for the LLM API.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmAPIKey",
+      "type": "string",
+      "required": false,
+      "display": {
+        "name": "LLM API Key",
+        "description": "API key for OpenAI or Azure OpenAI.",
+        "type": "password",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "llmModel",
+      "type": "string",
+      "required": false,
+      "value": "llama3.1:8b",
+      "display": {
+        "name": "LLM Model",
+        "description": "Model name for generation.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "systemPrompt",
+      "type": "string",
+      "required": false,
+      "value": "You are a helpful assistant. Answer the question using only the provided context. If the context does not contain enough information, say so.",
+      "display": {
+        "name": "System Prompt",
+        "description": "Default system/instruction prompt.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "maxTokens",
+      "type": "integer",
+      "required": false,
+      "value": 1024,
+      "display": {
+        "name": "Max Tokens",
+        "description": "Maximum tokens in the generated answer.",
+        "appPropertySupport": true
+      }
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "required": false,
+      "value": 0.1,
+      "display": {
+        "name": "Temperature",
+        "description": "Sampling temperature (0.0 = deterministic).",
+        "appPropertySupport": true
+      }
+    }
+  ],
+  "input": [
+    {"name": "queryText", "type": "string"},
+    {"name": "collectionName", "type": "string"},
+    {"name": "topK", "type": "integer", "value": 0},
+    {
+      "name": "filters",
+      "type": "object",
+      "schema": "{\"type\": \"object\", \"additionalProperties\": true}"
+    },
+    {"name": "systemPrompt", "type": "string"}
+  ],
+  "output": [
+    {"name": "success", "type": "boolean"},
+    {"name": "answer", "type": "string"},
+    {"name": "formattedContext", "type": "string"},
+    {
+      "name": "sourceDocuments",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"score\": {\"type\": \"number\"}, \"content\": {\"type\": \"string\"}, \"payload\": {\"type\": \"object\"}}}}"
+    },
+    {
+      "name": "queryEmbedding",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"number\"}}"
+    },
+    {"name": "totalFound", "type": "integer"},
+    {"name": "duration", "type": "string"},
+    {"name": "error", "type": "string"}
+  ]
+}
