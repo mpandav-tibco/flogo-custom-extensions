@@ -6,36 +6,23 @@ Custom TIBCO Flogo connectors. Each connector provides a Flogo connection type a
 
 A family of purpose-built VectorDB connectors for RAG and agentic AI pipelines. All connectors share the same **14-activity interface** — only the connection configuration differs per provider.
 
-See [VectorDB/README.md](VectorDB/README.md) for the full index, feature matrix, and decision guide.
+| Connector | Provider | Transport | Deployment |
+|-----------|----------|-----------|------------|
+| [VectorDB/qdrant](VectorDB/qdrant/README.md) | Qdrant | REST + gRPC | Self-hosted / Cloud |
+| [VectorDB/weaviate](VectorDB/weaviate/README.md) | Weaviate | REST / GraphQL | Self-hosted / Cloud |
+| [VectorDB/chroma](VectorDB/chroma/README.md) | Chroma | REST v2 | Self-hosted |
+| [VectorDB/milvus](VectorDB/milvus/README.md) | Milvus | gRPC | Self-hosted / Cloud |
+| [VectorDB/pgvector](VectorDB/pgvector/README.md) | PostgreSQL + pgvector | PostgreSQL wire (pgx) | Self-hosted |
+| [VectorDB/pinecone](VectorDB/pinecone/README.md) | Pinecone | REST | Cloud-only |
+| [VectorDB/redis](VectorDB/redis/README.md) | Redis Stack | RESP3 | Self-hosted |
+| [VectorDB/elasticsearch](VectorDB/elasticsearch/README.md) | Elasticsearch 8.x | REST | Self-hosted / Cloud |
+| [VectorDB/opensearch](VectorDB/opensearch/README.md) | OpenSearch 2.x | REST | Self-hosted / Cloud |
+| [VectorDB/azureaisearch](VectorDB/azureaisearch/README.md) | Azure AI Search | REST | Cloud-only |
+| [VectorDB/lancedb](VectorDB/lancedb/README.md) | LanceDB | REST (custom server) | Self-hosted |
 
-### Tier 1 — General Purpose
+See [VectorDB/README.md](VectorDB/README.md) for the full feature matrix and connector selection guide.
 
-| Connector | Provider | Status |
-|-----------|----------|--------|
-| [VectorDB/qdrant](VectorDB/qdrant/README.md) | Qdrant | ✅ Active |
-| [VectorDB/weaviate](VectorDB/weaviate/README.md) | Weaviate | ✅ Active |
-| [VectorDB/chroma](VectorDB/chroma/README.md) | Chroma | ✅ Active |
-| [VectorDB/milvus](VectorDB/milvus/README.md) | Milvus | ✅ Active |
-| [VectorDB/pgvector](VectorDB/pgvector/README.md) | PostgreSQL + pgvector | ✅ Active |
-| [VectorDB/pinecone](VectorDB/pinecone/README.md) | Pinecone Cloud | ✅ Active |
-| [VectorDB/redis](VectorDB/redis/README.md) | Redis Stack | ✅ Active |
-
-### Tier 2 — Elasticsearch Ecosystem & Cloud-Native
-
-| Connector | Provider | Status |
-|-----------|----------|--------|
-| [VectorDB/elasticsearch](VectorDB/elasticsearch/README.md) | Elasticsearch 8.x | ✅ Active |
-| [VectorDB/opensearch](VectorDB/opensearch/README.md) | OpenSearch 2.x | ✅ Active |
-| [VectorDB/azureaisearch](VectorDB/azureaisearch/README.md) | Azure AI Search | ✅ Active |
-| [VectorDB/lancedb](VectorDB/lancedb/README.md) | LanceDB | ✅ Active |
-
-### Legacy
-
-| Connector | Provider | Status |
-|-----------|----------|--------|
-| [VectorDB/monolith](VectorDB/monolith/README.md) | All providers (monolith) | ⚠️ Deprecated |
-
-> **New projects** should use the dedicated connector for their target provider. The monolithic `VectorDB` connector is deprecated — no new features will be added.
+> The monolithic [VectorDB/monolith](VectorDB/monolith/README.md) connector is **deprecated** — use dedicated connectors for new projects.
 
 ## Streaming Connectors
 
