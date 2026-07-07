@@ -18,7 +18,7 @@ var core_1 = require("@angular/core"),
                 if (fieldName === "connection") {
                     return rxjs_1.Observable.create(function (observer) {
                         var connections = [];
-                        wi_contrib_1.WiContributionUtils.getConnections(n.http, "VectorDB", "qdrant-connector").subscribe(
+                        wi_contrib_1.WiContributionUtils.getConnections(n.http, "VectorDB", "pinecone-connector").subscribe(
                             function (conns) {
                                 conns.forEach(function (conn) {
                                     for (var i = 0; i < conn.settings.length; i++) {

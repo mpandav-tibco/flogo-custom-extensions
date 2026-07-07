@@ -29,7 +29,10 @@
             "type": "string",
             "required": false,
             "value": "https",
-            "allowed": ["https", "http"],
+            "allowed": [
+                "https",
+                "http"
+            ],
             "display": {
                 "name": "Mode",
                 "description": "https = Pinecone Cloud (production). http = Pinecone Local (Docker, no API key required).",
@@ -65,7 +68,11 @@
             "type": "string",
             "required": false,
             "value": "aws",
-            "allowed": ["aws", "gcp", "azure"],
+            "allowed": [
+                "aws",
+                "gcp",
+                "azure"
+            ],
             "display": {
                 "name": "Cloud Provider",
                 "description": "Cloud provider for new serverless indexes (cloud mode only): aws, gcp, azure",

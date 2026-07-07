@@ -4,39 +4,101 @@
   "type": "flogo:activity",
   "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/hybridSearch",
   "title": "Hybrid Search",
-  "image": "icons/search.svg",
+  "image": "icons/hybrid.svg",
   "description": "Hybrid (vector + keyword) search in an Azure AI Search index.",
   "display": {
     "category": "azureaisearch",
     "visible": true,
-    "smallIcon": "icons/search.svg",
+    "smallIcon": "icons/hybrid.svg",
     "description": "Hybrid search (dense + BM25)"
   },
   "settings": [
     {
-      "name": "connection", "type": "connection", "required": true,
-      "display": {"name": "Azure AI Search Connection", "type": "connection"},
-      "allowed": ["azureaisearch-connector"]
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "Azure AI Search Connection",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
     },
-    {"name": "defaultCollection", "type": "string", "required": false},
-    {"name": "defaultTopK", "type": "integer", "required": false, "value": 10}
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "defaultTopK",
+      "type": "integer",
+      "required": false,
+      "value": 10
+    }
   ],
   "input": [
-    {"name": "collectionName", "type": "string"},
-    {"name": "queryText", "type": "string"},
-    {"name": "queryVector", "type": "array"},
-    {"name": "topK", "type": "integer", "value": 0},
-    {"name": "scoreThreshold", "type": "number", "value": 0.0},
-    {"name": "alpha", "type": "number", "value": 0.5},
-    {"name": "filters", "type": "object"},
-    {"name": "skipPayload", "type": "boolean", "value": false}
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "queryText",
+      "type": "string"
+    },
+    {
+      "name": "queryVector",
+      "type": "array"
+    },
+    {
+      "name": "topK",
+      "type": "integer",
+      "value": 0
+    },
+    {
+      "name": "scoreThreshold",
+      "type": "number",
+      "value": 0.0
+    },
+    {
+      "name": "alpha",
+      "type": "number",
+      "value": 0.5
+    },
+    {
+      "name": "filters",
+      "type": "object"
+    },
+    {
+      "name": "skipPayload",
+      "type": "boolean",
+      "value": false
+    }
   ],
   "output": [
-    {"name": "success", "type": "boolean"},
-    {"name": "results", "type": "array"},
-    {"name": "totalCount", "type": "integer"},
-    {"name": "duration", "type": "string"},
-    {"name": "error", "type": "string"},
-    {"name": "fallbackReason", "type": "string"}
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "results",
+      "type": "array"
+    },
+    {
+      "name": "totalCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    },
+    {
+      "name": "fallbackReason",
+      "type": "string"
+    }
   ]
 }

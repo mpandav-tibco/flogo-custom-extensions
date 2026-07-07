@@ -46,7 +46,7 @@
       "id": "TestTrigger",
       "handlers": [
         {
-          "description": "Full CRUD test: createCollection to ingestDocs to count to getDocument to scrollDocuments to deleteDocuments to count to deleteCollection",
+          "description": "Full CRUD test: createCollection to ingestDocs to count to getDocument to scrollDocuments to deleteDocuments to count to deleteCollection (Elasticsearch)",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -84,7 +84,7 @@
           "name": "crud_cycle"
         },
         {
-          "description": "RAG cycle: createCollection to ingestDocuments (with Ollama embeddings) to ragQuery to deleteCollection",
+          "description": "RAG cycle: createCollection to ingestDocuments (Ollama embeddings) to ragQuery to deleteCollection (Elasticsearch)",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -122,7 +122,7 @@
           "name": "rag_cycle"
         },
         {
-          "description": "Test createEmbeddings activity with Ollama provider - generates embeddings for sample texts",
+          "description": "Test createEmbeddings activity with Ollama provider - generates embeddings for sample texts (Elasticsearch)",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -160,7 +160,7 @@
           "name": "embed_test"
         },
         {
-          "description": "Test rerank activity - calls Cohere rerank API to reorder documents by relevance",
+          "description": "Test rerank activity - calls Cohere rerank API to reorder documents by relevance (Elasticsearch)",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -317,7 +317,9 @@
               "input": {
                 "collectionName": "flogodemo",
                 "dimensions": 768,
-                "distanceMetric": "cosine"
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
               }
             }
           },
@@ -329,19 +331,14 @@
               "ref": "#ingestDocuments",
               "settings": {
                 "connection": "conn://es-conn",
-                "enableChunking": false,
                 "chunkStrategy": "paragraph",
                 "chunkSize": 1000,
                 "chunkOverlap": 200,
-                "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
                 "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
                 "embeddingModel": "=$property[\"EMBED_MODEL\"]",
-                "embeddingDimensions": 0,
-                "contentField": "text",
-                "timeoutSeconds": 120,
-                "embeddingBatchSize": 8
+                "batchSize": 100
               },
               "input": {
                 "collectionName": "flogodemo",
@@ -564,7 +561,9 @@
               "input": {
                 "collectionName": "ragdemo",
                 "dimensions": 768,
-                "distanceMetric": "cosine"
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
               }
             }
           },
@@ -576,19 +575,14 @@
               "ref": "#ingestDocuments",
               "settings": {
                 "connection": "conn://es-conn",
-                "enableChunking": false,
                 "chunkStrategy": "paragraph",
                 "chunkSize": 1000,
                 "chunkOverlap": 200,
-                "useConnectorEmbedding": false,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
                 "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
                 "embeddingModel": "=$property[\"EMBED_MODEL\"]",
-                "embeddingDimensions": 0,
-                "contentField": "text",
-                "timeoutSeconds": 60,
-                "embeddingBatchSize": 8
+                "batchSize": 100
               },
               "input": {
                 "collectionName": "ragdemo",
@@ -619,29 +613,17 @@
               "ref": "#ragQuery",
               "settings": {
                 "connection": "conn://es-conn",
-                "useConnectorEmbedding": false,
+                "defaultTopK": 3,
+                "scoreThreshold": 0,
+                "hybridAlpha": 0.5,
                 "embeddingProvider": "=$property[\"EMBED_PROVIDER\"]",
                 "embeddingAPIKey": "=$property[\"EMBED_API_KEY\"]",
                 "embeddingBaseURL": "=$property[\"EMBED_BASE_URL\"]",
                 "embeddingModel": "=$property[\"EMBED_MODEL\"]",
-                "embeddingDimensions": 0,
-                "defaultTopK": 3,
-                "scoreThreshold": 0,
-                "contentField": "text",
-                "contextFormat": "numbered",
-                "timeoutSeconds": 60,
-                "useHybridSearch": false,
-                "hybridAlpha": 0.5,
-                "enableLLMGenerate": false,
-                "llmProvider": "Ollama",
-                "llmBaseURL": "http://localhost:11434",
                 "llmModel": "llama3.1:8b",
-                "systemPrompt": "You are a helpful assistant. Answer the question using only the provided context. If the context does not contain enough information, say so.",
-                "maxTokens": 1024,
-                "temperature": 0.1
+                "llmTimeoutSeconds": 30
               },
               "input": {
-                "queryText": "How does the attention mechanism work in transformer models?",
                 "collectionName": "ragdemo",
                 "topK": 3
               }
@@ -730,16 +712,9 @@
               "ref": "#createEmbeddings",
               "settings": {
                 "connection": "conn://es-conn",
-                "useConnectorEmbedding": true,
-                "provider": "=$property[\"EMBED_PROVIDER\"]",
-                "apiKey": "=$property[\"EMBED_API_KEY\"]",
-                "baseURL": "=$property[\"EMBED_BASE_URL\"]",
-                "model": "=$property[\"EMBED_MODEL\"]",
+                "embeddingProvider": "",
                 "dimensions": 0,
                 "timeoutSeconds": 30
-              },
-              "input": {
-                "inputText": "Flogo Elasticsearch vector connector test - single embedding"
               }
             }
           },
@@ -751,22 +726,9 @@
               "ref": "#createEmbeddings",
               "settings": {
                 "connection": "conn://es-conn",
-                "useConnectorEmbedding": true,
-                "provider": "=$property[\"EMBED_PROVIDER\"]",
-                "apiKey": "=$property[\"EMBED_API_KEY\"]",
-                "baseURL": "=$property[\"EMBED_BASE_URL\"]",
-                "model": "=$property[\"EMBED_MODEL\"]",
+                "embeddingProvider": "",
                 "dimensions": 0,
                 "timeoutSeconds": 30
-              },
-              "input": {
-                "inputTexts": {
-                  "mapping": [
-                    "The quick brown fox",
-                    "Machine learning is powerful",
-                    "Vector similarity search"
-                  ]
-                }
               }
             }
           },
@@ -838,6 +800,7 @@
               },
               "input": {
                 "query": "Which sentence is about machine learning?",
+                "topN": 0,
                 "documents": {
                   "mapping": [
                     "The quick brown fox jumps over the lazy dog",
@@ -874,6 +837,61 @@
     }
   ],
   "properties": [
+    {
+      "name": "VectorDB.es-conn.Connection_Name",
+      "type": "string",
+      "value": "es-conn"
+    },
+    {
+      "name": "VectorDB.es-conn.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "VectorDB.es-conn.Port",
+      "type": "float64",
+      "value": 9200
+    },
+    {
+      "name": "VectorDB.es-conn.Username",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "VectorDB.es-conn.Password",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "VectorDB.es-conn.API_Key",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "VectorDB.es-conn.Enable_TLS",
+      "type": "boolean",
+      "value": false
+    },
+    {
+      "name": "VectorDB.es-conn.Timeout_(seconds)",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "VectorDB.es-conn.Max_Retries",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "VectorDB.es-conn.Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": 500
+    },
+    {
+      "name": "VectorDB.es-conn.Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": false
+    },
     {
       "name": "EMBED_PROVIDER",
       "type": "string",
@@ -922,23 +940,25 @@
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "es-conn",
-        "host": "localhost",
-        "port": 9200,
-        "username": "",
-        "password": "",
-        "apiKey": "",
-        "useTLS": false,
+        "name": "=$property[\"VectorDB.es-conn.Connection_Name\"]",
+        "host": "=$property[\"VectorDB.es-conn.Host\"]",
+        "port": "=$property[\"VectorDB.es-conn.Port\"]",
+        "username": "=$property[\"VectorDB.es-conn.Username\"]",
+        "password": "=$property[\"VectorDB.es-conn.Password\"]",
+        "apiKey": "=$property[\"VectorDB.es-conn.API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.es-conn.Enable_TLS\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": 30,
-        "maxRetries": 3,
-        "retryBackoffMs": 500,
-        "enableEmbedding": false,
-        "embeddingProvider": "OpenAI"
+        "timeoutSeconds": "=$property[\"VectorDB.es-conn.Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.es-conn.Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.es-conn.Retry_Backoff_(ms)\"]",
+        "enableEmbedding": "=$property[\"VectorDB.es-conn.Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI",
+        "embeddingAPIKey": "",
+        "embeddingBaseURL": ""
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItZWxhc3RpY3NlYXJjaCIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJ2ZWN0b3JkYi1lbGFzdGljc2VhcmNoIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6Ikxpc3RCZWZvcmUiLCJpZCI6ImVsYXN0aWNzZWFyY2giLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vZWxhc3RpY3NlYXJjaCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuYyIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJSZWRpcyBTdGFjayBWZWN0b3JEQiBDb25uZWN0b3IiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vVmVjdG9yREIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
   "metadata": {
     "endpoints": [
       {
@@ -978,7 +998,7 @@
                     }
                   }
                 },
-                "description": "Full CRUD test for Elasticsearch"
+                "description": "Full CRUD test: createCollection to ingestDocs to count to getDocument to scrollDocuments to deleteDocuments to count to deleteCollection (Elasticsearch)"
               }
             },
             "/api/test/rag": {
@@ -1002,7 +1022,7 @@
                     }
                   }
                 },
-                "description": "RAG cycle for Elasticsearch"
+                "description": "RAG cycle: createCollection to ingestDocuments (Ollama embeddings) to ragQuery to deleteCollection (Elasticsearch)"
               }
             },
             "/api/test/embed": {
@@ -1026,7 +1046,7 @@
                     }
                   }
                 },
-                "description": "Test createEmbeddings with Elasticsearch"
+                "description": "Test createEmbeddings activity with Ollama provider - generates embeddings for sample texts (Elasticsearch)"
               }
             },
             "/api/test/rerank": {
@@ -1050,7 +1070,7 @@
                     }
                   }
                 },
-                "description": "Test rerank activity with Elasticsearch"
+                "description": "Test rerank activity - calls Cohere rerank API to reorder documents by relevance (Elasticsearch)"
               }
             }
           },
@@ -1058,6 +1078,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.3"
+    "flogoVersion": "2.26.5"
   }
 }

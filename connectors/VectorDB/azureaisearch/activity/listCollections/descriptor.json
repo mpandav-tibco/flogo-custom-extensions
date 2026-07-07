@@ -5,20 +5,47 @@
   "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/listCollections",
   "title": "List Indexes",
   "description": "List all Azure AI Search indexes.",
-  "display": {"category": "azureaisearch", "visible": true},
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "smallIcon": "icons/list.svg"
+  },
   "settings": [
     {
-      "name": "connection", "type": "connection", "required": true,
-      "display": {"name": "Azure AI Search Connection", "type": "connection"},
-      "allowed": ["azureaisearch-connector"]
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "Azure AI Search Connection",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
     }
   ],
   "input": [],
   "output": [
-    {"name": "success", "type": "boolean"},
-    {"name": "collections", "type": "array"},
-    {"name": "totalCount", "type": "integer"},
-    {"name": "duration", "type": "string"},
-    {"name": "error", "type": "string"}
-  ]
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "collections",
+      "type": "array"
+    },
+    {
+      "name": "totalCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ],
+  "image": "icons/list.svg"
 }

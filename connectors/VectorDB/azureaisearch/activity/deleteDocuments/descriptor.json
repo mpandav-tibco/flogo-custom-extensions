@@ -5,24 +5,61 @@
   "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/deleteDocuments",
   "title": "Delete Documents",
   "description": "Delete documents from an Azure AI Search index by ID or filter.",
-  "display": {"category": "azureaisearch", "visible": true},
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "smallIcon": "icons/delete.svg"
+  },
   "settings": [
     {
-      "name": "connection", "type": "connection", "required": true,
-      "display": {"name": "Azure AI Search Connection", "type": "connection"},
-      "allowed": ["azureaisearch-connector"]
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "Azure AI Search Connection",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
     },
-    {"name": "defaultCollection", "type": "string", "required": false}
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false
+    }
   ],
   "input": [
-    {"name": "collectionName", "type": "string"},
-    {"name": "ids", "type": "array"},
-    {"name": "filters", "type": "object"}
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "ids",
+      "type": "array"
+    },
+    {
+      "name": "filters",
+      "type": "object"
+    }
   ],
   "output": [
-    {"name": "success", "type": "boolean"},
-    {"name": "deletedCount", "type": "integer"},
-    {"name": "duration", "type": "string"},
-    {"name": "error", "type": "string"}
-  ]
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "deletedCount",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ],
+  "image": "icons/delete.svg"
 }

@@ -29,7 +29,10 @@
             "type": "string",
             "required": false,
             "value": "http",
-            "allowed": ["http", "https"],
+            "allowed": [
+                "http",
+                "https"
+            ],
             "display": {
                 "name": "Mode",
                 "description": "Mode: http=self-hosted (Docker), https=LanceDB Cloud",
@@ -173,7 +176,7 @@
     ],
     "actions": [
         {
-            "name": "Connect"
+            "name": "Save"
         }
     ]
 }

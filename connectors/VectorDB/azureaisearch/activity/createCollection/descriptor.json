@@ -5,24 +5,64 @@
   "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/createCollection",
   "title": "Create Index",
   "description": "Create a new Azure AI Search vector index.",
-  "display": {"category": "azureaisearch", "visible": true},
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "smallIcon": "icons/collection.svg"
+  },
   "settings": [
     {
-      "name": "connection", "type": "connection", "required": true,
-      "display": {"name": "Azure AI Search Connection", "type": "connection"},
-      "allowed": ["azureaisearch-connector"]
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "Azure AI Search Connection",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
     }
   ],
   "input": [
-    {"name": "collectionName", "type": "string"},
-    {"name": "dimensions", "type": "integer", "value": 1536},
-    {"name": "distanceMetric", "type": "string", "value": "cosine"},
-    {"name": "onDisk", "type": "boolean", "value": false},
-    {"name": "replicationFactor", "type": "integer", "value": 1}
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "dimensions",
+      "type": "integer",
+      "value": 1536
+    },
+    {
+      "name": "distanceMetric",
+      "type": "string",
+      "value": "cosine"
+    },
+    {
+      "name": "onDisk",
+      "type": "boolean",
+      "value": false
+    },
+    {
+      "name": "replicationFactor",
+      "type": "integer",
+      "value": 1
+    }
   ],
   "output": [
-    {"name": "success", "type": "boolean"},
-    {"name": "duration", "type": "string"},
-    {"name": "error", "type": "string"}
-  ]
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ],
+  "image": "icons/collection.svg"
 }
