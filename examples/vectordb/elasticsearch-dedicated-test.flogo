@@ -17,7 +17,8 @@
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/connector"
+    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/connector",
+    "github.com/project-flogo/contrib/activity/actreturn"
   ],
   "name": "elasticsearch-dedicated-test",
   "description": "Live connector test app for Elasticsearch 8.x using dedicated vectordb-elasticsearch connector - CRUD cycle, RAG ingest/query, embeddings, rerank",
@@ -58,6 +59,10 @@
             "ref": "github.com/project-flogo/flow",
             "settings": {
               "flowURI": "res://flow:crud_cycle"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
             }
           },
           "reply": {
@@ -96,6 +101,10 @@
             "ref": "github.com/project-flogo/flow",
             "settings": {
               "flowURI": "res://flow:rag_cycle"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
             }
           },
           "reply": {
@@ -134,6 +143,10 @@
             "ref": "github.com/project-flogo/flow",
             "settings": {
               "flowURI": "res://flow:embed_test"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
             }
           },
           "reply": {
@@ -172,6 +185,10 @@
             "ref": "github.com/project-flogo/flow",
             "settings": {
               "flowURI": "res://flow:rerank_test"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
             }
           },
           "reply": {
@@ -283,6 +300,13 @@
             "to": "LogSummary",
             "type": "label",
             "label": "ListAfter to LogSummary"
+          },
+          {
+            "id": 12,
+            "from": "LogSummary",
+            "to": "Return",
+            "type": "label",
+            "label": "LogSummary to Return"
           }
         ],
         "tasks": [
@@ -487,13 +511,50 @@
                 "logLevel": "INFO"
               }
             }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "crud",
+                      "success": true,
+                      "collections_before": "=$activity[ListBefore].totalCount",
+                      "ingested": "=$activity[IngestDocs].ingestedCount",
+                      "count_before_delete": "=$activity[CountDocs1].count",
+                      "document_found": "=$activity[GetDoc].found",
+                      "scroll_documents": "=$activity[ScrollDocs].documents",
+                      "count_after_delete": "=$activity[CountDocs2].count",
+                      "collections_after": "=$activity[ListAfter].totalCount"
+                    }
+                  }
+                }
+              }
+            }
           }
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjAwLCJ5Ijo1MH0sIkNyZWF0ZUNvbGxlY3Rpb24iOnsieCI6MzUwLCJ5Ijo1MH0sIkluZ2VzdERvY3MiOnsieCI6NTAwLCJ5Ijo1MH0sIkNvdW50RG9jczEiOnsieCI6NjUwLCJ5Ijo1MH0sIkdldERvYyI6eyJ4Ijo4MDAsInkiOjUwfSwiU2Nyb2xsRG9jcyI6eyJ4Ijo5NTAsInkiOjUwfSwiRGVsZXRlRG9jcyI6eyJ4IjoxMTAwLCJ5Ijo1MH0sIkNvdW50RG9jczIiOnsieCI6MTI1MCwieSI6NTB9LCJEZWxldGVDb2xsZWN0aW9uIjp7IngiOjE0MDAsInkiOjUwfSwiTGlzdEFmdGVyIjp7IngiOjE1NTAsInkiOjUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoxNzAwLCJ5Ijo1MH19",
         "metadata": {
           "input": [],
-          "output": [],
-          "fe_metadata": {}
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
         },
         "explicitReply": true
       }
@@ -538,6 +599,13 @@
             "to": "LogSummary",
             "type": "label",
             "label": "DeleteRAGCol to LogSummary"
+          },
+          {
+            "id": 6,
+            "from": "LogSummary",
+            "to": "Return",
+            "type": "label",
+            "label": "LogSummary to Return"
           }
         ],
         "tasks": [
@@ -656,13 +724,47 @@
                 "logLevel": "INFO"
               }
             }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "rag",
+                      "success": true,
+                      "ingested": "=$activity[IngestDocs].ingestedCount",
+                      "found": "=$activity[RAGQuery].totalFound",
+                      "answer": "=$activity[RAGQuery].answer",
+                      "sources": "=$activity[RAGQuery].sourceDocuments"
+                    }
+                  }
+                }
+              }
+            }
           }
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfX0=",
         "metadata": {
           "input": [],
-          "output": [],
-          "fe_metadata": {}
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
         },
         "explicitReply": true
       }
@@ -693,6 +795,13 @@
             "to": "LogSummary",
             "type": "label",
             "label": "EmbedBatch to LogSummary"
+          },
+          {
+            "id": 4,
+            "from": "LogSummary",
+            "to": "Return",
+            "type": "label",
+            "label": "LogSummary to Return"
           }
         ],
         "tasks": [
@@ -745,13 +854,45 @@
                 "logLevel": "INFO"
               }
             }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "embed",
+                      "success": true,
+                      "single_dims": "=$activity[EmbedSingle].dimensions",
+                      "batch_dims": "=$activity[EmbedBatch].dimensions"
+                    }
+                  }
+                }
+              }
+            }
           }
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkVtYmVkU2luZ2xlIjp7IngiOjI1MCwieSI6MTUwfSwiRW1iZWRCYXRjaCI6eyJ4Ijo0NTAsInkiOjI1MH0sIkxvZ1N1bW1hcnkiOnsieCI6NjUwLCJ5IjozNTB9fQ==",
         "metadata": {
           "input": [],
-          "output": [],
-          "fe_metadata": {}
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
         },
         "explicitReply": true
       }
@@ -775,6 +916,13 @@
             "to": "LogSummary",
             "type": "label",
             "label": "RerankDocs to LogSummary"
+          },
+          {
+            "id": 3,
+            "from": "LogSummary",
+            "to": "Return",
+            "type": "label",
+            "label": "LogSummary to Return"
           }
         ],
         "tasks": [
@@ -824,13 +972,45 @@
                 "logLevel": "INFO"
               }
             }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "rerank",
+                      "success": "=$activity[RerankDocs].success",
+                      "total": "=$activity[RerankDocs].totalCount",
+                      "ranked": "=$activity[RerankDocs].rankedDocuments"
+                    }
+                  }
+                }
+              }
+            }
           }
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlJlcmFua0RvY3MiOnsieCI6MjUwLCJ5IjoxNTB9LCJMb2dTdW1tYXJ5Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
         "metadata": {
           "input": [],
-          "output": [],
-          "fe_metadata": {}
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
         },
         "explicitReply": true
       }
