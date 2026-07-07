@@ -1,0 +1,10 @@
+# Keep the proprietary tibdg client out of the build context — the Dockerfile
+# sources it from the AS SDK in the base image instead.
+dep/
+
+# Build artifacts / VCS
+bin/
+*.exe
+asnative-bin
+*.test
+.git/

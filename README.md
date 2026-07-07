@@ -10,6 +10,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 |-----------|---------|------|-------------|
 | [SSE Connector](connectors/sse/) | 1.0.0 | Connector | Server-Sent Events real-time streaming with event buffering and topic filtering |
 | [Kafka Stream Connector](connectors/KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, content-based routing, and event-time processing |
+| [VectorDB — ActiveSpaces](connectors/VectorDB/activespaces/) | 1.0.0 | Connector | TIBCO ActiveSpaces 5.2 vector store — dual connectors: gateway (pure-Go, portable) and native (tibdg/CGO), sharing the 14-activity surface for RAG and agentic AI pipelines |
 | [VectorDB — Qdrant](connectors/VectorDB/qdrant/) | 1.0.0 | Connector | Qdrant connector — high-performance ANN search via REST and gRPC, TLS support, purpose-built for RAG and agentic AI pipelines |
 | [VectorDB — Weaviate](connectors/VectorDB/weaviate/) | 1.0.0 | Connector | Weaviate connector — native hybrid (BM25 + vector) search, GraphQL-backed, purpose-built for RAG pipelines |
 | [VectorDB — Chroma](connectors/VectorDB/chroma/) | 1.0.0 | Connector | Chroma connector — lightweight embedding-first store via REST v2, purpose-built for RAG pipelines |
@@ -88,7 +89,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger, Kafka Stream Split Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, join readings with alert thresholds across two topics, and route messages to branches via content-based split |
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 | [SOAP Client Demo](examples/soap-client/) | SOAP Client Activity | Timer-triggered SOAP 1.1 call to a public calculator service in both JSON mode and XML mode with namespace attributes |
-| [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (Qdrant, Weaviate, Chroma, Milvus, pgvector, Pinecone, Redis, Elasticsearch, OpenSearch, Azure AI Search, LanceDB) | End-to-end RAG demo across all 11 dedicated connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
+| [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (TIBCO ActiveSpaces, Qdrant, Weaviate, Chroma, Milvus, pgvector, Pinecone, Redis, Elasticsearch, OpenSearch, Azure AI Search, LanceDB) | End-to-end RAG demo across all 12 dedicated connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
 
 ## 🤝 Contributing
 

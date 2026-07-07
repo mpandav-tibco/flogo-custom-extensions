@@ -1,0 +1,15 @@
+# ── TIBCO proprietary — do NOT commit ──────────────────────────────────────────
+# The native ActiveSpaces client (tibdg) is TIBCO SDK source and is NOT
+# redistributed in this repository. Supply it from your own AS SDK before a
+# local build (the Dockerfile does this automatically from the base image):
+#
+#   cp -R "$TIBDG_ROOT/samples/golang/src/tibco.com/tibdg" dep/tibco.com/tibdg
+#
+# go.mod maps  tibco.com/tibdg => ./dep/tibco.com/tibdg
+/dep/
+
+# ── Build artifacts ────────────────────────────────────────────────────────────
+/bin/
+*.exe
+asnative-bin
+*.test

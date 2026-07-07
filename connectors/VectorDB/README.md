@@ -8,6 +8,7 @@ A family of purpose-built vector database connectors for TIBCO Flogo, designed f
 
 | Connector | Provider | Transport | Deployment | Status |
 |-----------|----------|-----------|------------|--------|
+| [activespaces](activespaces/README.md) | TIBCO ActiveSpaces 5.2 | REST gateway / native (CGO) | Self-hosted | ✅ Active |
 | [qdrant](qdrant/README.md) | Qdrant | REST + gRPC | Self-hosted / Cloud | ✅ Active |
 | [weaviate](weaviate/README.md) | Weaviate | REST / GraphQL | Self-hosted / Cloud | ✅ Active |
 | [chroma](chroma/README.md) | Chroma | REST v2 | Self-hosted | ✅ Active |
@@ -50,18 +51,18 @@ All connectors expose the same 14 activities:
 
 ## Feature Matrix
 
-| Feature | Qdrant | Weaviate | Chroma | Milvus | pgvector | Pinecone | Redis | Elasticsearch | OpenSearch | Azure AI Search | LanceDB |
-|---------|:------:|:--------:|:------:|:------:|:--------:|:--------:|:-----:|:-------------:|:----------:|:---------------:|:-------:|
-| **Vector Search** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Hybrid Search** | ⚠️ fallback | ✅ native | ⚠️ fallback | ⚠️ fallback | ✅ native | ✅ native | ✅ native | ✅ native | ✅ native | ✅ RRF | ✅ RRF |
-| **Metadata Filters** | ✅ | ✅ | ✅ | ✅ | ✅ JSONB | ✅ | ✅ | ✅ | ✅ | ⚠️ client-side¹ | ⚠️ LIKE only² |
-| **Delete by Filter** | ✅ server | ✅ server | ✅ server | ✅ server | ✅ server | ✅ server | ⚠️ client-side | ✅ server | ✅ server | ⚠️ client-side¹ | ✅ server |
-| **Scroll / Paginate** | ✅ native | ✅ native | ⚠️ client-side | ✅ native | ✅ native | ✅ native | ✅ native | ✅ | ✅ | ✅ | ✅ |
-| **Count with Filter** | ✅ | ❌ | ⚠️ client-side | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ⚠️ client-side¹ | ⚠️ client-side² |
-| **TLS / Auth** | ✅ | ✅ | ✅ | ✅ | ✅ SSL | ✅ API key | ✅ password | ✅ | ✅ | ✅ API key | ✅ Bearer |
-| **gRPC Transport** | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Self-hosted** | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| **Cloud / Managed** | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Feature | ActiveSpaces | Qdrant | Weaviate | Chroma | Milvus | pgvector | Pinecone | Redis | Elasticsearch | OpenSearch | Azure AI Search | LanceDB |
+|---------|:------------:|:------:|:--------:|:------:|:------:|:--------:|:--------:|:-----:|:-------------:|:----------:|:---------------:|:-------:|
+| **Vector Search** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Hybrid Search** | ⚠️ fallback | ⚠️ fallback | ✅ native | ⚠️ fallback | ⚠️ fallback | ✅ native | ✅ native | ✅ native | ✅ native | ✅ native | ✅ RRF | ✅ RRF |
+| **Metadata Filters** | ✅ SQL | ✅ | ✅ | ✅ | ✅ | ✅ JSONB | ✅ | ✅ | ✅ | ✅ | ⚠️ client-side¹ | ⚠️ LIKE only² |
+| **Delete by Filter** | ✅ table API | ✅ server | ✅ server | ✅ server | ✅ server | ✅ server | ✅ server | ⚠️ client-side | ✅ server | ✅ server | ⚠️ client-side¹ | ✅ server |
+| **Scroll / Paginate** | ✅ native | ✅ native | ✅ native | ⚠️ client-side | ✅ native | ✅ native | ✅ native | ✅ native | ✅ | ✅ | ✅ | ✅ |
+| **Count with Filter** | ✅ | ✅ | ❌ | ⚠️ client-side | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ⚠️ client-side¹ | ⚠️ client-side² |
+| **TLS / Auth** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ SSL | ✅ API key | ✅ password | ✅ | ✅ | ✅ API key | ✅ Bearer |
+| **gRPC Transport** | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Self-hosted** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| **Cloud / Managed** | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
 
 ¹ Azure AI Search: metadata is stored as a JSON string (`Edm.String`) — OData filtering is not available; all filters are client-side.  
 ² LanceDB: metadata is stored as a JSON string; numeric range operators (`$gt`/`$lt`) are not supported; filtering uses SQL `LIKE` matching.
