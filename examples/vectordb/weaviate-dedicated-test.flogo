@@ -4,17 +4,12 @@
     "github.com/project-flogo/contrib/activity/noop",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/listCollections",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/upsertDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/ingestDocuments",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/vectorSearch",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/hybridSearch",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/getDocument",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/scrollDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/ragQuery",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/ragQuery",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/createEmbeddings",
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
@@ -23,7 +18,7 @@
     "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/connector"
   ],
   "name": "weaviate-dedicated-test",
-  "description": "Live connector test app for Weaviate using dedicated vectordb-weaviate connector \u2014 CRUD cycle, RAG ingest/query, embeddings, rerank",
+  "description": "Live connector test app for Weaviate using dedicated vectordb-weaviate connector — CRUD cycle, RAG ingest/query, embeddings, rerank",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -49,7 +44,7 @@
       "id": "TestTrigger",
       "handlers": [
         {
-          "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 hybridSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+          "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → hybridSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -87,7 +82,7 @@
           "name": "crud_cycle"
         },
         {
-          "description": "RAG cycle with hybrid search: createCollection \u2192 ingestDocuments \u2192 ragQuery \u2192 hybridSearch \u2192 deleteCollection",
+          "description": "RAG cycle with hybrid search: createCollection → ingestDocuments → ragQuery → hybridSearch → deleteCollection",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -163,7 +158,7 @@
           "name": "embed_test"
         },
         {
-          "description": "Test rerank activity \u2014 calls Cohere rerank API",
+          "description": "Test rerank activity — calls Cohere rerank API",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -208,7 +203,7 @@
       "id": "flow:crud_cycle",
       "data": {
         "name": "crud_cycle",
-        "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 hybridSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+        "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → hybridSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection",
         "links": [
           {
             "id": 1,
@@ -239,56 +234,7 @@
             "label": "UpsertDocs to CountDocs1"
           },
           {
-            "id": 7,
-            "from": "HybridSearch",
-            "to": "GetDoc",
-            "type": "label",
-            "label": "HybridSearch to GetDoc"
-          },
-          {
-            "id": 8,
-            "from": "GetDoc",
-            "to": "ScrollDocs",
-            "type": "label",
-            "label": "GetDoc to ScrollDocs"
-          },
-          {
-            "id": 9,
-            "from": "ScrollDocs",
-            "to": "DeleteDocs",
-            "type": "label",
-            "label": "ScrollDocs to DeleteDocs"
-          },
-          {
-            "id": 10,
-            "from": "DeleteDocs",
-            "to": "CountDocs2",
-            "type": "label",
-            "label": "DeleteDocs to CountDocs2"
-          },
-          {
-            "id": 11,
-            "from": "CountDocs2",
-            "to": "DeleteCollection",
-            "type": "label",
-            "label": "CountDocs2 to DeleteCollection"
-          },
-          {
-            "id": 12,
-            "from": "DeleteCollection",
-            "to": "ListAfter",
-            "type": "label",
-            "label": "DeleteCollection to ListAfter"
-          },
-          {
-            "id": 13,
-            "from": "ListAfter",
-            "to": "LogSummary",
-            "type": "label",
-            "label": "ListAfter to LogSummary"
-          },
-          {
-            "id": 14,
+            "id": 5,
             "from": "CountDocs1",
             "to": "HybridSearch",
             "type": "default"
@@ -416,114 +362,9 @@
                 "skipPayload": false
               }
             }
-          },
-          {
-            "id": "GetDoc",
-            "name": "GetDoc",
-            "description": "",
-            "activity": {
-              "ref": "#getDocument",
-              "settings": {
-                "connection": "conn://weaviate-conn"
-              },
-              "input": {
-                "collectionName": "flogodemo",
-                "documentId": "crud-001"
-              }
-            }
-          },
-          {
-            "id": "ScrollDocs",
-            "name": "ScrollDocs",
-            "description": "",
-            "activity": {
-              "ref": "#scrollDocuments",
-              "settings": {
-                "connection": "conn://weaviate-conn"
-              },
-              "input": {
-                "collectionName": "flogodemo",
-                "limit": 10,
-                "offset": "",
-                "withVectors": false
-              }
-            }
-          },
-          {
-            "id": "DeleteDocs",
-            "name": "DeleteDocs",
-            "description": "",
-            "activity": {
-              "ref": "#deleteDocuments",
-              "settings": {
-                "connection": "conn://weaviate-conn"
-              },
-              "input": {
-                "collectionName": "flogodemo",
-                "ids": {
-                  "mapping": [
-                    "crud-003",
-                    "crud-004"
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "id": "CountDocs2",
-            "name": "CountDocs2",
-            "description": "",
-            "activity": {
-              "ref": "#countDocuments",
-              "settings": {
-                "connection": "conn://weaviate-conn"
-              },
-              "input": {
-                "collectionName": "flogodemo"
-              }
-            }
-          },
-          {
-            "id": "DeleteCollection",
-            "name": "DeleteCollection",
-            "description": "",
-            "activity": {
-              "ref": "#deleteCollection",
-              "settings": {
-                "connection": "conn://weaviate-conn"
-              },
-              "input": {
-                "collectionName": "flogodemo"
-              }
-            }
-          },
-          {
-            "id": "ListAfter",
-            "name": "ListAfter",
-            "description": "",
-            "activity": {
-              "ref": "#listCollections",
-              "settings": {
-                "connection": "conn://weaviate-conn"
-              }
-            }
-          },
-          {
-            "id": "LogSummary",
-            "name": "LogSummary",
-            "description": "",
-            "activity": {
-              "ref": "#log",
-              "input": {
-                "Log Level": "INFO",
-                "flowInfo": true,
-                "message": "=string.concat('Weaviate CRUD COMPLETE - count_before=', coerce.toString($activity[CountDocs1].count), ' count_after_delete=', coerce.toString($activity[CountDocs2].count))",
-                "logLevel": "INFO"
-              }
-            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUwfSwiSW5nZXN0RG9jcyI6eyJ4Ijo1MDAsInkiOjUwfSwiQ291bnREb2NzMSI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkh5YnJpZFNlYXJjaCI6eyJ4IjoxMjUwLCJ5Ijo2NTB9LCJHZXREb2MiOnsieCI6MTQ1MCwieSI6NzUwfSwiU2Nyb2xsRG9jcyI6eyJ4IjoxNjUwLCJ5Ijo4NTB9LCJEZWxldGVEb2NzIjp7IngiOjE4NTAsInkiOjk1MH0sIkNvdW50RG9jczIiOnsieCI6MjA1MCwieSI6MTA1MH0sIkRlbGV0ZUNvbGxlY3Rpb24iOnsieCI6MjI1MCwieSI6MTE1MH0sIkxpc3RBZnRlciI6eyJ4IjoyNDUwLCJ5IjoxMjUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoyNjUwLCJ5IjoxMzUwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUwfSwiSW5nZXN0RG9jcyI6eyJ4Ijo1MDAsInkiOjUwfSwiQ291bnREb2NzMSI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkh5YnJpZFNlYXJjaCI6eyJ4IjoxMjUwLCJ5Ijo2NTB9fQ==",
         "metadata": {
           "input": [],
           "output": [],
@@ -536,7 +377,7 @@
       "id": "flow:rag_cycle",
       "data": {
         "name": "rag_cycle",
-        "description": "RAG cycle with hybrid search: createCollection \u2192 ingestDocuments \u2192 ragQuery \u2192 hybridSearch \u2192 deleteCollection",
+        "description": "RAG cycle with hybrid search: createCollection → ingestDocuments → ragQuery → hybridSearch → deleteCollection",
         "links": [
           {
             "id": 1,
@@ -798,7 +639,7 @@
                 "timeoutSeconds": 30
               },
               "input": {
-                "inputText": "Flogo vector connector test \u2014 single embedding"
+                "inputText": "Flogo vector connector test — single embedding"
               }
             }
           },
@@ -856,7 +697,7 @@
       "id": "flow:rerank_test",
       "data": {
         "name": "rerank_test",
-        "description": "Test rerank activity \u2014 calls Cohere rerank API",
+        "description": "Test rerank activity — calls Cohere rerank API",
         "links": [
           {
             "id": 1,
@@ -973,57 +814,52 @@
       "value": "rerank-english-v3.0"
     },
     {
-      "name": "VectorDB.weaviate-conn.Connection_Name",
-      "type": "string",
-      "value": "weaviate-conn"
-    },
-    {
       "name": "VectorDB.weaviate-conn.DB_Provider",
       "type": "string",
       "value": "weaviate"
     },
     {
-      "name": "VectorDB.weaviate-conn.Host",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "weaviate-conn"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Host",
       "type": "string",
       "value": "localhost"
     },
     {
-      "name": "VectorDB.weaviate-conn.Port",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Port",
       "type": "float64",
       "value": 18080
     },
     {
-      "name": "VectorDB.weaviate-conn.API_Key",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].API_Key",
       "type": "string",
       "value": ""
     },
     {
-      "name": "VectorDB.weaviate-conn.Secure_Connection",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Secure_Connection",
       "type": "boolean",
       "value": false
     },
     {
-      "name": "VectorDB.weaviate-conn.Timeout_(seconds)",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Timeout_(seconds)",
       "type": "float64",
       "value": 30
     },
     {
-      "name": "VectorDB.weaviate-conn.Max_Retries",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Max_Retries",
       "type": "float64",
       "value": 3
     },
     {
-      "name": "VectorDB.weaviate-conn.Retry_Backoff_(ms)",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Retry_Backoff_(ms)",
       "type": "float64",
       "value": 500
     },
     {
-      "name": "VectorDB.weaviate-conn.HTTP_Scheme",
-      "type": "string",
-      "value": "http"
-    },
-    {
-      "name": "VectorDB.weaviate-conn.Configure_Embedding_Provider",
+      "name": "VectorDB.=$property[\"VectorDB_weaviate-conn_Connection_Name\"].Configure_Embedding_Provider",
       "type": "boolean",
       "value": false
     }
@@ -1035,22 +871,22 @@
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "weaviate-conn",
-        "host": "localhost",
-        "port": 18080,
-        "scheme": "http",
-        "apiKey": "",
-        "useTLS": false,
+        "name": "=$property[\"VectorDB.weaviate-conn.Connection_Name\"]",
+        "host": "=$property[\"VectorDB.weaviate-conn.Host\"]",
+        "port": "=$property[\"VectorDB.weaviate-conn.Port\"]",
+        "apiKey": "=$property[\"VectorDB.weaviate-conn.API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.weaviate-conn.Secure_Connection\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": 30,
-        "maxRetries": 3,
-        "retryBackoffMs": 500,
-        "enableEmbedding": false,
+        "timeoutSeconds": "=$property[\"VectorDB.weaviate-conn.Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.weaviate-conn.Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.weaviate-conn.Retry_Backoff_(ms)\"]",
+        "scheme": "http",
+        "enableEmbedding": "=$property[\"VectorDB.weaviate-conn.Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI"
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItd2VhdmlhdGUiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoidmVjdG9yZGItd2VhdmlhdGUgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L1ZlY3RvckRCIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJMaXN0QmVmb3JlIiwiaWQiOiJXZWF2aWF0ZSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9XZWF2aWF0ZSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -1090,7 +926,7 @@
                     }
                   }
                 },
-                "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 hybridSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection"
+                "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → hybridSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection"
               }
             },
             "/api/test/rag": {
@@ -1114,7 +950,7 @@
                     }
                   }
                 },
-                "description": "RAG cycle with hybrid search: createCollection \u2192 ingestDocuments \u2192 ragQuery \u2192 hybridSearch \u2192 deleteCollection"
+                "description": "RAG cycle with hybrid search: createCollection → ingestDocuments → ragQuery → hybridSearch → deleteCollection"
               }
             },
             "/api/test/embed": {
@@ -1162,7 +998,7 @@
                     }
                   }
                 },
-                "description": "Test rerank activity \u2014 calls Cohere rerank API"
+                "description": "Test rerank activity — calls Cohere rerank API"
               }
             }
           },
@@ -1170,6 +1006,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.3"
+    "flogoVersion": "2.26.5"
   }
 }

@@ -1,0 +1,1249 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/upsertDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/vectorSearch",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/hybridSearch",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/deleteCollection",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/activity/rerank",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/connector"
+  ],
+  "name": "activespaces-gateway-suite",
+  "description": "Comprehensive test suite for the GATEWAY (pure-Go) ActiveSpaces connector: all 14 activities across 4 REST endpoints against the vector gateway + Ollama.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "REST trigger exposing one endpoint per activity group",
+      "settings": {
+        "port": 19091,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "SuiteTrigger",
+      "handlers": [
+        {
+          "description": "Exercises collection + document + search activities via the gateway",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/gateway/crud",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:crud"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "crud"
+        },
+        {
+          "description": "Generate an embedding via Ollama",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/gateway/embed",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:embed"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "embed"
+        },
+        {
+          "description": "Ingest text (embedded via Ollama) then RAG-query via the gateway",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/gateway/rag",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:rag"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "rag"
+        },
+        {
+          "description": "Rerank documents via a cross-encoder endpoint (set apiKey to use)",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/gateway/rerank",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:rerank"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "rerank"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:crud",
+      "data": {
+        "name": "crud",
+        "description": "Exercises collection + document + search activities via the gateway",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateColl",
+            "type": "label",
+            "label": "StartActivity to CreateColl"
+          },
+          {
+            "id": 2,
+            "from": "CreateColl",
+            "to": "ListColls",
+            "type": "label",
+            "label": "CreateColl to ListColls"
+          },
+          {
+            "id": 3,
+            "from": "ListColls",
+            "to": "Upsert",
+            "type": "label",
+            "label": "ListColls to Upsert"
+          },
+          {
+            "id": 4,
+            "from": "Upsert",
+            "to": "CountAll",
+            "type": "label",
+            "label": "Upsert to CountAll"
+          },
+          {
+            "id": 5,
+            "from": "CountAll",
+            "to": "CountAnimals",
+            "type": "label",
+            "label": "CountAll to CountAnimals"
+          },
+          {
+            "id": 6,
+            "from": "CountAnimals",
+            "to": "GetDoc",
+            "type": "label",
+            "label": "CountAnimals to GetDoc"
+          },
+          {
+            "id": 7,
+            "from": "GetDoc",
+            "to": "Scroll",
+            "type": "label",
+            "label": "GetDoc to Scroll"
+          },
+          {
+            "id": 8,
+            "from": "Scroll",
+            "to": "Search",
+            "type": "label",
+            "label": "Scroll to Search"
+          },
+          {
+            "id": 9,
+            "from": "Search",
+            "to": "Hybrid",
+            "type": "label",
+            "label": "Search to Hybrid"
+          },
+          {
+            "id": 10,
+            "from": "Hybrid",
+            "to": "DelDocs",
+            "type": "label",
+            "label": "Hybrid to DelDocs"
+          },
+          {
+            "id": 11,
+            "from": "DelDocs",
+            "to": "CountAfter",
+            "type": "label",
+            "label": "DelDocs to CountAfter"
+          },
+          {
+            "id": 12,
+            "from": "CountAfter",
+            "to": "DelColl",
+            "type": "label",
+            "label": "CountAfter to DelColl"
+          },
+          {
+            "id": 13,
+            "from": "DelColl",
+            "to": "Return",
+            "type": "label",
+            "label": "DelColl to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateColl",
+            "name": "CreateColl",
+            "description": "",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "dimensions": 4,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "ListColls",
+            "name": "ListColls",
+            "description": "",
+            "activity": {
+              "ref": "#listCollections",
+              "settings": {
+                "connection": "conn://as-gateway"
+              }
+            }
+          },
+          {
+            "id": "Upsert",
+            "name": "Upsert",
+            "description": "",
+            "activity": {
+              "ref": "#upsertDocuments",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "doc-1",
+                      "content": "The quick brown fox jumps",
+                      "vector": [
+                        0.1,
+                        0.2,
+                        0.3,
+                        0.4
+                      ],
+                      "category": "animals"
+                    },
+                    {
+                      "id": "doc-2",
+                      "content": "Deep learning neural networks",
+                      "vector": [
+                        0.9,
+                        0.1,
+                        0.05,
+                        0.1
+                      ],
+                      "category": "tech"
+                    },
+                    {
+                      "id": "doc-3",
+                      "content": "A lazy dog sleeps all day",
+                      "vector": [
+                        0.15,
+                        0.22,
+                        0.31,
+                        0.38
+                      ],
+                      "category": "animals"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountAll",
+            "name": "CountAll",
+            "description": "",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite"
+              }
+            }
+          },
+          {
+            "id": "CountAnimals",
+            "name": "CountAnimals",
+            "description": "",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "filters": {
+                  "mapping": {
+                    "category": "animals"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "GetDoc",
+            "name": "GetDoc",
+            "description": "",
+            "activity": {
+              "ref": "#getDocument",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "documentId": "doc-1"
+              }
+            }
+          },
+          {
+            "id": "Scroll",
+            "name": "Scroll",
+            "description": "",
+            "activity": {
+              "ref": "#scrollDocuments",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "limit": 10,
+                "offset": "",
+                "withVectors": false
+              }
+            }
+          },
+          {
+            "id": "Search",
+            "name": "Search",
+            "description": "",
+            "activity": {
+              "ref": "#vectorSearch",
+              "settings": {
+                "connection": "conn://as-gateway",
+                "defaultTopK": 10
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "withVectors": false,
+                "skipPayload": false,
+                "queryVector": {
+                  "mapping": [
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "Hybrid",
+            "name": "Hybrid",
+            "description": "",
+            "activity": {
+              "ref": "#hybridSearch",
+              "settings": {
+                "connection": "conn://as-gateway",
+                "defaultTopK": 10
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "queryText": "fox",
+                "topK": 3,
+                "scoreThreshold": 0,
+                "alpha": 0.5,
+                "skipPayload": false,
+                "queryVector": {
+                  "mapping": [
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "DelDocs",
+            "name": "DelDocs",
+            "description": "",
+            "activity": {
+              "ref": "#deleteDocuments",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite",
+                "ids": {
+                  "mapping": [
+                    "doc-2"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "CountAfter",
+            "name": "CountAfter",
+            "description": "",
+            "activity": {
+              "ref": "#countDocuments",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite"
+              }
+            }
+          },
+          {
+            "id": "DelColl",
+            "name": "DelColl",
+            "description": "",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite"
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "crud",
+                      "collection": "gateway_suite",
+                      "list_total": "=$activity[ListColls].totalCount",
+                      "upserted": "=$activity[Upsert].upsertedCount",
+                      "count_all": "=$activity[CountAll].count",
+                      "count_animals": "=$activity[CountAnimals].count",
+                      "get_found": "=$activity[GetDoc].found",
+                      "get_document": "=$activity[GetDoc].document",
+                      "scroll_next_offset": "=$activity[Scroll].nextOffset",
+                      "scroll_documents": "=$activity[Scroll].documents",
+                      "search_total": "=$activity[Search].totalCount",
+                      "search_results": "=$activity[Search].results",
+                      "hybrid_total": "=$activity[Hybrid].totalCount",
+                      "hybrid_results": "=$activity[Hybrid].results",
+                      "deleted": "=$activity[DelDocs].deletedCount",
+                      "count_after_delete": "=$activity[CountAfter].count"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjYwLCJ5IjoxMjB9LCJDcmVhdGVDb2xsIjp7IngiOjI2MCwieSI6MjkwfSwiTGlzdENvbGxzIjp7IngiOjQ2MCwieSI6MTIwfSwiVXBzZXJ0Ijp7IngiOjY2MCwieSI6MjkwfSwiQ291bnRBbGwiOnsieCI6ODYwLCJ5IjoxMjB9LCJDb3VudEFuaW1hbHMiOnsieCI6MTA2MCwieSI6MjkwfSwiR2V0RG9jIjp7IngiOjEyNjAsInkiOjEyMH0sIlNjcm9sbCI6eyJ4IjoxNDYwLCJ5IjoyOTB9LCJTZWFyY2giOnsieCI6MTY2MCwieSI6MTIwfSwiSHlicmlkIjp7IngiOjE4NjAsInkiOjI5MH0sIkRlbERvY3MiOnsieCI6MjA2MCwieSI6MTIwfSwiQ291bnRBZnRlciI6eyJ4IjoyMjYwLCJ5IjoyOTB9LCJEZWxDb2xsIjp7IngiOjI0NjAsInkiOjEyMH0sIlJldHVybiI6eyJ4IjoyNjYwLCJ5IjoyOTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:embed",
+      "data": {
+        "name": "embed",
+        "description": "Generate an embedding via Ollama",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Embed",
+            "type": "label",
+            "label": "StartActivity to Embed"
+          },
+          {
+            "id": 2,
+            "from": "Embed",
+            "to": "Return",
+            "type": "label",
+            "label": "Embed to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Embed",
+            "name": "Embed",
+            "description": "",
+            "activity": {
+              "ref": "#createEmbeddings",
+              "settings": {
+                "connection": "conn://as-gateway",
+                "useConnectorEmbedding": false,
+                "provider": "Ollama",
+                "baseURL": "http://localhost:11434",
+                "model": "nomic-embed-text",
+                "dimensions": 768,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "inputText": "The quick brown fox jumps over the lazy dog"
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "embed",
+                      "success": "=$activity[Embed].success",
+                      "dimensions": "=$activity[Embed].dimensions",
+                      "tokens_used": "=$activity[Embed].tokensUsed",
+                      "error": "=$activity[Embed].error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjYwLCJ5IjoxMjB9LCJFbWJlZCI6eyJ4IjoyNjAsInkiOjI5MH0sIlJldHVybiI6eyJ4Ijo0NjAsInkiOjEyMH19",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:rag",
+      "data": {
+        "name": "rag",
+        "description": "Ingest text (embedded via Ollama) then RAG-query via the gateway",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CreateRagColl",
+            "type": "label",
+            "label": "StartActivity to CreateRagColl"
+          },
+          {
+            "id": 2,
+            "from": "CreateRagColl",
+            "to": "Ingest",
+            "type": "label",
+            "label": "CreateRagColl to Ingest"
+          },
+          {
+            "id": 3,
+            "from": "Ingest",
+            "to": "Rag",
+            "type": "label",
+            "label": "Ingest to Rag"
+          },
+          {
+            "id": 4,
+            "from": "Rag",
+            "to": "DelRagColl",
+            "type": "label",
+            "label": "Rag to DelRagColl"
+          },
+          {
+            "id": 5,
+            "from": "DelRagColl",
+            "to": "Return",
+            "type": "label",
+            "label": "DelRagColl to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CreateRagColl",
+            "name": "CreateRagColl",
+            "description": "",
+            "activity": {
+              "ref": "#createCollection",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite_rag",
+                "dimensions": 768,
+                "distanceMetric": "cosine",
+                "onDisk": false,
+                "replicationFactor": 1
+              }
+            }
+          },
+          {
+            "id": "Ingest",
+            "name": "Ingest",
+            "description": "",
+            "activity": {
+              "ref": "#ingestDocuments",
+              "settings": {
+                "connection": "conn://as-gateway",
+                "enableChunking": false,
+                "chunkStrategy": "paragraph",
+                "chunkSize": 1000,
+                "chunkOverlap": 200,
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "Ollama",
+                "embeddingBaseURL": "http://localhost:11434",
+                "embeddingModel": "nomic-embed-text",
+                "embeddingDimensions": 768,
+                "contentField": "text",
+                "timeoutSeconds": 60,
+                "embeddingBatchSize": 100
+              },
+              "input": {
+                "collectionName": "gateway_suite_rag",
+                "documents": {
+                  "mapping": [
+                    {
+                      "id": "a1",
+                      "text": "Cheetahs are the fastest land animals, reaching 120 km/h.",
+                      "metadata": {
+                        "topic": "animals"
+                      }
+                    },
+                    {
+                      "id": "a2",
+                      "text": "The Go programming language compiles to fast native machine code.",
+                      "metadata": {
+                        "topic": "tech"
+                      }
+                    },
+                    {
+                      "id": "a3",
+                      "text": "Peregrine falcons dive at over 300 km/h, the fastest of any animal.",
+                      "metadata": {
+                        "topic": "animals"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "Rag",
+            "name": "Rag",
+            "description": "",
+            "activity": {
+              "ref": "#ragQuery",
+              "settings": {
+                "connection": "conn://as-gateway",
+                "useConnectorEmbedding": false,
+                "embeddingProvider": "Ollama",
+                "embeddingBaseURL": "http://localhost:11434",
+                "embeddingModel": "nomic-embed-text",
+                "embeddingDimensions": 768,
+                "defaultTopK": 5,
+                "scoreThreshold": 0,
+                "contentField": "text",
+                "contextFormat": "numbered",
+                "timeoutSeconds": 30,
+                "useHybridSearch": false,
+                "hybridAlpha": 0.5,
+                "enableLLMGenerate": false,
+                "llmProvider": "Ollama",
+                "llmBaseURL": "http://localhost:11434",
+                "llmModel": "llama3.1:8b",
+                "systemPrompt": "You are a helpful assistant. Answer the question using only the provided context. If the context does not contain enough information, say so.",
+                "maxTokens": 1024,
+                "temperature": 0.1
+              },
+              "input": {
+                "queryText": "Which animal is the fastest?",
+                "collectionName": "gateway_suite_rag",
+                "topK": 3
+              }
+            }
+          },
+          {
+            "id": "DelRagColl",
+            "name": "DelRagColl",
+            "description": "",
+            "activity": {
+              "ref": "#deleteCollection",
+              "settings": {
+                "connection": "conn://as-gateway"
+              },
+              "input": {
+                "collectionName": "gateway_suite_rag"
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "rag",
+                      "ingested": "=$activity[Ingest].ingestedCount",
+                      "ingest_dimensions": "=$activity[Ingest].dimensions",
+                      "rag_total_found": "=$activity[Rag].totalFound",
+                      "rag_formatted_context": "=$activity[Rag].formattedContext",
+                      "rag_source_documents": "=$activity[Rag].sourceDocuments",
+                      "ingest_error": "=$activity[Ingest].error",
+                      "rag_error": "=$activity[Rag].error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjYwLCJ5IjoxMjB9LCJDcmVhdGVSYWdDb2xsIjp7IngiOjI2MCwieSI6MjkwfSwiSW5nZXN0Ijp7IngiOjQ2MCwieSI6MTIwfSwiUmFnIjp7IngiOjY2MCwieSI6MjkwfSwiRGVsUmFnQ29sbCI6eyJ4Ijo4NjAsInkiOjEyMH0sIlJldHVybiI6eyJ4IjoxMDYwLCJ5IjoyOTB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:rerank",
+      "data": {
+        "name": "rerank",
+        "description": "Rerank documents via a cross-encoder endpoint (set apiKey to use)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Rerank",
+            "type": "label",
+            "label": "StartActivity to Rerank"
+          },
+          {
+            "id": 2,
+            "from": "Rerank",
+            "to": "Return",
+            "type": "label",
+            "label": "Rerank to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Rerank",
+            "name": "Rerank",
+            "description": "",
+            "activity": {
+              "ref": "#rerank",
+              "settings": {
+                "rerankEndpoint": "https://api.cohere.ai/v2/rerank",
+                "apiKey": "",
+                "model": "rerank-english-v3.0",
+                "topN": 3,
+                "timeoutSeconds": 30
+              },
+              "input": {
+                "query": "the fastest animal",
+                "documents": {
+                  "mapping": [
+                    "A fox runs quickly",
+                    "A lazy dog sleeps",
+                    "Cheetahs are the fastest land animal"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "test": "rerank",
+                      "success": "=$activity[Rerank].success",
+                      "ranked_documents": "=$activity[Rerank].rankedDocuments",
+                      "error": "=$activity[Rerank].error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjYwLCJ5IjoxMjB9LCJSZXJhbmsiOnsieCI6MjYwLCJ5IjoyOTB9LCJSZXR1cm4iOnsieCI6NDYwLCJ5IjoxMjB9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Connection_Name",
+      "type": "string",
+      "value": "as-gateway"
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Gateway_Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Gateway_Port",
+      "type": "float64",
+      "value": 8081
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.API_Key",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Secure_Connection",
+      "type": "boolean",
+      "value": false
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Timeout_(seconds)",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Max_Retries",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": 500
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Grid_Name",
+      "type": "string",
+      "value": "_default"
+    },
+    {
+      "name": "ActiveSpaces Gateway.as-gateway.Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": false
+    }
+  ],
+  "connections": {
+    "as-gateway": {
+      "id": "as-gateway",
+      "name": "as-gateway",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "=$property[\"ActiveSpaces Gateway.as-gateway.Connection_Name\"]",
+        "host": "=$property[\"ActiveSpaces Gateway.as-gateway.Gateway_Host\"]",
+        "port": "=$property[\"ActiveSpaces Gateway.as-gateway.Gateway_Port\"]",
+        "apiKey": "=$property[\"ActiveSpaces Gateway.as-gateway.API_Key\"]",
+        "useTLS": "=$property[\"ActiveSpaces Gateway.as-gateway.Secure_Connection\"]",
+        "tlsInsecureSkipVerify": false,
+        "tlsServerName": "",
+        "caCert": "",
+        "clientCert": "",
+        "clientKey": "",
+        "timeoutSeconds": "=$property[\"ActiveSpaces Gateway.as-gateway.Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"ActiveSpaces Gateway.as-gateway.Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"ActiveSpaces Gateway.as-gateway.Retry_Backoff_(ms)\"]",
+        "gridName": "=$property[\"ActiveSpaces Gateway.as-gateway.Grid_Name\"]",
+        "enableEmbedding": "=$property[\"ActiveSpaces Gateway.as-gateway.Configure_Embedding_Provider\"]",
+        "embeddingProvider": "OpenAI",
+        "embeddingAPIKey": "",
+        "embeddingBaseURL": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXQiLCJpZCI6ImFjdGl2ZXNwYWNlcy1nYXRld2F5IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiQWN0aXZlU3BhY2VzIEdhdGV3YXkgVmVjdG9yREIgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L2FjdGl2ZXNwYWNlcy1nYXRld2F5IiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "19091",
+        "spec": {
+          "name": "activespaces-gateway-suite",
+          "version": "1.0.0"
+        },
+        "title": "SuiteTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "activespaces-gateway-suite",
+            "version": "1.0.0",
+            "description": "REST trigger exposing one endpoint per activity group"
+          },
+          "paths": {
+            "/api/gateway/crud": {
+              "post": {
+                "summary": "crud",
+                "operationId": "post_api_gateway_crud",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Exercises collection + document + search activities via the gateway",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/api/gateway/embed": {
+              "post": {
+                "summary": "embed",
+                "operationId": "post_api_gateway_embed",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Generate an embedding via Ollama",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/api/gateway/rag": {
+              "post": {
+                "summary": "rag",
+                "operationId": "post_api_gateway_rag",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Ingest text (embedded via Ollama) then RAG-query via the gateway",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/api/gateway/rerank": {
+              "post": {
+                "summary": "rerank",
+                "operationId": "post_api_gateway_rerank",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Rerank documents via a cross-encoder endpoint (set apiKey to use)",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            }
+          },
+          "definitions": {}
+        }
+      }
+    ],
+    "flogoVersion": "2.26.5"
+  }
+}

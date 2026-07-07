@@ -1,0 +1,74 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/connector"
+  ],
+  "name": "demo-as",
+  "description": "",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [],
+  "resources": [
+    {
+      "id": "flow:New_flow",
+      "data": {
+        "name": "New_flow",
+        "description": "",
+        "links": [],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {
+    "736e3ee5-4131-4cda-b4f1-93debf0de79e": {
+      "id": "736e3ee5-4131-4cda-b4f1-93debf0de79e",
+      "name": "demo-as-gateway",
+      "ref": "#connector",
+      "isGlobal": false,
+      "settings": {
+        "name": "demo-as-gateway",
+        "host": "localhost",
+        "port": 8081,
+        "apiKey": "",
+        "useTLS": false,
+        "tlsInsecureSkipVerify": false,
+        "tlsServerName": "",
+        "caCert": "",
+        "clientCert": "",
+        "clientKey": "",
+        "timeoutSeconds": 30,
+        "maxRetries": 3,
+        "retryBackoffMs": 500,
+        "gridName": "_default",
+        "enableEmbedding": false,
+        "embeddingProvider": "OpenAI",
+        "embeddingAPIKey": "",
+        "embeddingBaseURL": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXQiLCJpZCI6IkFjdGl2ZVNwYWNlcyBHYXRld2F5IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiQWN0aXZlU3BhY2VzIEdhdGV3YXkgVmVjdG9yREIgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L0FjdGl2ZVNwYWNlcyBHYXRld2F5IiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.5"
+  }
+}
