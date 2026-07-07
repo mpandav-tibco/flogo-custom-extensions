@@ -17,7 +17,7 @@
 # separate step (the Flogo toolchain generates the engine) — see README.md
 # ("Building a native Flogo app").
 
-ARG AS_IMAGE=mpandav/as-dev-ftlserver:5.2.0
+ARG AS_IMAGE=<>/as-dev-ftlserver:5.2.0
 FROM --platform=linux/amd64 ${AS_IMAGE}
 
 # The AS SDK base image (Ubuntu 24.04) ships without a Go toolchain or a C
