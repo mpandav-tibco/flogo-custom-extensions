@@ -8,6 +8,7 @@ A family of purpose-built VectorDB connectors for RAG and agentic AI pipelines. 
 
 | Connector | Provider | Transport | Deployment |
 |-----------|----------|-----------|------------|
+| [VectorDB/activespaces](VectorDB/activespaces/README.md) | TIBCO ActiveSpaces 5.2 | REST gateway / native (CGO) | Self-hosted |
 | [VectorDB/qdrant](VectorDB/qdrant/README.md) | Qdrant | REST + gRPC | Self-hosted / Cloud |
 | [VectorDB/weaviate](VectorDB/weaviate/README.md) | Weaviate | REST / GraphQL | Self-hosted / Cloud |
 | [VectorDB/chroma](VectorDB/chroma/README.md) | Chroma | REST v2 | Self-hosted |

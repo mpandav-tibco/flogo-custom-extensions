@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- document stack -->
+  <rect x="7" y="18" width="16" height="20" rx="2" fill="#E3EAF6" stroke="#546E7A" stroke-width="1"/>
+  <rect x="10" y="15" width="16" height="20" rx="2" fill="#D1DCF2" stroke="#546E7A" stroke-width="1"/>
+  <rect x="13" y="12" width="16" height="20" rx="2" fill="#BECFEF" stroke="#78909C" stroke-width="1"/>
+  <line x1="16" y1="18" x2="26" y2="18" stroke="#7986CB" stroke-width="1"/>
+  <line x1="16" y1="21" x2="26" y2="21" stroke="#7986CB" stroke-width="1"/>
+  <line x1="16" y1="24" x2="22" y2="24" stroke="#7986CB" stroke-width="1"/>
+  <!-- magnifier -->
+  <circle cx="34" cy="18" r="8" fill="none" stroke="#7C4DFF" stroke-width="2.5"/>
+  <line x1="40" y1="24" x2="45" y2="29" stroke="#7C4DFF" stroke-width="3" stroke-linecap="round"/>
+  <!-- spark inside magnifier -->
+  <circle cx="34" cy="18" r="3" fill="#7C4DFF" fill-opacity="0.5"/>
+  <text x="24" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="5.5" fill="#7C4DFF">RAG</text>
+</svg>
