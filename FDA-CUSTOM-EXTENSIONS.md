@@ -199,7 +199,7 @@ cd /Users/milindpandav/.vscode/extensions/tibco.flogo-2.26.3-2442/bin
 Config file: `.vscode/flogo-custom-ext-fda-config.json`  
 Generator: `/tmp/gen-all-extensions-config.py`
 
-### Contributions (11)
+### Contributions (12)
 | ID | Module |
 |---|---|
 | VectorDB | `github.com/mpandav-tibco/flogo-extensions/vectordb` |
@@ -213,6 +213,7 @@ Generator: `/tmp/gen-all-extensions-config.py`
 | XMLFilter | `github.com/milindpandav/activity/xmlfilter` |
 | PostgresListener | `github.com/mpandav/trigger/postgreslistener` |
 | MySQLBinlogListener | `github.com/mpandav-tibco/flogo-custom-extensions/trigger/mysql-binlog-listener` |
+| RestFireForget | `github.com/mpandav-tibco/flogo-custom-extensions/activity/rest-fire-forget` |
 
 ### Connections (1)
 | Name | Connector |
@@ -230,7 +231,7 @@ Generator: `/tmp/gen-all-extensions-config.py`
 | trig_postgreslistener | PostgreSQL LISTEN/NOTIFY |
 | trig_mysql_binlog | MySQL Binlog CDC |
 
-### Activities (25)
+### Activities (26)
 | Group | Activities |
 |---|---|
 | vectordb | ragQuery, ingestDocuments, createCollection, deleteCollection, listCollections, vectorSearch, hybridSearch, upsertDocuments, deleteDocuments, getDocument, scrollDocuments, countDocuments, createEmbeddings, rerank |
@@ -242,6 +243,7 @@ Generator: `/tmp/gen-all-extensions-config.py`
 | templateengine | tibco-template-engine |
 | logging | tibco-write-log |
 | xml | xmlfilter |
+| http | rest-fire-forget |
 
 ---
 

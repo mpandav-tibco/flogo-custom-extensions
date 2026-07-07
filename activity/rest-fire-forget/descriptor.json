@@ -1,0 +1,119 @@
+{
+    "name": "rest-fire-forget",
+    "type": "flogo:activity",
+    "version": "1.0.0",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/rest-fire-forget",
+    "title": "REST Fire & Forget",
+    "author": "mpandav",
+    "description": "Send an HTTP request to an endpoint without waiting for the response (fire-and-forget). The flow continues immediately after the request is dispatched. Supports all HTTP methods (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS).",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/activity/rest-fire-forget",
+    "display": {
+        "category": "rest-fire-forget",
+        "visible": true,
+        "smallIcon": "icons/rest-fire-forget.svg",
+        "largeIcon": "icons/rest-fire-forget.svg",
+        "description": "Fire-and-forget HTTP request — dispatch and continue without waiting for a response"
+    },
+    "settings": [
+        {
+            "name": "method",
+            "type": "string",
+            "required": true,
+            "value": "POST",
+            "allowed": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "HEAD",
+                "OPTIONS"
+            ],
+            "display": {
+                "name": "HTTP Method",
+                "description": "The HTTP method used for the request.",
+                "type": "dropdown",
+                "selection": "single"
+            }
+        },
+        {
+            "name": "timeout",
+            "type": "integer",
+            "value": 30000,
+            "display": {
+                "name": "Send Timeout (ms)",
+                "description": "Maximum time the background request may run before it is abandoned. Does NOT delay the flow. 0 = 30000 ms default.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "skipTlsVerify",
+            "type": "boolean",
+            "value": false,
+            "display": {
+                "name": "Skip TLS Verification",
+                "description": "Disable TLS certificate verification. Insecure — use only for development / self-signed certs."
+            }
+        },
+        {
+            "name": "maxConcurrentRequests",
+            "type": "integer",
+            "value": 1000,
+            "display": {
+                "name": "Max Concurrent Requests",
+                "description": "Upper bound on in-flight fire-and-forget requests. Excess requests are dropped instead of blocking the flow. 0 = 1000 default."
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "name": "url",
+            "type": "string",
+            "required": true,
+            "display": {
+                "name": "URL",
+                "description": "The URL of the endpoint the request is sent to, e.g. https://host/path.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "queryParams",
+            "type": "complex_object",
+            "display": {
+                "name": "Query Params",
+                "description": "The query parameters for the request",
+                "type": "params",
+                "schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"parameterName\":{\"type\":\"string\"},\"type\":{\"type\":{\"enum\":[\"string\",\"number\",\"boolean\",\"object\"]}},\"repeating\":{\"type\":{\"enum\":[\"true\",\"false\"]}},\"required\":{\"type\":{\"enum\":[\"true\",\"false\"]}}}}}",
+                "mappable": true
+            }
+        },
+        {
+            "name": "headers",
+            "type": "complex_object",
+            "display": {
+                "name": "Request Headers",
+                "description": "The headers you want to send",
+                "type": "params",
+                "schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"parameterName\":{\"type\":\"string\"},\"type\":{\"type\":{\"enum\":[\"string\",\"number\",\"boolean\"]}},\"repeating\":{\"type\":{\"enum\":[\"true\",\"false\"]}},\"required\":{\"type\":{\"enum\":[\"true\",\"false\"]}}}}}",
+                "mappable": true
+            },
+            "value": {
+                "metadata": "",
+                "value": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+            }
+        },
+        {
+            "name": "body",
+            "type": "complex_object",
+            "display": {
+                "name": "Request Body",
+                "description": "An example JSON payload to send to the endpoint (application/json content type). Shown only for POST/PUT/PATCH/DELETE (controlled by activity.js).",
+                "type": "texteditor",
+                "syntax": "json",
+                "mappable": true,
+                "visible": false
+            }
+        }
+    ],
+    "outputs": []
+}

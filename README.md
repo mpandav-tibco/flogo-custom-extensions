@@ -51,6 +51,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [JSON Schema Transform](activity/schema-transform/jsonschematransform/) | 1.0.0 | Schema Transform | Transform JSON Schema to XSD and Avro formats |
 | [XSD Schema Transform](activity/schema-transform/xsdschematransform/) | 1.0.0 | Schema Transform | Transform XSD schemas to JSON Schema and Avro formats |
 | [SOAP Client](activity/soapclient/) | 1.0.0 | Web Services | SOAP 1.1/1.2 client with WSDL support, JSON/XML modes, mutual TLS, WS-Security headers, OpenTelemetry tracing, and Flogo retry/circuit-breaker |
+| [REST Fire & Forget](activity/rest-fire-forget/) | 1.0.0 | HTTP | Asynchronous fire-and-forget HTTP client — dispatches a request (any method) with mappable headers, query params, and JSON body, then returns immediately without waiting for the response; bounded concurrency and a hardened HTTP client |
 
 ### 🎯 Triggers
 
@@ -89,6 +90,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Kafka Stream Demo](examples/kafka-stream/) | Kafka Stream Aggregate Trigger, Kafka Stream Filter Trigger, Kafka Stream Join Trigger, Kafka Stream Split Trigger | Filter hot sensor readings by temperature threshold, compute per-device averages over a tumbling time window, join readings with alert thresholds across two topics, and route messages to branches via content-based split |
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 | [SOAP Client Demo](examples/soap-client/) | SOAP Client Activity | Timer-triggered SOAP 1.1 call to a public calculator service in both JSON mode and XML mode with namespace attributes |
+| [REST Fire & Forget Demo](examples/rest-fire-forget/) | REST Fire & Forget Activity | REST-triggered flow that dispatches a fire-and-forget HTTP POST to a bundled mock receiver service and returns immediately without waiting for the response |
 | [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (TIBCO ActiveSpaces, Qdrant, Weaviate, Chroma, Milvus, pgvector, Pinecone, Redis, Elasticsearch, OpenSearch, Azure AI Search, LanceDB) | End-to-end RAG demo across all 12 dedicated connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
 
 ## 🤝 Contributing
