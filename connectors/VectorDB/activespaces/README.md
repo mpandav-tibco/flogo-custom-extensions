@@ -4,7 +4,7 @@ Two Flogo connectors for the **TIBCO ActiveSpaces 5.2 vector store**, exposing t
 14-activity surface** and the same `VectorDBClient` interface. They differ only in **how** they
 reach the grid, so you can pick the right trade-off for your deployment without changing your flows.
 
-| | [`pureGo/`](../activespaces-gateway/README.md) | [`nativeAS/`](../activespaces-native/README.md) |
+| | [`activespaces-gateway/`](../activespaces-gateway/README.md) | [`activespaces-native/`](../activespaces-native/README.md) |
 |---|---|---|
 | **How it reaches the grid** | HTTP/JSON → a small **vector gateway** container that links AS natively | **Direct, in-process** via the native **tibdg** client (CGO) |
 | **Data path** | `app ──HTTP──▶ gateway ──native──▶ grid` | `app ──tibdg (.so)──▶ grid` |
@@ -18,17 +18,17 @@ reach the grid, so you can pick the right trade-off for your deployment without 
 Both connectors implement identical activities and mappings, so an app can switch between them
 by changing only the connection (and rebuilding). See each connector's README for details:
 
-- **[`pureGo/`](../activespaces-gateway/README.md)** — portable, gateway-based. Start here unless you specifically
+- **[`activespaces-gateway/`](../activespaces-gateway/README.md)** — portable, gateway-based. Start here unless you specifically
   need in-process native access. The gateway (a [separate repository](https://github.com/mpandav-tibco/activespaces-vector-gateway))
   isolates all native concerns in a container, so the Flogo app itself builds and runs anywhere.
-- **[`nativeAS/`](../activespaces-native/README.md)** — native, in-process, lowest latency, no gateway — at the
+- **[`activespaces-native/`](../activespaces-native/README.md)** — native, in-process, lowest latency, no gateway — at the
   cost of a linux/amd64 + AS-SDK build/runtime.
 
 ## Which should I use?
 
-- **Use `pureGo`** for portability, simplest app builds, and when you can run one small gateway
+- **Use `activespaces-gateway`** for portability, simplest app builds, and when you can run one small gateway
   container next to the grid (or share one across many apps). This is the recommended default.
-- **Use `nativeAS`** when you want to eliminate the gateway hop, are already deploying on
+- **Use `activespaces-native`** when you want to eliminate the gateway hop, are already deploying on
   linux/amd64 with the ActiveSpaces SDK available, and want the lowest latency.
 
 ## Activity surface (both)
