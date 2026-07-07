@@ -5,28 +5,79 @@
   "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/scrollDocuments",
   "title": "Scroll Documents",
   "description": "Paginate through documents in an Azure AI Search index.",
-  "display": {"category": "azureaisearch", "visible": true},
+  "display": {
+    "category": "azureaisearch",
+    "visible": true,
+    "smallIcon": "icons/scroll.svg"
+  },
   "settings": [
     {
-      "name": "connection", "type": "connection", "required": true,
-      "display": {"name": "Azure AI Search Connection", "type": "connection"},
-      "allowed": ["azureaisearch-connector"]
+      "name": "connection",
+      "type": "connection",
+      "required": true,
+      "display": {
+        "name": "Azure AI Search Connection",
+        "type": "connection"
+      },
+      "allowed": [
+        "azureaisearch-connector"
+      ]
     },
-    {"name": "defaultCollection", "type": "string", "required": false}
+    {
+      "name": "defaultCollection",
+      "type": "string",
+      "required": false
+    }
   ],
   "input": [
-    {"name": "collectionName", "type": "string"},
-    {"name": "limit", "type": "integer", "value": 100},
-    {"name": "offset", "type": "string"},
-    {"name": "filters", "type": "object"},
-    {"name": "withVectors", "type": "boolean", "value": false}
+    {
+      "name": "collectionName",
+      "type": "string"
+    },
+    {
+      "name": "limit",
+      "type": "integer",
+      "value": 100
+    },
+    {
+      "name": "offset",
+      "type": "string"
+    },
+    {
+      "name": "filters",
+      "type": "object"
+    },
+    {
+      "name": "withVectors",
+      "type": "boolean",
+      "value": false
+    }
   ],
   "output": [
-    {"name": "success", "type": "boolean"},
-    {"name": "documents", "type": "array"},
-    {"name": "nextOffset", "type": "string"},
-    {"name": "total", "type": "integer"},
-    {"name": "duration", "type": "string"},
-    {"name": "error", "type": "string"}
-  ]
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "documents",
+      "type": "array"
+    },
+    {
+      "name": "nextOffset",
+      "type": "string"
+    },
+    {
+      "name": "total",
+      "type": "integer"
+    },
+    {
+      "name": "duration",
+      "type": "string"
+    },
+    {
+      "name": "error",
+      "type": "string"
+    }
+  ],
+  "image": "icons/scroll.svg"
 }

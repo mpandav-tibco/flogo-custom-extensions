@@ -102,7 +102,13 @@
             "type": "string",
             "required": false,
             "value": "OpenAI",
-            "allowed": ["OpenAI", "Azure OpenAI", "Cohere", "Ollama", "Custom"],
+            "allowed": [
+                "OpenAI",
+                "Azure OpenAI",
+                "Cohere",
+                "Ollama",
+                "Custom"
+            ],
             "display": {
                 "name": "Embedding Provider",
                 "description": "AI service used to generate vector embeddings",

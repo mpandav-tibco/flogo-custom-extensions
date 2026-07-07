@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <!-- central node -->
+  <circle cx="24" cy="24" r="5" fill="#7C4DFF"/>
+  <!-- surrounding nodes -->
+  <circle cx="10" cy="14" r="3" fill="#5C6BC0"/>
+  <circle cx="38" cy="14" r="3" fill="#5C6BC0"/>
+  <circle cx="10" cy="34" r="3" fill="#5C6BC0"/>
+  <circle cx="38" cy="34" r="3" fill="#5C6BC0"/>
+  <circle cx="24" cy="7"  r="3" fill="#5C6BC0"/>
+  <circle cx="24" cy="41" r="3" fill="#5C6BC0"/>
+  <!-- connections -->
+  <line x1="24" y1="19" x2="13" y2="16" stroke="#7C4DFF" stroke-width="1.2" stroke-opacity="0.7"/>
+  <line x1="24" y1="19" x2="35" y2="16" stroke="#7C4DFF" stroke-width="1.2" stroke-opacity="0.7"/>
+  <line x1="24" y1="29" x2="13" y2="32" stroke="#7C4DFF" stroke-width="1.2" stroke-opacity="0.7"/>
+  <line x1="24" y1="29" x2="35" y2="32" stroke="#7C4DFF" stroke-width="1.2" stroke-opacity="0.7"/>
+  <line x1="24" y1="19" x2="24" y2="10"  stroke="#7C4DFF" stroke-width="1.2" stroke-opacity="0.7"/>
+  <line x1="24" y1="29" x2="24" y2="38" stroke="#7C4DFF" stroke-width="1.2" stroke-opacity="0.7"/>
+  <text x="24" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="5.5" fill="#7C4DFF">EMBED</text>
+</svg>

@@ -158,7 +158,7 @@
     ],
     "actions": [
         {
-            "name": "Connect"
+            "name": "Save"
         }
     ]
 }
