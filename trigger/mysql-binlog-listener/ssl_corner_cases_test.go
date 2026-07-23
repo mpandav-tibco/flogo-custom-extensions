@@ -47,6 +47,7 @@ func TestSSLCornerCases(t *testing.T) {
 	t.Run("SkipSSLVerify with verify-full mode conflict", func(t *testing.T) {
 		// This is a logical conflict but should still validate
 		settings := &Settings{
+			TLSConfig:     true,
 			Host:          "localhost",
 			Port:          3306,
 			User:          "test",
@@ -71,6 +72,7 @@ func TestSSLCornerCases(t *testing.T) {
 	t.Run("SSL require mode without any certificates", func(t *testing.T) {
 		// This should be valid - require mode doesn't need certificates
 		settings := &Settings{
+			TLSConfig:    true,
 			Host:         "localhost",
 			Port:         3306,
 			User:         "test",
@@ -134,6 +136,7 @@ func TestSSLCornerCases(t *testing.T) {
 	t.Run("SSL require with SkipSSLVerify true", func(t *testing.T) {
 		// Valid combination for testing environments
 		settings := &Settings{
+			TLSConfig:     true,
 			Host:          "localhost",
 			Port:          3306,
 			User:          "test",
@@ -156,6 +159,7 @@ func TestSSLCornerCases(t *testing.T) {
 	t.Run("Host field used for ServerName in verify-full", func(t *testing.T) {
 		hostname := "mysql.production.com"
 		settings := &Settings{
+			TLSConfig:    true,
 			Host:         hostname,
 			Port:         3306,
 			User:         "test",
@@ -179,6 +183,7 @@ func TestSSLCornerCases(t *testing.T) {
 	t.Run("Invalid SSL certificate file paths", func(t *testing.T) {
 		// Test that our validation allows non-existent paths (file existence checked later)
 		settings := &Settings{
+			TLSConfig:    true,
 			Host:         "localhost",
 			Port:         3306,
 			User:         "test",

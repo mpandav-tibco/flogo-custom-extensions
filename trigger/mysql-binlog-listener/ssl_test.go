@@ -177,7 +177,8 @@ func TestSSLHelperMethods(t *testing.T) {
 		{
 			name: "SSL require mode",
 			settings: &Settings{
-				SSLMode: "require",
+				TLSConfig: true,
+				SSLMode:   "require",
 			},
 			isSSLRequired:  true,
 			needsCustomTLS: false,
@@ -185,8 +186,9 @@ func TestSSLHelperMethods(t *testing.T) {
 		{
 			name: "SSL verify-ca mode",
 			settings: &Settings{
-				SSLMode: "verify-ca",
-				SSLCA:   "/path/to/ca.pem",
+				TLSConfig: true,
+				SSLMode:   "verify-ca",
+				SSLCA:     "/path/to/ca.pem",
 			},
 			isSSLRequired:  true,
 			needsCustomTLS: true,
@@ -194,9 +196,10 @@ func TestSSLHelperMethods(t *testing.T) {
 		{
 			name: "SSL with client cert",
 			settings: &Settings{
-				SSLMode: "require",
-				SSLCert: "/path/to/client.pem",
-				SSLKey:  "/path/to/client.key",
+				TLSConfig: true,
+				SSLMode:   "require",
+				SSLCert:   "/path/to/client.pem",
+				SSLKey:    "/path/to/client.key",
 			},
 			isSSLRequired:  true,
 			needsCustomTLS: true,
@@ -204,8 +207,9 @@ func TestSSLHelperMethods(t *testing.T) {
 		{
 			name: "SSL with file CA",
 			settings: &Settings{
-				SSLMode: "verify-full",
-				SSLCA:   "/path/to/ca.pem",
+				TLSConfig: true,
+				SSLMode:   "verify-full",
+				SSLCA:     "/path/to/ca.pem",
 			},
 			isSSLRequired:  true,
 			needsCustomTLS: true,
@@ -239,7 +243,8 @@ func TestTLSConfigBuilding(t *testing.T) {
 
 	t.Run("SSL require mode", func(t *testing.T) {
 		settings := &Settings{
-			SSLMode: "require",
+			TLSConfig: true,
+			SSLMode:   "require",
 		}
 		listener := NewMySQLBinlogListener(settings, logger)
 
@@ -251,6 +256,7 @@ func TestTLSConfigBuilding(t *testing.T) {
 
 	t.Run("SSL require mode with skip verify", func(t *testing.T) {
 		settings := &Settings{
+			TLSConfig:     true,
 			SSLMode:       "require",
 			SkipSSLVerify: true,
 		}
@@ -264,8 +270,9 @@ func TestTLSConfigBuilding(t *testing.T) {
 
 	t.Run("SSL verify-full mode", func(t *testing.T) {
 		settings := &Settings{
-			Host:    "mysql.example.com",
-			SSLMode: "verify-full",
+			TLSConfig: true,
+			Host:      "mysql.example.com",
+			SSLMode:   "verify-full",
 		}
 		listener := NewMySQLBinlogListener(settings, logger)
 
@@ -299,6 +306,7 @@ func TestSSLConnectionStringBuilding(t *testing.T) {
 
 	t.Run("SSL required", func(t *testing.T) {
 		settings := &Settings{
+			TLSConfig:    true,
 			Host:         "localhost",
 			Port:         3306,
 			User:         "testuser",
@@ -316,6 +324,7 @@ func TestSSLConnectionStringBuilding(t *testing.T) {
 
 	t.Run("SSL skip verify", func(t *testing.T) {
 		settings := &Settings{
+			TLSConfig:     true,
 			Host:          "localhost",
 			Port:          3306,
 			User:          "testuser",

@@ -2,15 +2,18 @@ package mysqlbinloglistener
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
@@ -31,9 +34,11 @@ type MySQLBinlogListener struct {
 	mutex             sync.Mutex
 	binlogSyncer      *replication.BinlogSyncer
 	binlogStreamer    *replication.BinlogStreamer
+	syncerMutex       sync.Mutex // Protects binlogSyncer during reconnects
 	mysqlVersion      string
 	isMySQL8Plus      bool
 	currentBinlogFile string
+	lastPos           uint32                            // Last processed binlog position, for resume-on-reconnect
 	schemaCache       map[string]map[string]interface{} // Cache for table schemas: "db.table" -> schema info
 	schemaMutex       sync.RWMutex                      // Protects schema cache access
 }
@@ -300,11 +305,8 @@ func (m *MySQLBinlogListener) Stop() error {
 	}
 
 	// Close binlog syncer
-	if m.binlogSyncer != nil {
-		m.logger.Info("Closing binlog syncer...")
-		m.binlogSyncer.Close()
-		m.binlogSyncer = nil
-	}
+	m.logger.Info("Closing binlog syncer...")
+	m.closeSyncer()
 
 	// Wait for streaming goroutines to finish
 	m.wg.Wait()
@@ -325,12 +327,18 @@ func (m *MySQLBinlogListener) Stop() error {
 
 // HealthCheck verifies the MySQL connection is still active
 func (m *MySQLBinlogListener) HealthCheck() error {
-	if m.db == nil {
+	// Capture the handle under the lock so this never races Stop closing and
+	// nil-ing m.db; the Ping itself runs outside the lock to keep Stop fast.
+	m.mutex.Lock()
+	db := m.db
+	m.mutex.Unlock()
+
+	if db == nil {
 		return fmt.Errorf("MySQL database connection is nil")
 	}
 
-	if err := m.db.Ping(); err != nil {
-		return fmt.Errorf("MySQL database ping failed: %v", err)
+	if err := db.Ping(); err != nil {
+		return fmt.Errorf("MySQL database ping failed: %w", err)
 	}
 
 	return nil
@@ -342,10 +350,18 @@ func (m *MySQLBinlogListener) streamBinlog(ctx context.Context, handlerSettings 
 
 	m.logger.Debugf("Configuring binlog syncer with ServerID: %d", handlerSettings.ServerID)
 
+	// Select the replication flavor from the detected server version. MariaDB and
+	// MySQL differ in their GTID/event dialects, so the syncer must be told which
+	// one it is talking to.
+	flavor := mysql.MySQLFlavor
+	if strings.Contains(strings.ToLower(m.mysqlVersion), "mariadb") {
+		flavor = mysql.MariaDBFlavor
+	}
+
 	// Configure binlog syncer
 	cfg := replication.BinlogSyncerConfig{
 		ServerID: uint32(handlerSettings.ServerID),
-		Flavor:   "mysql",
+		Flavor:   flavor,
 		Host:     m.settings.Host,
 		Port:     uint16(m.settings.Port),
 		User:     m.settings.User,
@@ -358,9 +374,9 @@ func (m *MySQLBinlogListener) streamBinlog(ctx context.Context, handlerSettings 
 		return
 	}
 
-	m.binlogSyncer = replication.NewBinlogSyncer(cfg)
-
-	// Determine starting position
+	// Determine starting position. The syncer itself is created lazily by
+	// openStreamer inside the reconnect loop, so there is no premature syncer to
+	// allocate and immediately discard here.
 	var pos mysql.Position
 	if handlerSettings.BinlogFile != "" {
 		pos = mysql.Position{
@@ -379,16 +395,10 @@ func (m *MySQLBinlogListener) streamBinlog(ctx context.Context, handlerSettings 
 		m.currentBinlogFile = pos.Name
 		m.logger.Infof("Starting from current position: %s:%d", pos.Name, pos.Pos)
 	}
+	m.lastPos = pos.Pos
 
-	// Start binlog streaming
-	streamer, err := m.binlogSyncer.StartSync(pos)
-	if err != nil {
-		m.logger.Errorf("Failed to start binlog sync: %v", err)
-		return
-	}
-	m.binlogStreamer = streamer
-
-	m.logger.Info("Binlog streaming started successfully")
+	// Close the active syncer when streaming ends (normal stop or give-up).
+	defer m.closeSyncer()
 
 	// Create table filter
 	var tableFilter map[string]bool
@@ -402,50 +412,143 @@ func (m *MySQLBinlogListener) streamBinlog(ctx context.Context, handlerSettings 
 		m.logger.Debug("No table filter configured - monitoring all tables")
 	}
 
-	// Create event type filter
-	eventTypeFilter := make(map[string]bool)
-	if handlerSettings.EventTypes == "ALL" || handlerSettings.EventTypes == "" {
-		eventTypeFilter["INSERT"] = true
-		eventTypeFilter["UPDATE"] = true
-		eventTypeFilter["DELETE"] = true
-	} else {
-		eventTypeFilter[handlerSettings.EventTypes] = true
-	}
+	// Create event type filter (supports a comma-separated list)
+	eventTypeFilter := handlerSettings.EventTypeSet()
 	m.logger.Debugf("Event type filter configured: %s -> %v", handlerSettings.EventTypes, eventTypeFilter)
 
-	eventCount := 0
-	lastLogTime := time.Now()
+	// Reconnect/backoff parameters.
+	retryDelay := 5 * time.Second
+	if d, err := time.ParseDuration(m.settings.RetryDelay); err == nil && d > 0 {
+		retryDelay = d
+	}
+	maxAttempts := 3
+	if n, err := strconv.Atoi(m.settings.MaxRetryAttempts); err == nil && n > 0 {
+		maxAttempts = n
+	}
 
-	// Process binlog events
+	// Stream events, reconnecting from the last processed position so no
+	// changes are missed across transient connection failures.
+	attempt := 0
 	for {
 		select {
 		case <-ctx.Done():
 			m.logger.Info("Binlog streaming stopping due to context cancellation")
 			return
 		default:
-			ev, err := streamer.GetEvent(ctx)
-			if err != nil {
-				if ctx.Err() != nil {
-					// Context cancelled, normal shutdown
-					return
-				}
-				m.logger.Errorf("Error reading binlog event: %v", err)
-				continue
-			}
+		}
 
-			eventCount++
-
-			// Log periodic statistics
-			if time.Since(lastLogTime) >= time.Minute {
-				m.logger.Infof("Processed %d binlog events in the last minute", eventCount)
-				eventCount = 0
-				lastLogTime = time.Now()
+		resumePos := mysql.Position{Name: m.currentBinlogFile, Pos: m.lastPos}
+		streamer, err := m.openStreamer(cfg, resumePos)
+		if err != nil {
+			if ctx.Err() != nil {
+				return
 			}
-
-			// Process the binlog event
-			if err := m.processBinlogEvent(ev, tableFilter, eventTypeFilter, handlerSettings, eventHandler, ctx); err != nil {
-				m.logger.Errorf("Error processing binlog event: %v", err)
+			attempt++
+			m.logger.Errorf("Failed to start binlog sync from %s:%d (attempt %d/%d): %v",
+				resumePos.Name, resumePos.Pos, attempt, maxAttempts, err)
+			if maxAttempts > 0 && attempt >= maxAttempts {
+				m.logger.Errorf("MySQL binlog: giving up after %d failed connection attempts", attempt)
+				return
 			}
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(retryDelay):
+			}
+			continue
+		}
+		m.binlogStreamer = streamer
+		m.logger.Infof("Binlog streaming started from %s:%d", resumePos.Name, resumePos.Pos)
+
+		processed, streamErr := m.consumeEvents(ctx, streamer, tableFilter, eventTypeFilter, handlerSettings, eventHandler)
+		if ctx.Err() != nil {
+			return
+		}
+		if streamErr == nil {
+			// consumeEvents only returns without error on context cancellation.
+			return
+		}
+
+		// A healthy streaming period resets the consecutive-failure counter.
+		if processed > 0 {
+			attempt = 0
+		}
+		attempt++
+		m.logger.Errorf("Binlog stream error (attempt %d/%d): %v", attempt, maxAttempts, streamErr)
+		if maxAttempts > 0 && attempt >= maxAttempts {
+			m.logger.Errorf("MySQL binlog: giving up after %d consecutive failures", attempt)
+			return
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(retryDelay):
+		}
+	}
+}
+
+// openStreamer closes any existing syncer and starts a fresh one from pos. The
+// syncer pointer is guarded so Stop can safely close it concurrently.
+func (m *MySQLBinlogListener) openStreamer(cfg replication.BinlogSyncerConfig, pos mysql.Position) (*replication.BinlogStreamer, error) {
+	m.syncerMutex.Lock()
+	if m.binlogSyncer != nil {
+		m.binlogSyncer.Close()
+	}
+	m.binlogSyncer = replication.NewBinlogSyncer(cfg)
+	syncer := m.binlogSyncer
+	m.syncerMutex.Unlock()
+	return syncer.StartSync(pos)
+}
+
+// closeSyncer closes the binlog syncer if it is open. It is idempotent and safe
+// to call from both Stop and the streaming goroutine.
+func (m *MySQLBinlogListener) closeSyncer() {
+	m.syncerMutex.Lock()
+	if m.binlogSyncer != nil {
+		m.binlogSyncer.Close()
+		m.binlogSyncer = nil
+	}
+	m.syncerMutex.Unlock()
+}
+
+// consumeEvents reads events from a streamer until the context is cancelled
+// (returns nil) or a read error occurs (returns the error). It reports how many
+// events it processed so the caller can reset its retry counter after a healthy
+// streaming period.
+func (m *MySQLBinlogListener) consumeEvents(ctx context.Context, streamer *replication.BinlogStreamer, tableFilter, eventTypeFilter map[string]bool, handlerSettings *HandlerSettings, eventHandler EventHandler) (int, error) {
+	processed := 0
+	eventCount := 0
+	lastLogTime := time.Now()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return processed, nil
+		default:
+		}
+
+		ev, err := streamer.GetEvent(ctx)
+		if err != nil {
+			if ctx.Err() != nil {
+				// Context cancelled, normal shutdown.
+				return processed, nil
+			}
+			return processed, fmt.Errorf("error reading binlog event: %w", err)
+		}
+
+		processed++
+		eventCount++
+
+		// Log periodic statistics
+		if time.Since(lastLogTime) >= time.Minute {
+			m.logger.Infof("Processed %d binlog events in the last minute", eventCount)
+			eventCount = 0
+			lastLogTime = time.Now()
+		}
+
+		// Process the binlog event
+		if err := m.processBinlogEvent(ev, tableFilter, eventTypeFilter, handlerSettings, eventHandler, ctx); err != nil {
+			m.logger.Errorf("Error processing binlog event: %v", err)
 		}
 	}
 }
@@ -488,12 +591,29 @@ func (m *MySQLBinlogListener) getCurrentBinlogPosition() (mysql.Position, error)
 		return mysql.Position{}, fmt.Errorf("no master status found - binary logging may not be enabled")
 	}
 
+	// The column set of SHOW MASTER STATUS / SHOW BINARY LOG STATUS varies by
+	// flavor: MySQL 5.7/8.0 return 5 columns (File, Position, Binlog_Do_DB,
+	// Binlog_Ignore_DB, Executed_Gtid_Set) while MariaDB returns 4 (no
+	// Executed_Gtid_Set, since it uses a different GTID model). File and Position
+	// are always the first two columns, so scan dynamically to stay flavor-agnostic.
+	cols, err := rows.Columns()
+	if err != nil {
+		return mysql.Position{}, fmt.Errorf("failed to read master status columns: %v", err)
+	}
+	if len(cols) < 2 {
+		return mysql.Position{}, fmt.Errorf("unexpected master status columns: %v", cols)
+	}
+
 	var file string
 	var position uint32
-	var binlogDoDB, binlogIgnoreDB, executedGtidSet sql.NullString
+	dest := make([]interface{}, len(cols))
+	dest[0] = &file
+	dest[1] = &position
+	for i := 2; i < len(cols); i++ {
+		dest[i] = new(sql.NullString)
+	}
 
-	err = rows.Scan(&file, &position, &binlogDoDB, &binlogIgnoreDB, &executedGtidSet)
-	if err != nil {
+	if err = rows.Scan(dest...); err != nil {
 		return mysql.Position{}, fmt.Errorf("failed to scan master status: %v", err)
 	}
 
@@ -507,10 +627,17 @@ func (m *MySQLBinlogListener) getCurrentBinlogPosition() (mysql.Position, error)
 
 // processBinlogEvent processes a single binlog event and generates database events
 func (m *MySQLBinlogListener) processBinlogEvent(ev *replication.BinlogEvent, tableFilter map[string]bool, eventTypeFilter map[string]bool, handlerSettings *HandlerSettings, eventHandler EventHandler, ctx context.Context) error {
+	// Track the stream position so a reconnect can resume from here. Rotate
+	// events carry the position in the new file and are handled below.
+	if ev.Header.LogPos > 0 {
+		m.lastPos = ev.Header.LogPos
+	}
+
 	switch e := ev.Event.(type) {
 	case *replication.RotateEvent:
 		// Update current binlog file when rotation occurs
 		m.currentBinlogFile = string(e.NextLogName)
+		m.lastPos = uint32(e.Position)
 		m.logger.Debugf("Binlog rotated to: %s", m.currentBinlogFile)
 		return nil
 
@@ -560,11 +687,7 @@ func (m *MySQLBinlogListener) processBinlogEvent(ev *replication.BinlogEvent, ta
 						m.logger.Warnf("Failed to get schema for table %s.%s: %v, falling back to column indices",
 							databaseName, tableName, err)
 						// Fallback to column indices
-						rowData = make(map[string]interface{})
-						for j, value := range row {
-							columnKey := fmt.Sprintf("col_%d", j)
-							rowData[columnKey] = value
-						}
+						rowData = formatRowDataByIndex(row)
 					} else {
 						// Use column names from schema
 						rowData = m.formatRowDataWithSchema(row, schema)
@@ -572,11 +695,7 @@ func (m *MySQLBinlogListener) processBinlogEvent(ev *replication.BinlogEvent, ta
 					}
 				} else {
 					// Convert row data to map with column indices (default behavior)
-					rowData = make(map[string]interface{})
-					for j, value := range row {
-						columnKey := fmt.Sprintf("col_%d", j)
-						rowData[columnKey] = value
-					}
+					rowData = formatRowDataByIndex(row)
 				}
 
 				// Create and send the event
@@ -621,11 +740,7 @@ func (m *MySQLBinlogListener) processBinlogEvent(ev *replication.BinlogEvent, ta
 						m.logger.Warnf("Failed to get schema for table %s.%s: %v, falling back to column indices",
 							databaseName, tableName, err)
 						// Fallback to column indices
-						rowData = make(map[string]interface{})
-						for i, value := range row {
-							columnKey := fmt.Sprintf("col_%d", i)
-							rowData[columnKey] = value
-						}
+						rowData = formatRowDataByIndex(row)
 					} else {
 						// Use column names from schema
 						rowData = m.formatRowDataWithSchema(row, schema)
@@ -633,11 +748,7 @@ func (m *MySQLBinlogListener) processBinlogEvent(ev *replication.BinlogEvent, ta
 					}
 				} else {
 					// Convert row data to map with column indices (default behavior)
-					rowData = make(map[string]interface{})
-					for i, value := range row {
-						columnKey := fmt.Sprintf("col_%d", i)
-						rowData[columnKey] = value
-					}
+					rowData = formatRowDataByIndex(row)
 				}
 
 				// Create binlog event
@@ -677,7 +788,14 @@ func (m *MySQLBinlogListener) processBinlogEvent(ev *replication.BinlogEvent, ta
 		databaseName := string(e.Schema)
 
 		m.logger.Debugf("Query event: %s on database %s", query, databaseName)
-		// DDL event handling can be added here if needed
+		// A DDL statement may alter a table's structure, so drop the cached
+		// schemas; subsequent rows are then decoded with fresh column metadata.
+		m.schemaMutex.Lock()
+		if len(m.schemaCache) > 0 {
+			m.schemaCache = make(map[string]map[string]interface{})
+			m.logger.Debugf("Cleared table schema cache after DDL: %s", query)
+		}
+		m.schemaMutex.Unlock()
 
 	default:
 		// Skip other event types (format description, etc.)
@@ -806,7 +924,7 @@ func (m *MySQLBinlogListener) loadCACertificate(tlsConfig *tls.Config) error {
 
 	if m.settings.SSLCA != "" {
 		// Read CA certificate from file
-		caCertData, err = ioutil.ReadFile(m.settings.SSLCA)
+		caCertData, err = os.ReadFile(m.settings.SSLCA)
 		if err != nil {
 			return fmt.Errorf("failed to read CA certificate file %s: %v", m.settings.SSLCA, err)
 		}
@@ -844,12 +962,12 @@ func (m *MySQLBinlogListener) loadClientCertificate(tlsConfig *tls.Config) error
 	}
 
 	// Read client certificate and key from files
-	clientCertData, err = ioutil.ReadFile(m.settings.SSLCert)
+	clientCertData, err = os.ReadFile(m.settings.SSLCert)
 	if err != nil {
 		return fmt.Errorf("failed to read client certificate file %s: %v", m.settings.SSLCert, err)
 	}
 
-	clientKeyData, err = ioutil.ReadFile(m.settings.SSLKey)
+	clientKeyData, err = os.ReadFile(m.settings.SSLKey)
 	if err != nil {
 		return fmt.Errorf("failed to read client key file %s: %v", m.settings.SSLKey, err)
 	}
@@ -978,7 +1096,11 @@ func (m *MySQLBinlogListener) pingWithRetry(db *sql.DB) error {
 
 // generateCorrelationID creates a unique correlation ID
 func (m *MySQLBinlogListener) generateCorrelationID() string {
-	return fmt.Sprintf("mysql_%d_%d", time.Now().UnixNano(), time.Now().Nanosecond())
+	b := make([]byte, 12)
+	if _, err := rand.Read(b); err != nil {
+		return fmt.Sprintf("mysql_%d", time.Now().UnixNano())
+	}
+	return "mysql_" + hex.EncodeToString(b)
 }
 
 // getTableSchema fetches and caches table schema information
@@ -1071,22 +1193,42 @@ func (m *MySQLBinlogListener) formatRowDataWithSchema(row []interface{}, schema 
 		// Use column names from schema
 		for i, value := range row {
 			if i < len(columnNames) {
-				rowData[columnNames[i]] = value
+				rowData[columnNames[i]] = normalizeRowValue(value)
 			} else {
 				// Fallback to col_X format for extra columns
 				columnKey := fmt.Sprintf("col_%d", i)
-				rowData[columnKey] = value
+				rowData[columnKey] = normalizeRowValue(value)
 			}
 		}
 	} else {
 		// Fallback to col_X format if schema is not available
 		for i, value := range row {
 			columnKey := fmt.Sprintf("col_%d", i)
-			rowData[columnKey] = value
+			rowData[columnKey] = normalizeRowValue(value)
 		}
 	}
 
 	return rowData
+}
+
+// formatRowDataByIndex maps row values to col_0, col_1, ... keys. It is used
+// when schema information is unavailable or disabled.
+func formatRowDataByIndex(row []interface{}) map[string]interface{} {
+	rowData := make(map[string]interface{})
+	for i, value := range row {
+		rowData[fmt.Sprintf("col_%d", i)] = normalizeRowValue(value)
+	}
+	return rowData
+}
+
+// normalizeRowValue converts MySQL []byte column values (text/varchar) into Go
+// strings so downstream flows receive readable text instead of base64. Values
+// that are not valid UTF-8 (genuine binary/BLOB) are left as []byte.
+func normalizeRowValue(v interface{}) interface{} {
+	if b, ok := v.([]byte); ok && utf8.Valid(b) {
+		return string(b)
+	}
+	return v
 }
 
 // maskPassword masks the password in connection strings for logging

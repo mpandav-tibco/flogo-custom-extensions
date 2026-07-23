@@ -1,0 +1,348 @@
+{
+    "name": "postgres-cdc-listener",
+    "type": "flogo:trigger",
+    "version": "1.0.0",
+    "title": "PostgreSQL CDC Listener",
+    "image": "icons/postgres-listener.svg",
+    "description": "Native PostgreSQL change data capture via logical replication (WAL / pgoutput). Streams row-level INSERT, UPDATE, and DELETE changes with no polling and no source-side triggers.",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/trigger/postgres-cdc-listener",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/trigger/postgres-cdc-listener",
+    "display": {
+        "category": "PostgreSQL",
+        "visible": true,
+        "description": "Streams real-time row changes from PostgreSQL using logical replication (pgoutput) and fires a Flogo flow for each INSERT, UPDATE, or DELETE",
+        "smallIcon": "icons/ic-postgres-connection.png",
+        "largeIcon": "icons/ic-postgres-connection.png"
+    },
+    "settings": [
+        {
+            "name": "host",
+            "type": "string",
+            "required": true,
+            "value": "localhost",
+            "description": "PostgreSQL server host",
+            "display": {
+                "name": "Host",
+                "description": "PostgreSQL server host",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "port",
+            "type": "integer",
+            "required": true,
+            "value": 5432,
+            "description": "PostgreSQL server port",
+            "display": {
+                "name": "Port",
+                "description": "PostgreSQL server port",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "user",
+            "type": "string",
+            "required": true,
+            "description": "Database user with the REPLICATION attribute",
+            "display": {
+                "name": "User",
+                "description": "Database user with the REPLICATION attribute (ALTER ROLE <user> REPLICATION)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "required": true,
+            "description": "Database password",
+            "display": {
+                "name": "Password",
+                "description": "Database password",
+                "type": "password",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "databaseName",
+            "type": "string",
+            "required": true,
+            "description": "Database to replicate changes from",
+            "display": {
+                "name": "Database Name",
+                "description": "Database to replicate changes from",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "tlsConfig",
+            "type": "boolean",
+            "value": false,
+            "description": "Enable TLS/SSL for the PostgreSQL connection",
+            "display": {
+                "name": "Enable TLS Configuration",
+                "description": "Enable TLS/SSL secure connection. When enabled, configure SSL Mode and certificates below."
+            }
+        },
+        {
+            "name": "sslMode",
+            "type": "string",
+            "value": "require",
+            "allowed": [
+                "require",
+                "verify-ca",
+                "verify-full"
+            ],
+            "description": "SSL mode: require, verify-ca, verify-full",
+            "display": {
+                "name": "SSL Mode",
+                "description": "require: encrypt but skip certificate verification. verify-ca: verify server CA. verify-full: verify CA and hostname.",
+                "type": "dropdown",
+                "selection": "single",
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "sslCA",
+            "type": "string",
+            "description": "CA certificate file path (required for verify-ca and verify-full)",
+            "display": {
+                "name": "SSL CA Certificate",
+                "description": "CA certificate file path (required for verify-ca and verify-full)",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".crt",
+                    ".pem",
+                    ".cer",
+                    ".der"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "sslCert",
+            "type": "string",
+            "description": "Client certificate file path (optional, for client authentication)",
+            "display": {
+                "name": "SSL Client Certificate",
+                "description": "Client certificate file path (optional, for client authentication)",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".crt",
+                    ".pem",
+                    ".cer",
+                    ".der"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "sslKey",
+            "type": "string",
+            "description": "Client private key file path (optional, for client authentication)",
+            "display": {
+                "name": "SSL Client Key",
+                "description": "Client private key file path (optional, for client authentication)",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".key",
+                    ".pem"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "connectionTimeout",
+            "type": "integer",
+            "value": 30,
+            "description": "Connection timeout in seconds",
+            "display": {
+                "name": "Connection Timeout (s)",
+                "description": "Connection timeout in seconds",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxRetryAttempts",
+            "type": "integer",
+            "value": 5,
+            "description": "Maximum reconnect attempts after a stream failure (0 = retry forever)",
+            "display": {
+                "name": "Max Retry Attempts",
+                "description": "Maximum reconnect attempts after a stream failure (0 = retry forever)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "retryDelay",
+            "type": "string",
+            "value": "5s",
+            "description": "Delay between reconnect attempts (Go duration, e.g. 5s)",
+            "display": {
+                "name": "Retry Delay",
+                "description": "Delay between reconnect attempts (Go duration, e.g. 5s)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "standbyMessageTimeout",
+            "type": "string",
+            "value": "10s",
+            "description": "Interval for sending standby status (LSN acknowledgement) updates",
+            "display": {
+                "name": "Standby Message Timeout",
+                "description": "Interval for sending standby status (LSN acknowledgement) updates (Go duration, e.g. 10s)",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "slotName",
+                "type": "string",
+                "required": true,
+                "description": "Logical replication slot name (lowercase letters, digits, underscore)",
+                "display": {
+                    "name": "Replication Slot",
+                    "description": "Logical replication slot name. The slot persists the stream position server-side for durable, resumable CDC.",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "publicationName",
+                "type": "string",
+                "required": true,
+                "description": "pgoutput publication name that defines which tables are published",
+                "display": {
+                    "name": "Publication",
+                    "description": "pgoutput publication name (CREATE PUBLICATION ...) that defines which tables are captured",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "createSlotIfNotExists",
+                "type": "boolean",
+                "value": true,
+                "description": "Automatically create the replication slot if it does not exist",
+                "display": {
+                    "name": "Create Slot If Not Exists",
+                    "description": "Automatically create the replication slot if it does not exist"
+                }
+            },
+            {
+                "name": "temporarySlot",
+                "type": "boolean",
+                "value": false,
+                "description": "Use a temporary slot that is dropped when the connection closes (no durable resume)",
+                "display": {
+                    "name": "Temporary Slot",
+                    "description": "Use a temporary slot that is dropped when the connection closes. Not recommended for production (no durable resume)."
+                }
+            },
+            {
+                "name": "createPublicationIfNotExists",
+                "type": "boolean",
+                "value": false,
+                "description": "Automatically create the publication if it does not exist",
+                "display": {
+                    "name": "Create Publication If Not Exists",
+                    "description": "Automatically create the publication if it does not exist (uses the Tables list, or FOR ALL TABLES when empty)"
+                }
+            },
+            {
+                "name": "tables",
+                "type": "array",
+                "description": "Tables to publish when auto-creating the publication (schema.table). Empty = FOR ALL TABLES.",
+                "display": {
+                    "name": "Tables",
+                    "description": "Tables to publish when auto-creating the publication (schema.table). Empty = FOR ALL TABLES.",
+                    "type": "params",
+                    "schema": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"table\":{\"type\":\"string\"}}}}",
+                    "mappable": true
+                }
+            },
+            {
+                "name": "eventTypes",
+                "type": "string",
+                "value": "ALL",
+                "description": "Comma-separated event types to capture: ALL, or any of INSERT, UPDATE, DELETE",
+                "display": {
+                    "name": "Event Types",
+                    "description": "Comma-separated event types to capture: ALL, or any of INSERT, UPDATE, DELETE",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "includeTransactionMarkers",
+                "type": "boolean",
+                "value": false,
+                "description": "Emit BEGIN and COMMIT marker events in addition to row-level events",
+                "display": {
+                    "name": "Include Transaction Markers",
+                    "description": "Emit BEGIN and COMMIT marker events in addition to row-level events"
+                }
+            }
+        ]
+    },
+    "output": [
+        {
+            "name": "eventID",
+            "type": "string",
+            "description": "Unique event identifier"
+        },
+        {
+            "name": "eventType",
+            "type": "string",
+            "description": "Type of change: INSERT, UPDATE, DELETE, TRUNCATE, BEGIN, COMMIT"
+        },
+        {
+            "name": "database",
+            "type": "string",
+            "description": "Source database name"
+        },
+        {
+            "name": "schema",
+            "type": "string",
+            "description": "Source schema (namespace)"
+        },
+        {
+            "name": "table",
+            "type": "string",
+            "description": "Source table name"
+        },
+        {
+            "name": "timestamp",
+            "type": "string",
+            "description": "Transaction commit timestamp (RFC3339)"
+        },
+        {
+            "name": "data",
+            "type": "object",
+            "description": "New row image as a column-name keyed object (INSERT/UPDATE)"
+        },
+        {
+            "name": "oldData",
+            "type": "object",
+            "description": "Previous row image (UPDATE/DELETE; full row requires REPLICA IDENTITY FULL)"
+        },
+        {
+            "name": "lsn",
+            "type": "string",
+            "description": "WAL log sequence number (LSN) of the change"
+        },
+        {
+            "name": "xid",
+            "type": "integer",
+            "description": "Transaction ID"
+        },
+        {
+            "name": "correlationID",
+            "type": "string",
+            "description": "Correlation ID for tracing"
+        }
+    ]
+}

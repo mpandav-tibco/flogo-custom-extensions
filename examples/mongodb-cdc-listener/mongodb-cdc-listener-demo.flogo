@@ -1,0 +1,179 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/project-flogo/contrib/activity/log",
+    "github.com/mpandav-tibco/flogo-custom-extensions/trigger/mongodb-cdc-listener",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string"
+  ],
+  "name": "MongoDB-CDC-Demo",
+  "description": "Demonstrates the MongoDB CDC Listener trigger capturing real-time changes via change streams.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#mongodb-cdc-listener",
+      "name": "mongodb-cdc-listener",
+      "description": "Demonstrates the MongoDB CDC Listener trigger capturing real-time changes via change streams.",
+      "settings": {
+        "connectionURI": "mongodb://localhost:27017/?directConnection=true",
+        "host": "localhost",
+        "port": 27017,
+        "username": null,
+        "password": null,
+        "authSource": "admin",
+        "authMechanism": null,
+        "replicaSet": null,
+        "tlsConfig": false,
+        "tlsCAFile": null,
+        "tlsCertificateKeyFile": null,
+        "tlsInsecure": false,
+        "connectionTimeout": 30,
+        "maxRetryAttempts": 5,
+        "retryDelay": "5s"
+      },
+      "id": "MongoDBCDCListener",
+      "handlers": [
+        {
+          "description": "Dispatch each captured change event to the CDC event flow.",
+          "settings": {
+            "database": "demodb",
+            "collection": "orders",
+            "operationTypes": "ALL",
+            "fullDocument": "updateLookup",
+            "fullDocumentBeforeChange": "off",
+            "batchSize": null,
+            "maxAwaitTime": null
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:CDC_Event_Flow"
+            },
+            "input": {
+              "eventID": "=$.eventID",
+              "eventType": "=$.eventType",
+              "database": "=$.database",
+              "collection": "=$.collection",
+              "documentKey": "=$.documentKey",
+              "timestamp": "=$.timestamp",
+              "data": "=$.data",
+              "oldData": "=$.oldData",
+              "updatedFields": "=$.updatedFields",
+              "removedFields": "=$.removedFields",
+              "resumeToken": "=$.resumeToken",
+              "correlationID": "=$.correlationID"
+            }
+          },
+          "name": "CDC_Event_Flow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:CDC_Event_Flow",
+      "data": {
+        "name": "CDC_Event_Flow",
+        "description": "Demonstrates the MongoDB CDC Listener trigger capturing real-time changes via change streams.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogEvent",
+            "type": "label",
+            "label": "StartActivity to LogEvent"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogEvent",
+            "name": "LogEvent",
+            "description": "Log the captured change event.",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "message": "=string.concat(\"MongoDB CDC Listener event: \", $flow.eventID, \" | \", $flow.eventType, \" | \", $flow.database, \" | \", $flow.collection, \" | \", coerce.toString($flow.documentKey), \" | \", $flow.timestamp, \" | \", coerce.toString($flow.data), \" | \", coerce.toString($flow.oldData), \" | \", coerce.toString($flow.updatedFields), \" | \", coerce.toString($flow.removedFields), \" | \", $flow.resumeToken, \" | \", $flow.correlationID)"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nRXZlbnQiOnsieCI6MzQzLCJ5Ijo4OX19",
+        "metadata": {
+          "input": [
+            {
+              "name": "eventID",
+              "type": "string"
+            },
+            {
+              "name": "eventType",
+              "type": "string"
+            },
+            {
+              "name": "database",
+              "type": "string"
+            },
+            {
+              "name": "collection",
+              "type": "string"
+            },
+            {
+              "name": "documentKey",
+              "type": "object"
+            },
+            {
+              "name": "timestamp",
+              "type": "string"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            },
+            {
+              "name": "oldData",
+              "type": "object"
+            },
+            {
+              "name": "updatedFields",
+              "type": "object"
+            },
+            {
+              "name": "removedFields",
+              "type": "array"
+            },
+            {
+              "name": "resumeToken",
+              "type": "string"
+            },
+            {
+              "name": "correlationID",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"MongoDBCDCListener\",\"properties\":{\"eventID\":{\"type\":\"string\",\"required\":false},\"eventType\":{\"type\":\"string\",\"required\":false},\"database\":{\"type\":\"string\",\"required\":false},\"collection\":{\"type\":\"string\",\"required\":false},\"documentKey\":{\"type\":\"object\"},\"timestamp\":{\"type\":\"string\",\"required\":false},\"data\":{\"type\":\"object\"},\"oldData\":{\"type\":\"object\"},\"updatedFields\":{\"type\":\"object\"},\"removedFields\":{\"type\":\"array\"},\"resumeToken\":{\"type\":\"string\",\"required\":false},\"correlationID\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWN1c3RvbS1leHRlbnNpb25zL3RyaWdnZXIvbW9uZ29kYi1jZGMtbGlzdGVuZXIiLCJpZCI6Ik1vbmdvREJDRENMaXN0ZW5lciIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6Ik1vbmdvREIgQ0RDIExpc3RlbmVyIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L21vbmdvZGItY2RjLWxpc3RlbmVyIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.0"
+  }
+}

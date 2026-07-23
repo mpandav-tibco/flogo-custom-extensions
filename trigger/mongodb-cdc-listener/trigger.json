@@ -1,0 +1,343 @@
+{
+    "name": "mongodb-cdc-listener",
+    "type": "flogo:trigger",
+    "version": "1.0.0",
+    "title": "MongoDB CDC Listener",
+    "image": "icons/mongodb-cdc.svg",
+    "description": "Native MongoDB change data capture using change streams. Streams document-level insert, update, replace, and delete changes with resume-token durability and no polling.",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/trigger/mongodb-cdc-listener",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/trigger/mongodb-cdc-listener",
+    "display": {
+        "category": "MongoDB",
+        "visible": true,
+        "description": "Streams real-time document changes from MongoDB using change streams and fires a Flogo flow for each insert, update, replace, or delete",
+        "smallIcon": "icons/ic-mongodb-connection.png",
+        "largeIcon": "icons/ic-mongodb-connection.png"
+    },
+    "settings": [
+        {
+            "name": "connectionURI",
+            "type": "string",
+            "description": "Full MongoDB connection URI (mongodb:// or mongodb+srv://). Takes precedence over host/port when set.",
+            "display": {
+                "name": "Connection URI",
+                "description": "Full MongoDB connection URI (mongodb:// or mongodb+srv://). When set, host/port/credentials below are ignored.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "host",
+            "type": "string",
+            "value": "localhost",
+            "description": "MongoDB host (used when Connection URI is empty)",
+            "display": {
+                "name": "Host",
+                "description": "MongoDB host (used when Connection URI is empty)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "port",
+            "type": "integer",
+            "value": 27017,
+            "description": "MongoDB port (used when Connection URI is empty)",
+            "display": {
+                "name": "Port",
+                "description": "MongoDB port (used when Connection URI is empty)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "username",
+            "type": "string",
+            "description": "Authentication user",
+            "display": {
+                "name": "Username",
+                "description": "Authentication user",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "description": "Authentication password",
+            "display": {
+                "name": "Password",
+                "description": "Authentication password",
+                "type": "password",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "authSource",
+            "type": "string",
+            "value": "admin",
+            "description": "Authentication database",
+            "display": {
+                "name": "Auth Source",
+                "description": "Authentication database (default admin)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "authMechanism",
+            "type": "string",
+            "description": "Authentication mechanism (e.g. SCRAM-SHA-256)",
+            "display": {
+                "name": "Auth Mechanism",
+                "description": "Optional authentication mechanism (e.g. SCRAM-SHA-1, SCRAM-SHA-256)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "replicaSet",
+            "type": "string",
+            "description": "Replica set name (change streams require a replica set or sharded cluster)",
+            "display": {
+                "name": "Replica Set",
+                "description": "Replica set name. Change streams require a replica set or sharded cluster.",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "tlsConfig",
+            "type": "boolean",
+            "value": false,
+            "description": "Enable TLS/SSL for the MongoDB connection",
+            "display": {
+                "name": "Enable TLS Configuration",
+                "description": "Enable TLS/SSL secure connection. When enabled, configure certificates below."
+            }
+        },
+        {
+            "name": "tlsCAFile",
+            "type": "string",
+            "description": "CA certificate file path",
+            "display": {
+                "name": "TLS CA Certificate",
+                "description": "CA certificate file path",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".crt",
+                    ".pem",
+                    ".cer"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "tlsCertificateKeyFile",
+            "type": "string",
+            "description": "Client certificate + private key file path (PEM)",
+            "display": {
+                "name": "TLS Client Certificate Key File",
+                "description": "Combined client certificate and private key file path (PEM) for mutual TLS",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".pem"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "tlsInsecure",
+            "type": "boolean",
+            "value": false,
+            "description": "Skip certificate and hostname verification (not recommended for production)",
+            "display": {
+                "name": "TLS Insecure",
+                "description": "Skip certificate and hostname verification (not recommended for production)",
+                "visible": false
+            }
+        },
+        {
+            "name": "connectionTimeout",
+            "type": "integer",
+            "value": 30,
+            "description": "Connection timeout in seconds",
+            "display": {
+                "name": "Connection Timeout (s)",
+                "description": "Connection timeout in seconds",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxRetryAttempts",
+            "type": "integer",
+            "value": 5,
+            "description": "Maximum reconnect attempts after a stream failure (0 = retry forever)",
+            "display": {
+                "name": "Max Retry Attempts",
+                "description": "Maximum reconnect attempts after a stream failure (0 = retry forever)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "retryDelay",
+            "type": "string",
+            "value": "5s",
+            "description": "Delay between reconnect attempts (Go duration, e.g. 5s)",
+            "display": {
+                "name": "Retry Delay",
+                "description": "Delay between reconnect attempts (Go duration, e.g. 5s)",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "database",
+                "type": "string",
+                "description": "Database to watch (empty = whole deployment)",
+                "display": {
+                    "name": "Database",
+                    "description": "Database to watch. Leave empty to watch the entire deployment.",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "collection",
+                "type": "string",
+                "description": "Collection to watch (empty = whole database)",
+                "display": {
+                    "name": "Collection",
+                    "description": "Collection to watch. Leave empty to watch the entire database (requires Database).",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "operationTypes",
+                "type": "string",
+                "value": "ALL",
+                "description": "Comma-separated operation types: ALL, or any of INSERT, UPDATE, REPLACE, DELETE",
+                "display": {
+                    "name": "Operation Types",
+                    "description": "Comma-separated operation types: ALL, or any of INSERT, UPDATE, REPLACE, DELETE",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "fullDocument",
+                "type": "string",
+                "value": "updateLookup",
+                "allowed": [
+                    "default",
+                    "updateLookup",
+                    "whenAvailable",
+                    "required"
+                ],
+                "description": "Controls the full document returned on updates",
+                "display": {
+                    "name": "Full Document",
+                    "description": "updateLookup returns the current full document on updates. default returns only the delta.",
+                    "type": "dropdown",
+                    "selection": "single",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "fullDocumentBeforeChange",
+                "type": "string",
+                "value": "off",
+                "allowed": [
+                    "off",
+                    "whenAvailable",
+                    "required"
+                ],
+                "description": "Returns the pre-image (previous document). Requires changeStreamPreAndPostImages on the collection (MongoDB 6.0+).",
+                "display": {
+                    "name": "Full Document Before Change",
+                    "description": "Returns the document pre-image in oldData. Requires changeStreamPreAndPostImages enabled on the collection (MongoDB 6.0+).",
+                    "type": "dropdown",
+                    "selection": "single",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "batchSize",
+                "type": "integer",
+                "description": "Change stream cursor batch size (0 = server default)",
+                "display": {
+                    "name": "Batch Size",
+                    "description": "Change stream cursor batch size (0 = server default)",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "maxAwaitTime",
+                "type": "string",
+                "description": "Maximum time the server waits for new changes before returning (Go duration, e.g. 1s)",
+                "display": {
+                    "name": "Max Await Time",
+                    "description": "Maximum time the server waits for new changes before returning (Go duration, e.g. 1s)",
+                    "appPropertySupport": true
+                }
+            }
+        ]
+    },
+    "output": [
+        {
+            "name": "eventID",
+            "type": "string",
+            "description": "Unique event identifier"
+        },
+        {
+            "name": "eventType",
+            "type": "string",
+            "description": "Type of change: INSERT, UPDATE, REPLACE, DELETE, DROP, RENAME, INVALIDATE"
+        },
+        {
+            "name": "database",
+            "type": "string",
+            "description": "Source database name"
+        },
+        {
+            "name": "collection",
+            "type": "string",
+            "description": "Source collection name"
+        },
+        {
+            "name": "documentKey",
+            "type": "object",
+            "description": "Identifier of the changed document (typically {_id})"
+        },
+        {
+            "name": "timestamp",
+            "type": "string",
+            "description": "Cluster time of the change (RFC3339)"
+        },
+        {
+            "name": "data",
+            "type": "object",
+            "description": "Full document (INSERT/REPLACE; UPDATE when fullDocument lookup is enabled)"
+        },
+        {
+            "name": "oldData",
+            "type": "object",
+            "description": "Document pre-image (requires fullDocumentBeforeChange)"
+        },
+        {
+            "name": "updatedFields",
+            "type": "object",
+            "description": "Fields changed by an UPDATE"
+        },
+        {
+            "name": "removedFields",
+            "type": "array",
+            "description": "Fields removed by an UPDATE"
+        },
+        {
+            "name": "resumeToken",
+            "type": "string",
+            "description": "Resume token for restarting the change stream"
+        },
+        {
+            "name": "correlationID",
+            "type": "string",
+            "description": "Correlation ID for tracing"
+        }
+    ]
+}

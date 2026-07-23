@@ -1,0 +1,173 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/project-flogo/contrib/activity/log",
+    "github.com/mpandav-tibco/flogo-custom-extensions/trigger/postgres-cdc-listener",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string"
+  ],
+  "name": "PostgreSQL-CDC-Demo",
+  "description": "Demonstrates the PostgreSQL CDC Listener trigger capturing real-time row changes via logical replication.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#postgres-cdc-listener",
+      "name": "postgres-cdc-listener",
+      "description": "Demonstrates the PostgreSQL CDC Listener trigger capturing real-time row changes via logical replication.",
+      "settings": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "cdc_user",
+        "password": "",
+        "databaseName": "demodb",
+        "tlsConfig": false,
+        "sslMode": "require",
+        "sslCA": null,
+        "sslCert": null,
+        "sslKey": null,
+        "connectionTimeout": 30,
+        "maxRetryAttempts": 5,
+        "retryDelay": "5s",
+        "standbyMessageTimeout": "10s"
+      },
+      "id": "PostgresCDCListener",
+      "handlers": [
+        {
+          "description": "Demonstrates the PostgreSQL CDC Listener trigger capturing real-time row changes via logical replication.",
+          "settings": {
+            "slotName": "flogo_demo_slot",
+            "publicationName": "flogo_demo_pub",
+            "createSlotIfNotExists": true,
+            "temporarySlot": false,
+            "createPublicationIfNotExists": true,
+            "eventTypes": "ALL",
+            "includeTransactionMarkers": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:CDC_Event_Flow"
+            },
+            "input": {
+              "eventID": "=$.eventID",
+              "eventType": "=$.eventType",
+              "database": "=$.database",
+              "schema": "=$.schema",
+              "table": "=$.table",
+              "timestamp": "=$.timestamp",
+              "data": "=$.data",
+              "oldData": "=$.oldData",
+              "lsn": "=$.lsn",
+              "xid": "=$.xid",
+              "correlationID": "=$.correlationID"
+            }
+          },
+          "name": "CDC_Event_Flow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:CDC_Event_Flow",
+      "data": {
+        "name": "CDC_Event_Flow",
+        "description": "Demonstrates the PostgreSQL CDC Listener trigger capturing real-time row changes via logical replication.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogEvent",
+            "type": "label",
+            "label": "StartActivity to LogEvent"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogEvent",
+            "name": "LogEvent",
+            "description": "Log the captured change event.",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "message": "=string.concat(\"PostgreSQL CDC Listener event: \", $flow.eventID, \" | \", $flow.eventType, \" | \", $flow.database, \" | \", $flow.schema, \" | \", $flow.table, \" | \", $flow.timestamp, \" | \", coerce.toString($flow.data), \" | \", coerce.toString($flow.oldData), \" | \", $flow.lsn, \" | \", coerce.toString($flow.xid), \" | \", $flow.correlationID)"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nRXZlbnQiOnsieCI6MzQzLCJ5Ijo4OX19",
+        "metadata": {
+          "input": [
+            {
+              "name": "eventID",
+              "type": "string"
+            },
+            {
+              "name": "eventType",
+              "type": "string"
+            },
+            {
+              "name": "database",
+              "type": "string"
+            },
+            {
+              "name": "schema",
+              "type": "string"
+            },
+            {
+              "name": "table",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "type": "string"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            },
+            {
+              "name": "oldData",
+              "type": "object"
+            },
+            {
+              "name": "lsn",
+              "type": "string"
+            },
+            {
+              "name": "xid",
+              "type": "integer"
+            },
+            {
+              "name": "correlationID",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"PostgresCDCListener\",\"properties\":{\"eventID\":{\"type\":\"string\",\"required\":false},\"eventType\":{\"type\":\"string\",\"required\":false},\"database\":{\"type\":\"string\",\"required\":false},\"schema\":{\"type\":\"string\",\"required\":false},\"table\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false},\"data\":{\"type\":\"object\"},\"oldData\":{\"type\":\"object\"},\"lsn\":{\"type\":\"string\",\"required\":false},\"xid\":{\"type\":\"integer\",\"required\":false},\"correlationID\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbSIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.5"
+  }
+}

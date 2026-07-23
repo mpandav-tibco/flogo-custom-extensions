@@ -59,6 +59,9 @@ This repository provides custom Flogo extensions including activities, triggers,
 |-----------|---------|------|-------------|
 | [PostgreSQL Listener](trigger/postgreslistener/) | 0.1.0 | Database | Listen for PostgreSQL NOTIFY messages on specified channels |
 | [MySQL Binlog Listener](trigger/mysql-binlog-listener/) | 1.1.0 | Database | Real-time MySQL/MariaDB binlog streaming for change data capture with SSL/TLS support |
+| [PostgreSQL CDC Listener](trigger/postgres-cdc-listener/) | 1.0.0 | Database | Native change data capture via logical replication (`pgoutput`) — streams INSERT/UPDATE/DELETE from the WAL with before/after row images, LSN, and XID |
+| [MongoDB CDC Listener](trigger/mongodb-cdc-listener/) | 1.0.0 | Database | Change data capture via MongoDB change streams — inserts/updates/replaces/deletes with full/pre-images and resumable tokens |
+| [SQL Server CDC Listener](trigger/sqlserver-cdc-listener/) | 1.0.0 | Database | Change data capture via SQL Server CDC change tables — LSN-cursor polling with before/after row images |
 | [SSE Trigger](connectors/sse/trigger/) | 1.0.0 | Real-time | Server-Sent Events trigger for streaming data to web clients |
 | [Kafka Stream Aggregate Trigger](connectors/KafkaStream/trigger/aggregate/) | 1.0.0 | Kafka Stream | Stateful windowed aggregation over a Kafka topic — fires on window close with sum/avg/count/min/max result |
 | [Kafka Stream Filter Trigger](connectors/KafkaStream/trigger/filter/) | 1.0.0 | Kafka Stream | Fire a flow only for messages satisfying single or multi-predicate AND/OR conditions; supports deduplication and rate limiting |
@@ -84,6 +87,9 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 | [PostgreSQL Listener Demo](examples/postgrelistener/) | PostgreSQL Listener Trigger, Write Log Activity | Database change notification demo with NOTIFY/LISTEN and logging |
 | [MySQL Binlog Listener Demo](examples/mysqllistener/) | MySQL Binlog Listener Trigger, Write Log Activity | Real-time MySQL/MariaDB binlog streaming demo for change data capture |
+| [PostgreSQL CDC Demo](examples/postgres-cdc-listener/) | PostgreSQL CDC Listener Trigger, Log Activity | Logical-replication CDC demo — logs every captured INSERT/UPDATE/DELETE with typed row images, LSN, and XID |
+| [MongoDB CDC Demo](examples/mongodb-cdc-listener/) | MongoDB CDC Listener Trigger, Log Activity | Change-stream CDC demo — logs captured document changes with full/pre-images and resume tokens |
+| [SQL Server CDC Demo](examples/sqlserver-cdc-listener/) | SQL Server CDC Listener Trigger, Log Activity | CDC change-table demo — logs captured INSERT/UPDATE/DELETE with before/after row images |
 | [AWS SQS Delete Demo](examples/aws_signature4/) | AWS Signature V4 Generator, REST Invoke Activity | AWS SQS message deletion demo using Signature V4 authentication |
 | [Template Engine Demo](examples/template-engine/) | Template Engine Activity, Write Log Activity | Dynamic content generation demo using templates with timer-based processing |
 | [Write Log Demo](examples/write_log/) | Write Log Activity | Efficient logging demonstration with various log levels and structured output |

@@ -3,6 +3,7 @@ package mysqlbinloglistener
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/project-flogo/core/data/coerce"
@@ -274,11 +275,45 @@ func (h *HandlerSettings) Validate() error {
 		h.EventTypes = "ALL" // Default to all
 	}
 
-	// Validate event types
+	// Validate event types (accepts a comma-separated list, e.g. "INSERT,UPDATE")
 	validTypes := map[string]bool{"ALL": true, "INSERT": true, "UPDATE": true, "DELETE": true}
-	if !validTypes[h.EventTypes] {
-		return fmt.Errorf("invalid event type: %s (valid: ALL, INSERT, UPDATE, DELETE)", h.EventTypes)
+	for _, part := range strings.Split(h.EventTypes, ",") {
+		t := strings.ToUpper(strings.TrimSpace(part))
+		if t == "" {
+			continue
+		}
+		if !validTypes[t] {
+			return fmt.Errorf("invalid event type: %s (valid: ALL, INSERT, UPDATE, DELETE)", t)
+		}
 	}
 
 	return nil
+}
+
+// EventTypeSet returns the set of enabled event types, expanding "ALL" (or an
+// empty value) to INSERT/UPDATE/DELETE and supporting a comma-separated list.
+func (h *HandlerSettings) EventTypeSet() map[string]bool {
+	set := make(map[string]bool)
+	raw := strings.TrimSpace(h.EventTypes)
+	if raw == "" || strings.EqualFold(raw, "ALL") {
+		set["INSERT"] = true
+		set["UPDATE"] = true
+		set["DELETE"] = true
+		return set
+	}
+	for _, part := range strings.Split(raw, ",") {
+		switch strings.ToUpper(strings.TrimSpace(part)) {
+		case "ALL":
+			set["INSERT"] = true
+			set["UPDATE"] = true
+			set["DELETE"] = true
+		case "INSERT":
+			set["INSERT"] = true
+		case "UPDATE":
+			set["UPDATE"] = true
+		case "DELETE":
+			set["DELETE"] = true
+		}
+	}
+	return set
 }

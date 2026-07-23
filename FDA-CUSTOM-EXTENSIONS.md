@@ -199,7 +199,7 @@ cd /Users/milindpandav/.vscode/extensions/tibco.flogo-2.26.3-2442/bin
 Config file: `.vscode/flogo-custom-ext-fda-config.json`  
 Generator: `/tmp/gen-all-extensions-config.py`
 
-### Contributions (12)
+### Contributions (15)
 | ID | Module |
 |---|---|
 | VectorDB | `github.com/mpandav-tibco/flogo-extensions/vectordb` |
@@ -213,6 +213,9 @@ Generator: `/tmp/gen-all-extensions-config.py`
 | XMLFilter | `github.com/milindpandav/activity/xmlfilter` |
 | PostgresListener | `github.com/mpandav/trigger/postgreslistener` |
 | MySQLBinlogListener | `github.com/mpandav-tibco/flogo-custom-extensions/trigger/mysql-binlog-listener` |
+| PostgresCDCListener | `github.com/mpandav-tibco/flogo-custom-extensions/trigger/postgres-cdc-listener` |
+| MongoDBCDCListener | `github.com/mpandav-tibco/flogo-custom-extensions/trigger/mongodb-cdc-listener` |
+| SQLServerCDCListener | `github.com/mpandav-tibco/flogo-custom-extensions/trigger/sqlserver-cdc-listener` |
 | RestFireForget | `github.com/mpandav-tibco/flogo-custom-extensions/activity/rest-fire-forget` |
 
 ### Connections (1)
@@ -220,7 +223,7 @@ Generator: `/tmp/gen-all-extensions-config.py`
 |---|---|
 | con_vectordb | VectorDB (Weaviate/Qdrant/Chroma/Milvus) |
 
-### Triggers (7)
+### Triggers (10)
 | Name | Type |
 |---|---|
 | trig_kafkastream_filter | KafkaStream Filter |
@@ -230,6 +233,9 @@ Generator: `/tmp/gen-all-extensions-config.py`
 | trig_sse | Server-Sent Events |
 | trig_postgreslistener | PostgreSQL LISTEN/NOTIFY |
 | trig_mysql_binlog | MySQL Binlog CDC |
+| trig_postgres_cdc | PostgreSQL CDC (logical replication) |
+| trig_mongodb_cdc | MongoDB CDC (change streams) |
+| trig_sqlserver_cdc | SQL Server CDC (change tables) |
 
 ### Activities (26)
 | Group | Activities |

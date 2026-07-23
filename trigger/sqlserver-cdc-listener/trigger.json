@@ -1,0 +1,287 @@
+{
+    "name": "sqlserver-cdc-listener",
+    "type": "flogo:trigger",
+    "version": "1.0.0",
+    "title": "SQL Server CDC Listener",
+    "image": "icons/sqlserver-cdc.svg",
+    "description": "Native SQL Server change data capture. Reads committed INSERT, UPDATE, and DELETE changes from CDC change tables by log sequence number (LSN) and fires a Flogo flow for each row change.",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/trigger/sqlserver-cdc-listener",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/trigger/sqlserver-cdc-listener",
+    "display": {
+        "category": "SQLServer",
+        "visible": true,
+        "description": "Streams committed row changes from SQL Server using native Change Data Capture (CDC) change tables",
+        "smallIcon": "icons/ic-sqlserver-connection.png",
+        "largeIcon": "icons/ic-sqlserver-connection.png"
+    },
+    "settings": [
+        {
+            "name": "host",
+            "type": "string",
+            "required": true,
+            "value": "localhost",
+            "description": "SQL Server host",
+            "display": {
+                "name": "Host",
+                "description": "SQL Server host",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "port",
+            "type": "integer",
+            "required": true,
+            "value": 1433,
+            "description": "SQL Server port",
+            "display": {
+                "name": "Port",
+                "description": "SQL Server port",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "user",
+            "type": "string",
+            "required": true,
+            "description": "Database user",
+            "display": {
+                "name": "User",
+                "description": "Database user with access to the CDC change tables",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "password",
+            "type": "string",
+            "required": true,
+            "description": "Database password",
+            "display": {
+                "name": "Password",
+                "description": "Database password",
+                "type": "password",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "databaseName",
+            "type": "string",
+            "required": true,
+            "description": "Database with CDC enabled",
+            "display": {
+                "name": "Database Name",
+                "description": "Database with change data capture enabled (sys.sp_cdc_enable_db)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "encrypt",
+            "type": "string",
+            "value": "disable",
+            "allowed": [
+                "disable",
+                "false",
+                "true",
+                "strict"
+            ],
+            "description": "TLS encryption mode",
+            "display": {
+                "name": "Encrypt",
+                "description": "disable/false: no TLS. true: encrypt the login and (SQL Server 2022) the connection. strict: TDS 8.0 strict encryption.",
+                "type": "dropdown",
+                "selection": "single",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "trustServerCertificate",
+            "type": "boolean",
+            "value": false,
+            "description": "Trust the server certificate without validation",
+            "display": {
+                "name": "Trust Server Certificate",
+                "description": "Trust the server certificate without CA validation (use only for self-signed certs in trusted networks)",
+                "visible": false
+            }
+        },
+        {
+            "name": "certificate",
+            "type": "string",
+            "description": "Path to the server CA certificate (PEM) for verification",
+            "display": {
+                "name": "CA Certificate",
+                "description": "Path to the server CA certificate (PEM) used to verify the server certificate",
+                "type": "fileselector",
+                "fileExtensions": [
+                    ".crt",
+                    ".pem",
+                    ".cer"
+                ],
+                "visible": false,
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "connectionTimeout",
+            "type": "integer",
+            "value": 30,
+            "description": "Connection timeout in seconds",
+            "display": {
+                "name": "Connection Timeout (s)",
+                "description": "Connection timeout in seconds",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "pollInterval",
+            "type": "string",
+            "value": "2s",
+            "description": "How often to poll the CDC change tables (Go duration, e.g. 2s)",
+            "display": {
+                "name": "Poll Interval",
+                "description": "How often to poll the CDC change tables for new changes (Go duration, e.g. 2s)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "maxRetryAttempts",
+            "type": "integer",
+            "value": 5,
+            "description": "Maximum reconnect attempts after a failure (0 = retry forever)",
+            "display": {
+                "name": "Max Retry Attempts",
+                "description": "Maximum reconnect attempts after a failure (0 = retry forever)",
+                "appPropertySupport": true
+            }
+        },
+        {
+            "name": "retryDelay",
+            "type": "string",
+            "value": "5s",
+            "description": "Delay between reconnect attempts (Go duration, e.g. 5s)",
+            "display": {
+                "name": "Retry Delay",
+                "description": "Delay between reconnect attempts (Go duration, e.g. 5s)",
+                "appPropertySupport": true
+            }
+        }
+    ],
+    "handler": {
+        "settings": [
+            {
+                "name": "schema",
+                "type": "string",
+                "value": "dbo",
+                "description": "Source table schema",
+                "display": {
+                    "name": "Schema",
+                    "description": "Source table schema (default dbo)",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "table",
+                "type": "string",
+                "required": true,
+                "description": "Source table name (CDC must be enabled on it)",
+                "display": {
+                    "name": "Table",
+                    "description": "Source table name. CDC must be enabled on it (sys.sp_cdc_enable_table).",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "captureInstance",
+                "type": "string",
+                "description": "CDC capture instance name (defaults to <schema>_<table>)",
+                "display": {
+                    "name": "Capture Instance",
+                    "description": "CDC capture instance name. Defaults to <schema>_<table>. Set this when a custom capture instance name was used.",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "eventTypes",
+                "type": "string",
+                "value": "ALL",
+                "description": "Comma-separated event types: ALL, or any of INSERT, UPDATE, DELETE",
+                "display": {
+                    "name": "Event Types",
+                    "description": "Comma-separated event types: ALL, or any of INSERT, UPDATE, DELETE",
+                    "appPropertySupport": true
+                }
+            },
+            {
+                "name": "startFromBeginning",
+                "type": "boolean",
+                "value": false,
+                "description": "Replay all retained changes from the minimum LSN on start",
+                "display": {
+                    "name": "Start From Beginning",
+                    "description": "Replay all retained changes from the minimum LSN on start. When false, only changes committed after startup are delivered."
+                }
+            }
+        ]
+    },
+    "output": [
+        {
+            "name": "eventID",
+            "type": "string",
+            "description": "Unique event identifier"
+        },
+        {
+            "name": "eventType",
+            "type": "string",
+            "description": "Type of change: INSERT, UPDATE, DELETE"
+        },
+        {
+            "name": "database",
+            "type": "string",
+            "description": "Source database name"
+        },
+        {
+            "name": "schema",
+            "type": "string",
+            "description": "Source schema name"
+        },
+        {
+            "name": "table",
+            "type": "string",
+            "description": "Source table name"
+        },
+        {
+            "name": "timestamp",
+            "type": "string",
+            "description": "Commit time of the change (RFC3339)"
+        },
+        {
+            "name": "data",
+            "type": "object",
+            "description": "New row image as a column-name keyed object (INSERT/UPDATE)"
+        },
+        {
+            "name": "oldData",
+            "type": "object",
+            "description": "Previous row image (UPDATE/DELETE)"
+        },
+        {
+            "name": "lsn",
+            "type": "string",
+            "description": "Commit LSN (hex) of the change"
+        },
+        {
+            "name": "seqVal",
+            "type": "string",
+            "description": "Sequence value within the transaction (hex)"
+        },
+        {
+            "name": "operation",
+            "type": "integer",
+            "description": "Raw CDC operation code (1=delete, 2=insert, 3=update-before, 4=update-after)"
+        },
+        {
+            "name": "correlationID",
+            "type": "string",
+            "description": "Correlation ID for tracing"
+        }
+    ]
+}

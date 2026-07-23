@@ -1,0 +1,174 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/project-flogo/contrib/activity/log",
+    "github.com/mpandav-tibco/flogo-custom-extensions/trigger/sqlserver-cdc-listener",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string"
+  ],
+  "name": "SQLServer-CDC-Demo",
+  "description": "Demonstrates the SQL Server CDC Listener trigger capturing real-time changes via CDC change tables.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#sqlserver-cdc-listener",
+      "name": "sqlserver-cdc-listener",
+      "description": "Demonstrates the SQL Server CDC Listener trigger capturing real-time changes via CDC change tables.",
+      "settings": {
+        "host": "localhost",
+        "port": 1433,
+        "user": "sa",
+        "password": "",
+        "databaseName": "demodb",
+        "encrypt": "disable",
+        "trustServerCertificate": true,
+        "certificate": null,
+        "connectionTimeout": 30,
+        "pollInterval": "2s",
+        "maxRetryAttempts": 5,
+        "retryDelay": "5s"
+      },
+      "id": "SQLServerCDCListener",
+      "handlers": [
+        {
+          "description": "Demonstrates the SQL Server CDC Listener trigger capturing real-time changes via CDC change tables.",
+          "settings": {
+            "schema": "dbo",
+            "table": "orders",
+            "captureInstance": null,
+            "eventTypes": "ALL",
+            "startFromBeginning": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:CDC_Event_Flow"
+            },
+            "input": {
+              "eventID": "=$.eventID",
+              "eventType": "=$.eventType",
+              "database": "=$.database",
+              "schema": "=$.schema",
+              "table": "=$.table",
+              "timestamp": "=$.timestamp",
+              "data": "=$.data",
+              "oldData": "=$.oldData",
+              "lsn": "=$.lsn",
+              "seqVal": "=$.seqVal",
+              "operation": "=$.operation",
+              "correlationID": "=$.correlationID"
+            }
+          },
+          "name": "CDC_Event_Flow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:CDC_Event_Flow",
+      "data": {
+        "name": "CDC_Event_Flow",
+        "description": "Demonstrates the SQL Server CDC Listener trigger capturing real-time changes via CDC change tables.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogEvent",
+            "type": "label",
+            "label": "StartActivity to LogEvent"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogEvent",
+            "name": "LogEvent",
+            "description": "Log the captured change event.",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "message": "=string.concat(\"SQL Server CDC Listener event: \", $flow.eventID, \" | \", $flow.eventType, \" | \", $flow.database, \" | \", $flow.schema, \" | \", $flow.table, \" | \", $flow.timestamp, \" | \", coerce.toString($flow.data), \" | \", coerce.toString($flow.oldData), \" | \", $flow.lsn, \" | \", $flow.seqVal, \" | \", coerce.toString($flow.operation), \" | \", $flow.correlationID)"
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nRXZlbnQiOnsieCI6MzQzLCJ5Ijo4OX19",
+        "metadata": {
+          "input": [
+            {
+              "name": "eventID",
+              "type": "string"
+            },
+            {
+              "name": "eventType",
+              "type": "string"
+            },
+            {
+              "name": "database",
+              "type": "string"
+            },
+            {
+              "name": "schema",
+              "type": "string"
+            },
+            {
+              "name": "table",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "type": "string"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            },
+            {
+              "name": "oldData",
+              "type": "object"
+            },
+            {
+              "name": "lsn",
+              "type": "string"
+            },
+            {
+              "name": "seqVal",
+              "type": "string"
+            },
+            {
+              "name": "operation",
+              "type": "integer"
+            },
+            {
+              "name": "correlationID",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"SQLServerCDCListener\",\"properties\":{\"eventID\":{\"type\":\"string\",\"required\":false},\"eventType\":{\"type\":\"string\",\"required\":false},\"database\":{\"type\":\"string\",\"required\":false},\"schema\":{\"type\":\"string\",\"required\":false},\"table\":{\"type\":\"string\",\"required\":false},\"timestamp\":{\"type\":\"string\",\"required\":false},\"data\":{\"type\":\"object\"},\"oldData\":{\"type\":\"object\"},\"lsn\":{\"type\":\"string\",\"required\":false},\"seqVal\":{\"type\":\"string\",\"required\":false},\"operation\":{\"type\":\"integer\",\"required\":false},\"correlationID\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvIiwiaWQiOiJTUUxTZXJ2ZXIiLCJ2ZXJzaW9uIjoiMi42LjEgSEYtMSIsInRhZyI6IjIuNi4xLWIwMyIsIm5hbWUiOiJNaWNyb3NvZnQgU1FMIFNlcnZlciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9TUUxTZXJ2ZXIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.5"
+  }
+}
