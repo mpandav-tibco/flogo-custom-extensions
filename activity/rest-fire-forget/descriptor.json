@@ -16,27 +16,6 @@
     },
     "settings": [
         {
-            "name": "method",
-            "type": "string",
-            "required": true,
-            "value": "POST",
-            "allowed": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "HEAD",
-                "OPTIONS"
-            ],
-            "display": {
-                "name": "HTTP Method",
-                "description": "The HTTP method used for the request.",
-                "type": "dropdown",
-                "selection": "single"
-            }
-        },
-        {
             "name": "timeout",
             "type": "integer",
             "value": 30000,
@@ -66,6 +45,27 @@
         }
     ],
     "inputs": [
+        {
+            "name": "method",
+            "type": "string",
+            "required": true,
+            "value": "POST",
+            "allowed": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "HEAD",
+                "OPTIONS"
+            ],
+            "display": {
+                "name": "Method",
+                "description": "The HTTP method used for the request.",
+                "type": "dropdown",
+                "selection": "single"
+            }
+        },
         {
             "name": "url",
             "type": "string",
@@ -115,5 +115,14 @@
             }
         }
     ],
-    "outputs": []
+    "outputs": [
+        {
+            "name": "accepted",
+            "type": "boolean",
+            "display": {
+                "name": "Accepted",
+                "description": "True if the request was dispatched to the background sender; false if it was not sent (missing/invalid URL, unsupported method, un-marshalable body, or the concurrency limit was reached). The flow never waits for the HTTP response."
+            }
+        }
+    ]
 }

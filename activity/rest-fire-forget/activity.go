@@ -19,7 +19,7 @@ import (
 	"github.com/project-flogo/core/support/log"
 )
 
-var activityMd = activity.ToMetadata(&Settings{}, &Input{})
+var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 
 func init() {
 	_ = activity.Register(&Activity{}, New)
@@ -30,7 +30,6 @@ func init() {
 // reading) the HTTP response.
 type Activity struct {
 	client  *http.Client
-	method  string
 	timeout time.Duration
 	sem     chan struct{}
 	logger  log.Logger
@@ -45,14 +44,6 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	s := &Settings{}
 	if err := metadata.MapToStruct(ctx.Settings(), s, true); err != nil {
 		return nil, fmt.Errorf("failed to map settings: %w", err)
-	}
-
-	method := strings.ToUpper(strings.TrimSpace(s.Method))
-	if method == "" {
-		method = http.MethodPost
-	}
-	if !isValidMethod(method) {
-		return nil, fmt.Errorf("unsupported HTTP method %q (allowed: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)", s.Method)
 	}
 
 	timeout := 30 * time.Second
@@ -81,15 +72,14 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	a := &Activity{
 		client:  &http.Client{Transport: transport},
-		method:  method,
 		timeout: timeout,
 		sem:     make(chan struct{}, maxConc),
 		logger:  ctx.Logger(),
 	}
 
 	if a.logger != nil {
-		a.logger.Infof("REST Fire & Forget initialised: method=%s timeout=%s maxConcurrent=%d skipTLSVerify=%t",
-			a.method, a.timeout, maxConc, s.SkipTLSVerify)
+		a.logger.Infof("REST Fire & Forget initialised: timeout=%s maxConcurrent=%d skipTLSVerify=%t",
+			a.timeout, maxConc, s.SkipTLSVerify)
 	}
 	return a, nil
 }
@@ -106,15 +96,24 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return false, fmt.Errorf("activity context cannot be nil")
 	}
 
+	methodRaw, _ := coerce.ToString(ctx.GetInput("method"))
+	method := strings.ToUpper(strings.TrimSpace(methodRaw))
+	if method == "" {
+		method = http.MethodPost
+	}
+	if !isValidMethod(method) {
+		return a.reject(ctx, fmt.Sprintf("unsupported HTTP method %q", method))
+	}
+
 	rawURL, _ := coerce.ToString(ctx.GetInput("url"))
 	rawURL = strings.TrimSpace(rawURL)
 	if rawURL == "" {
-		return a.reject("url is required")
+		return a.reject(ctx, "url is required")
 	}
 
 	u, perr := url.Parse(rawURL)
 	if perr != nil || u.Scheme == "" || u.Host == "" {
-		return a.reject(fmt.Sprintf("invalid url %q", rawURL))
+		return a.reject(ctx, fmt.Sprintf("invalid url %q", rawURL))
 	}
 
 	// Append query parameters, if any.
@@ -128,19 +127,19 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	}
 
 	// Build the request body (only for methods that carry one).
-	bodyReader, contentType, berr := a.buildBody(ctx.GetInput("body"))
+	bodyReader, contentType, berr := a.buildBody(method, ctx.GetInput("body"))
 	if berr != nil {
-		return a.reject(berr.Error())
+		return a.reject(ctx, berr.Error())
 	}
 
 	// IMPORTANT: use a detached background context (not the activity's context,
 	// which is cancelled the instant Eval returns) so the request survives.
 	reqCtx, cancel := context.WithTimeout(context.Background(), a.timeout)
 
-	req, rerr := http.NewRequestWithContext(reqCtx, a.method, u.String(), bodyReader)
+	req, rerr := http.NewRequestWithContext(reqCtx, method, u.String(), bodyReader)
 	if rerr != nil {
 		cancel()
-		return a.reject(fmt.Sprintf("failed to build request: %v", rerr))
+		return a.reject(ctx, fmt.Sprintf("failed to build request: %v", rerr))
 	}
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
@@ -155,7 +154,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	case a.sem <- struct{}{}:
 	default:
 		cancel()
-		return a.reject("concurrency limit reached; request not dispatched")
+		return a.reject(ctx, "concurrency limit reached; request not dispatched")
 	}
 
 	target := u.String()
@@ -164,14 +163,14 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 			cancel()
 			<-a.sem
 			if r := recover(); r != nil && a.logger != nil {
-				a.logger.Errorf("rest-fire-forget: recovered from panic sending %s %s: %v", a.method, target, r)
+				a.logger.Errorf("rest-fire-forget: recovered from panic sending %s %s: %v", method, target, r)
 			}
 		}()
 
 		resp, derr := a.client.Do(req)
 		if derr != nil {
 			if a.logger != nil {
-				a.logger.Warnf("rest-fire-forget: %s %s failed: %v", a.method, target, derr)
+				a.logger.Warnf("rest-fire-forget: %s %s failed: %v", method, target, derr)
 			}
 			return
 		}
@@ -179,20 +178,21 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 		if a.logger != nil {
-			a.logger.Debugf("rest-fire-forget: %s %s -> %d", a.method, target, resp.StatusCode)
+			a.logger.Debugf("rest-fire-forget: %s %s -> %d", method, target, resp.StatusCode)
 		}
 	}()
 
 	if a.logger != nil {
-		a.logger.Debugf("rest-fire-forget: dispatched %s %s (fire-and-forget)", a.method, target)
+		a.logger.Debugf("rest-fire-forget: dispatched %s %s (fire-and-forget)", method, target)
 	}
+	_ = ctx.SetOutput("accepted", true)
 	return true, nil
 }
 
 // buildBody converts the body input to a reader. Bodies are only sent for
 // methods that carry a payload.
-func (a *Activity) buildBody(raw interface{}) (io.Reader, string, error) {
-	if raw == nil || !methodAllowsBody(a.method) {
+func (a *Activity) buildBody(method string, raw interface{}) (io.Reader, string, error) {
+	if raw == nil || !methodAllowsBody(method) {
 		return nil, "", nil
 	}
 	switch b := raw.(type) {
@@ -215,13 +215,14 @@ func (a *Activity) buildBody(raw interface{}) (io.Reader, string, error) {
 	}
 }
 
-// reject records a client-side failure (bad input / saturation) and returns
-// without dispatching. Fire-and-forget has no outputs, so the flow simply
-// continues; the reason is logged at WARN.
-func (a *Activity) reject(msg string) (bool, error) {
+// reject records a client-side failure (bad input / saturation), reports
+// accepted=false, and returns without dispatching. The flow is never failed —
+// it continues immediately; the reason is logged at WARN.
+func (a *Activity) reject(ctx activity.Context, msg string) (bool, error) {
 	if a.logger != nil {
 		a.logger.Warnf("rest-fire-forget: request not dispatched: %s", msg)
 	}
+	_ = ctx.SetOutput("accepted", false)
 	return true, nil
 }
 

@@ -115,12 +115,12 @@
             "activity": {
               "ref": "#rest-fire-forget",
               "settings": {
-                "method": "POST",
                 "timeout": 30000,
                 "skipTlsVerify": false,
                 "maxConcurrentRequests": 1000
               },
               "input": {
+                "method": "POST",
                 "url": "http://localhost:18899/notify",
                 "headers": {
                   "mapping": {

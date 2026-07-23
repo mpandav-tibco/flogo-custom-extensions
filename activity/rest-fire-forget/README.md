@@ -25,7 +25,7 @@ Supports:
 |---|---|---|
 | Waits for response | Yes — `client.Do` + reads the full body | **No** — dispatches and returns |
 | Flow blocked until | Response received & parsed | Request handed off (microseconds) |
-| Outputs | statusCode, headers, responseBody | **None** — nothing to wait for |
+| Outputs | statusCode, headers, responseBody | `accepted` only — a dispatch flag, not the HTTP response |
 | Delivery guarantee | Response confirms receipt | **None** — best effort |
 
 ---
@@ -34,7 +34,6 @@ Supports:
 
 | Setting | Type | Required | Default | Description |
 |---------|------|----------|---------|-------------|
-| `method` | dropdown | ✓ | `POST` | HTTP method: `GET` / `POST` / `PUT` / `DELETE` / `PATCH` / `HEAD` / `OPTIONS`. |
 | `timeout` | integer | | `30000` | Max time (ms) the background request may run before it is abandoned. Does **not** delay the flow. `0` = 30000 ms. |
 | `skipTlsVerify` | boolean | | `false` | Disable TLS certificate verification — **development only**. |
 | `maxConcurrentRequests` | integer | | `1000` | Upper bound on in-flight requests. Excess requests are dropped (logged at WARN) rather than blocking the flow. `0` = 1000. |
@@ -43,17 +42,26 @@ Supports:
 
 ## Inputs
 
-The input structure mirrors the OOTB **Invoke REST Service** activity — `complex_object` *params* editors for headers and query parameters, and a `texteditor` JSON body. A design-time handler (`activity.js`) manages the body per method, exactly like Invoke REST Service.
+The input structure mirrors the OOTB **Invoke REST Service** activity — `method` and `url` lead the list, followed by `complex_object` *params* editors for headers and query parameters, and a `texteditor` JSON body. A design-time handler (`activity.js`) manages the body per method, exactly like Invoke REST Service.
 
 | Input | Type | Description |
 |-------|------|-------------|
+| `method` | dropdown (string) | HTTP method: `GET` / `POST` / `PUT` / `DELETE` / `PATCH` / `HEAD` / `OPTIONS`. Defaults to `POST`; mappable per execution. |
 | `url` | string (required) | Full endpoint URL, e.g. `https://host/path`. Supports app properties. |
 | `queryParams` | complex_object (`params`) | Query parameters appended to the URL — same params editor as *Invoke REST Service*. |
 | `headers` | complex_object (`params`) | Request headers, e.g. `Content-Type: application/json` — same params editor as *Invoke REST Service*, pre-seeded with the standard header names. |
 | `body` | complex_object (`texteditor`, JSON) | Request payload. **Shown only for `POST` / `PUT` / `PATCH` / `DELETE`** and hidden for `GET` / `HEAD` / `OPTIONS` (managed by `activity.js`). Untyped by default so it is always mappable; paste an example JSON payload for typed, field-level mapping. JSON objects are marshaled and sent as `application/json`. |
 
-> This activity has **no outputs** — there is no response to return. The flow continues as soon as the request is handed off.
->
+---
+
+## Outputs
+
+The HTTP **response is never returned** — that is the point of fire-and-forget. The activity exposes a single dispatch flag so a flow can observe whether the request was actually sent.
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `accepted` | boolean | `true` when the request was handed off to the background sender; `false` when it was **not** dispatched — invalid input, unsupported method, un-marshalable body, or the `maxConcurrentRequests` limit was reached. The flow never blocks on, or receives, the HTTP response. |
+
 > **Designer handler (`activity.js`).** Like Invoke REST Service, this activity ships a `wi-studio` design-time handler (`activity.js` + `activity.module.js`) that runs **only in the Flogo designer** (never at runtime). It reveals the **Request Body** for body-carrying methods and hides it for `GET` / `HEAD` / `OPTIONS`, mirroring `methodAllowsBody()` in `activity.go`. Restart the Flogo Design Assistant / reopen the flow after changing these files so the designer reloads them.
 
 ---
@@ -63,7 +71,7 @@ The input structure mirrors the OOTB **Invoke REST Service** activity — `compl
 - **Detached context.** The request runs under a background context (with the configured send timeout), so it is *not* cancelled when the flow instance completes — the request still goes out after the activity returns.
 - **Bounded concurrency.** A semaphore caps in-flight requests; when saturated, the activity drops the request (logged at WARN) instead of blocking the flow or leaking goroutines.
 - **Connection reuse.** A pooled `http.Client` is shared across executions; the response body is drained and closed in the background so connections can be reused.
-- **No response, by design.** Dispatch is best-effort — there is no output and no delivery confirmation.
+- **No response, by design.** The HTTP response is never returned; the only output is `accepted` — whether the request was dispatched. Delivery itself is best-effort with no confirmation.
 
 ### Caveats
 
@@ -75,16 +83,11 @@ The input structure mirrors the OOTB **Invoke REST Service** activity — `compl
 
 ## Validation
 
-**At startup (activity initialisation):**
+All validation happens **at runtime** (per flow invocation) — nothing blocks activity initialisation:
 
 | Check | Behaviour on failure |
 |-------|----------------------|
-| `method` is a valid HTTP method | Startup error — activity does not initialise. |
-
-**At runtime (each flow invocation):**
-
-| Check | Behaviour on failure |
-|-------|----------------------|
+| `method` is a valid HTTP method | Request is dropped (logged at WARN); the flow continues. |
 | `url` is non-empty and parseable | Request is dropped (logged at WARN); the flow continues. |
 | In-flight requests below `maxConcurrentRequests` | Request is dropped (logged at WARN); the flow continues. |
 
@@ -96,16 +99,16 @@ The input structure mirrors the OOTB **Invoke REST Service** activity — `compl
 
 | Setting | Value |
 |---------|-------|
-| Method | `POST` |
 | Send Timeout (ms) | `30000` |
 
 | Input | Value |
 |-------|-------|
+| `method` | `POST` |
 | `url` | `=$property["WEBHOOK_URL"]` |
 | `headers` | `Content-Type: application/json`, `X-Source: flogo` |
 | `body` | `={"event":"order.created","id":$flow.orderId}` |
 
-The flow proceeds without waiting — there is no output to inspect; the request is dispatched on a background context.
+The flow proceeds without waiting; the request is dispatched on a background context. The `accepted` output reports whether it was handed off (`false` if dropped for bad input or when saturated).
 
 ---
 

@@ -31,14 +31,16 @@ func TestFireAndForget_DispatchesRequest(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	a := newActivity(t, map[string]interface{}{"method": "POST"})
+	a := newActivity(t, map[string]interface{}{})
 	tc := test.NewActivityContext(a.Metadata())
+	tc.SetInput("method", "POST")
 	tc.SetInput("url", srv.URL)
 	tc.SetInput("body", map[string]interface{}{"hello": "world"})
 
 	done, err := a.Eval(tc)
 	require.NoError(t, err)
 	assert.True(t, done)
+	assert.Equal(t, true, tc.GetOutput("accepted"))
 
 	select {
 	case m := <-got:
@@ -58,8 +60,9 @@ func TestFireAndForget_DoesNotWaitForResponse(t *testing.T) {
 	defer srv.Close()
 	defer close(release)
 
-	a := newActivity(t, map[string]interface{}{"method": "GET"})
+	a := newActivity(t, map[string]interface{}{})
 	tc := test.NewActivityContext(a.Metadata())
+	tc.SetInput("method", "GET")
 	tc.SetInput("url", srv.URL)
 
 	start := time.Now()
@@ -72,34 +75,96 @@ func TestFireAndForget_DoesNotWaitForResponse(t *testing.T) {
 }
 
 func TestFireAndForget_MissingURL(t *testing.T) {
-	a := newActivity(t, map[string]interface{}{"method": "POST"})
+	a := newActivity(t, map[string]interface{}{})
 	tc := test.NewActivityContext(a.Metadata())
+	tc.SetInput("method", "POST")
 	tc.SetInput("url", "")
 
 	done, err := a.Eval(tc)
 	require.NoError(t, err)
 	assert.True(t, done)
+	assert.Equal(t, false, tc.GetOutput("accepted"))
 }
 
 func TestFireAndForget_InvalidURL(t *testing.T) {
-	a := newActivity(t, map[string]interface{}{"method": "GET"})
+	a := newActivity(t, map[string]interface{}{})
 	tc := test.NewActivityContext(a.Metadata())
+	tc.SetInput("method", "GET")
 	tc.SetInput("url", "not-a-url")
 
 	done, err := a.Eval(tc)
 	require.NoError(t, err)
 	assert.True(t, done)
+	assert.Equal(t, false, tc.GetOutput("accepted"))
 }
 
-func TestNew_InvalidMethod(t *testing.T) {
-	ictx := test.NewActivityInitContext(map[string]interface{}{"method": "FOO"}, nil)
-	_, err := New(ictx)
-	assert.Error(t, err)
-}
-
-func TestNew_DefaultsMethodToPost(t *testing.T) {
+func TestEval_InvalidMethod(t *testing.T) {
 	a := newActivity(t, map[string]interface{}{})
-	assert.Equal(t, http.MethodPost, a.method)
+	tc := test.NewActivityContext(a.Metadata())
+	tc.SetInput("method", "FOO")
+	tc.SetInput("url", "http://example.com")
+
+	done, err := a.Eval(tc)
+	require.NoError(t, err)
+	assert.True(t, done) // rejected gracefully; no dispatch
+	assert.Equal(t, false, tc.GetOutput("accepted"))
+}
+
+func TestEval_DefaultsMethodToPost(t *testing.T) {
+	got := make(chan string, 1)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got <- r.Method
+		w.WriteHeader(http.StatusAccepted)
+	}))
+	defer srv.Close()
+
+	a := newActivity(t, map[string]interface{}{})
+	tc := test.NewActivityContext(a.Metadata())
+	tc.SetInput("url", srv.URL) // no method set → defaults to POST
+
+	done, err := a.Eval(tc)
+	require.NoError(t, err)
+	assert.True(t, done)
+	assert.Equal(t, true, tc.GetOutput("accepted"))
+
+	select {
+	case m := <-got:
+		assert.Equal(t, "POST", m)
+	case <-time.After(3 * time.Second):
+		t.Fatal("server never received the defaulted POST request")
+	}
+}
+
+// When the concurrency limit is saturated, further requests are not dispatched
+// and report accepted=false (the flow is not blocked).
+func TestFireAndForget_ConcurrencyLimit(t *testing.T) {
+	release := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		<-release // hold the first request open so it keeps its concurrency slot
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+	defer close(release)
+
+	a := newActivity(t, map[string]interface{}{"maxConcurrentRequests": 1})
+
+	// First request acquires the only slot and is dispatched.
+	tc1 := test.NewActivityContext(a.Metadata())
+	tc1.SetInput("method", "GET")
+	tc1.SetInput("url", srv.URL)
+	done, err := a.Eval(tc1)
+	require.NoError(t, err)
+	assert.True(t, done)
+	assert.Equal(t, true, tc1.GetOutput("accepted"))
+
+	// Second request finds the limit saturated and is rejected (not dispatched).
+	tc2 := test.NewActivityContext(a.Metadata())
+	tc2.SetInput("method", "GET")
+	tc2.SetInput("url", srv.URL)
+	done, err = a.Eval(tc2)
+	require.NoError(t, err)
+	assert.True(t, done)
+	assert.Equal(t, false, tc2.GetOutput("accepted"))
 }
 
 func TestMethodHelpers(t *testing.T) {
