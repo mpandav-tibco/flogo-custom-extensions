@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate
 
 go 1.25
 

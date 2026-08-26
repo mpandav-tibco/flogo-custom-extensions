@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/connector"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-milvus"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus/connector"
-	mockclient "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus/testutil/mock"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus/connector"
+	mockclient "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus/testutil/mock"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data"
 	"github.com/project-flogo/core/support/log"

@@ -2,7 +2,7 @@
   "name": "tibco-lancedb-vectorsearch",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/vectorSearch",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/vectorSearch",
   "title": "Vector Search",
   "image": "icons/search.svg",
   "description": "Semantic vector similarity search in a LanceDB table.",

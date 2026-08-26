@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/connector"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

@@ -2,7 +2,7 @@
   "name": "tibco-lancedb-delete-col",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/deleteCollection",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/deleteCollection",
   "title": "Delete Collection",
   "image": "icons/delete-col.svg",
   "description": "Permanently delete a LanceDB table / collection and all its data.",

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector"
 	"github.com/project-flogo/core/support/connection"
 )
 

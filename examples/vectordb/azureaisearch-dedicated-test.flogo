@@ -2,22 +2,22 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/listCollections",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/getDocument",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/scrollDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/deleteDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/deleteCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/ragQuery",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/createEmbeddings",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/rerank",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/connector",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/connector",
     "github.com/project-flogo/contrib/activity/actreturn"
   ],
   "name": "azureaisearch-dedicated-test",
@@ -1124,7 +1124,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItYXp1cmVhaXNlYXJjaCIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJ2ZWN0b3JkYi1henVyZWFpc2VhcmNoIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItYXp1cmVhaXNlYXJjaCIsImlkIjoiYXp1cmVhaXNlYXJjaCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6InZlY3RvcmRiLWF6dXJlYWlzZWFyY2ggQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L2F6dXJlYWlzZWFyY2giLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
   "metadata": {
     "endpoints": [
       {

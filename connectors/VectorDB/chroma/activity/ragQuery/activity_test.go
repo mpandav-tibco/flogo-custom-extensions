@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-chroma"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-chroma/connector"
-	mockclient "github.com/mpandav-tibco/flogo-extensions/vectordb-chroma/testutil/mock"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/connector"
+	mockclient "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/testutil/mock"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data"
 	"github.com/project-flogo/core/support/log"

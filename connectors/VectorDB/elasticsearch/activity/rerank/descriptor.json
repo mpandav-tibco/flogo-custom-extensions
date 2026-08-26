@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-rerank",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/rerank",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/rerank",
   "title": "Rerank",
   "image": "icons/rerank.svg",
   "description": "Re-rank a list of documents against a query using a cross-encoder rerank API (Cohere, Jina, Voyage, etc.).",

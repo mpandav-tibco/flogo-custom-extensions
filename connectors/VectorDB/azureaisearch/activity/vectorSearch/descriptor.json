@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-search",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/vectorSearch",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/vectorSearch",
   "title": "Vector Search",
   "image": "icons/search.svg",
   "description": "Semantic vector similarity search in an Azure AI Search index.",

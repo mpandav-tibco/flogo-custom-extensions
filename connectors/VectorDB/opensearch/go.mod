@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch
 
 go 1.25
 

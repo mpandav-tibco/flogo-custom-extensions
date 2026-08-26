@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb
 
 go 1.25
 

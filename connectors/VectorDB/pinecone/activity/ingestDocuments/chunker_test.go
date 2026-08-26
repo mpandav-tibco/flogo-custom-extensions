@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone"
-	mockclient "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/testutil/mock"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone"
+	mockclient "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone/testutil/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

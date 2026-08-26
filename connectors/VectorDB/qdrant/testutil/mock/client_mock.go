@@ -5,7 +5,7 @@ package mock
 import (
 	"context"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant"
 	"github.com/stretchr/testify/mock"
 )
 

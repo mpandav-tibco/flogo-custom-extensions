@@ -2,7 +2,7 @@
   "name": "tibco-lancedb-delete-docs",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/deleteDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/deleteDocuments",
   "title": "Delete Documents",
   "image": "icons/delete.svg",
   "description": "Delete documents by ID list or by filter expression from a LanceDB table.",

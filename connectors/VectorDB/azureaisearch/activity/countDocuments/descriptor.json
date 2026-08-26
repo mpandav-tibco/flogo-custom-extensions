@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-count",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/countDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/countDocuments",
   "title": "Count Documents",
   "description": "Count documents in an Azure AI Search index.",
   "display": {

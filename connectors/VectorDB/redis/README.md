@@ -6,7 +6,7 @@ A Flogo connector for [Redis Stack](https://redis.io/docs/stack/) — Redis with
 **Go Client**: `github.com/redis/go-redis/v9`  
 **Transport**: Redis RESP3 protocol  
 **Connector Name**: `redis-connector`  
-**Go Module**: `github.com/mpandav-tibco/flogo-extensions/vectordb-redis`
+**Go Module**: `github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis`
 
 > **Requires Redis Stack** — the standard Redis image does not include the vector module. Use `redis/redis-stack:latest` or `redis/redis-stack-server:latest`.
 

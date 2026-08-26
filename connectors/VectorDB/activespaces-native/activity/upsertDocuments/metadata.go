@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native"
 	"github.com/project-flogo/core/support/connection"
 )
 

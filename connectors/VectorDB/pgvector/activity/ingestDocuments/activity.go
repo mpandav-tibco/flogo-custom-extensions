@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/embeddings"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

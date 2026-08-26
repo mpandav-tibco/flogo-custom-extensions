@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant
 
 go 1.25
 

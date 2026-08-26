@@ -2,22 +2,22 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/listCollections",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/getDocument",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/scrollDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/deleteDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/deleteCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/ragQuery",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/createEmbeddings",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/activity/rerank",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector/connector",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector/connector",
     "github.com/project-flogo/contrib/activity/actreturn"
   ],
   "name": "pgvector-dedicated-test",
@@ -1240,5 +1240,5 @@
     ],
     "flogoVersion": "2.26.3"
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItcGd2ZWN0b3IiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoidmVjdG9yZGItcGd2ZWN0b3IgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L1ZlY3RvckRCIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0="
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItcGd2ZWN0b3IiLCJpZCI6InBndmVjdG9yIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoidmVjdG9yZGItcGd2ZWN0b3IgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L3BndmVjdG9yIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0="
 }

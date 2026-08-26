@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-upsert",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/activity/upsertDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch/activity/upsertDocuments",
   "title": "Upsert Documents",
   "image": "icons/upsert.svg",
   "description": "Insert or update documents (vectors + metadata) in a VectorDB collection.",

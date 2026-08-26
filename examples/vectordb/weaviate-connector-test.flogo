@@ -23,7 +23,7 @@
     "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
   ],
   "name": "weaviate-connector-test",
-  "description": "Live connector test app for Weaviate vector database \u2014 CRUD cycle, RAG ingest/query with hybrid search, embeddings, rerank",
+  "description": "Live connector test app for Weaviate vector database — CRUD cycle, RAG ingest/query with hybrid search, embeddings, rerank",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -49,7 +49,7 @@
       "id": "TestTrigger",
       "handlers": [
         {
-          "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 hybridSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+          "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → hybridSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -87,7 +87,7 @@
           "name": "crud_cycle"
         },
         {
-          "description": "RAG cycle with hybrid search: createCollection \u2192 ingestDocuments \u2192 ragQuery \u2192 hybridSearch \u2192 deleteCollection",
+          "description": "RAG cycle with hybrid search: createCollection → ingestDocuments → ragQuery → hybridSearch → deleteCollection",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -163,7 +163,7 @@
           "name": "embed_test"
         },
         {
-          "description": "Test rerank activity \u2014 calls Cohere rerank API",
+          "description": "Test rerank activity — calls Cohere rerank API",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -208,7 +208,7 @@
       "id": "flow:crud_cycle",
       "data": {
         "name": "crud_cycle",
-        "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 hybridSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+        "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → hybridSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection",
         "links": [
           {
             "id": 1,
@@ -536,7 +536,7 @@
       "id": "flow:rag_cycle",
       "data": {
         "name": "rag_cycle",
-        "description": "RAG cycle with hybrid search: createCollection \u2192 ingestDocuments \u2192 ragQuery \u2192 hybridSearch \u2192 deleteCollection",
+        "description": "RAG cycle with hybrid search: createCollection → ingestDocuments → ragQuery → hybridSearch → deleteCollection",
         "links": [
           {
             "id": 1,
@@ -798,7 +798,7 @@
                 "timeoutSeconds": 30
               },
               "input": {
-                "inputText": "Flogo vector connector test \u2014 single embedding"
+                "inputText": "Flogo vector connector test — single embedding"
               }
             }
           },
@@ -856,7 +856,7 @@
       "id": "flow:rerank_test",
       "data": {
         "name": "rerank_test",
-        "description": "Test rerank activity \u2014 calls Cohere rerank API",
+        "description": "Test rerank activity — calls Cohere rerank API",
         "links": [
           {
             "id": 1,
@@ -1007,7 +1007,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJpZCI6IlZlY3RvckRCIiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAiLCJuYW1lIjoiVmVjdG9yREIgUkFHIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9tb25vbGl0aCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -1047,7 +1047,7 @@
                     }
                   }
                 },
-                "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 hybridSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection"
+                "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → hybridSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection"
               }
             },
             "/api/test/rag": {
@@ -1071,7 +1071,7 @@
                     }
                   }
                 },
-                "description": "RAG cycle with hybrid search: createCollection \u2192 ingestDocuments \u2192 ragQuery \u2192 hybridSearch \u2192 deleteCollection"
+                "description": "RAG cycle with hybrid search: createCollection → ingestDocuments → ragQuery → hybridSearch → deleteCollection"
               }
             },
             "/api/test/embed": {
@@ -1119,7 +1119,7 @@
                     }
                   }
                 },
-                "description": "Test rerank activity \u2014 calls Cohere rerank API"
+                "description": "Test rerank activity — calls Cohere rerank API"
               }
             }
           },

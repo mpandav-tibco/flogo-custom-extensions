@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	vectordb "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/embeddings"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

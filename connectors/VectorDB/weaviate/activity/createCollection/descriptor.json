@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-create-col",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/createCollection",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/createCollection",
   "title": "Create Collection",
   "image": "icons/collection.svg",
   "description": "Create a new vector collection / index in the connected VectorDB.",

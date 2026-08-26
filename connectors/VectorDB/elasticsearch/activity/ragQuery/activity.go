@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/embeddings"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

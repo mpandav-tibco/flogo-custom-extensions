@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-redis"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis"
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/connection"
 	"github.com/project-flogo/core/support/log"

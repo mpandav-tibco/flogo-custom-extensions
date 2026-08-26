@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate"
 	"github.com/project-flogo/core/support/connection"
 )
 

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "flogo:connector",
   "image": "icons/vectordb.svg",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/connector",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-gateway/connector",
   "display": {
     "category": "activespaces-gateway",
     "visible": true,

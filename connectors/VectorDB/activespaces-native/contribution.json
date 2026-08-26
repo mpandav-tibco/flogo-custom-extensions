@@ -7,63 +7,63 @@
   "contributions": [
     {
       "type": "flogo:connector",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/connector"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/connector"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/upsertDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/upsertDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/vectorSearch"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/vectorSearch"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/hybridSearch"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/hybridSearch"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/deleteDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/deleteDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/createCollection"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/createCollection"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/deleteCollection"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/deleteCollection"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/listCollections"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/listCollections"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/scrollDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/scrollDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/getDocument"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/getDocument"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/countDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/countDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/rerank"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/rerank"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/ingestDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/ingestDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/createEmbeddings"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/createEmbeddings"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/ragQuery"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/ragQuery"
     }
   ]
 }

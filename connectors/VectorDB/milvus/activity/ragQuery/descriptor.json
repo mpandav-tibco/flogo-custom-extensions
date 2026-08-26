@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-rag-query",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus/activity/ragQuery",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus/activity/ragQuery",
   "title": "RAG Query",
   "image": "icons/rag.svg",
   "description": "Full RAG pipeline: embed query text \u2192 vector search \u2192 format context for LLM. Combines embedding generation and semantic retrieval in one activity.",

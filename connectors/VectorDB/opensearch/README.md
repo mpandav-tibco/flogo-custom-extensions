@@ -5,7 +5,7 @@ A pure-stdlib-Go Flogo connector for [OpenSearch](https://opensearch.org/) 2.x i
 **Status**: ✅ Active  
 **Transport**: REST (stdlib `net/http`)  
 **Connector Name**: `opensearch-connector`  
-**Go Module**: `github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch`
+**Go Module**: `github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch`
 
 ## Connection Settings
 

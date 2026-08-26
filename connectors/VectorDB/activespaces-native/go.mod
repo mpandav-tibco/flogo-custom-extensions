@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native
 
 go 1.24.1
 

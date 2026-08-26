@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-ingest-documents",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-chroma/activity/ingestDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/ingestDocuments",
   "title": "Ingest Documents",
   "image": "icons/ingest.svg",
   "description": "Embed text documents and store them in VectorDB in one step. Generates embeddings from raw text using your chosen provider, then upserts the resulting vectors and metadata into the target collection.",

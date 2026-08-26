@@ -5,7 +5,7 @@ A pure-stdlib-Go Flogo connector for [Pinecone](https://www.pinecone.io/) — th
 **Status**: ✅ Active  
 **Transport**: REST (stdlib `net/http`)  
 **Connector Name**: `pinecone-connector`  
-**Go Module**: `github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone`
+**Go Module**: `github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone`
 
 ## Connection Settings
 

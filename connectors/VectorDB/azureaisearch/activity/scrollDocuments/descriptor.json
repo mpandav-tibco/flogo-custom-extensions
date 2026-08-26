@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-scroll",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/scrollDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/scrollDocuments",
   "title": "Scroll Documents",
   "description": "Paginate through documents in an Azure AI Search index.",
   "display": {

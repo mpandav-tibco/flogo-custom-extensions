@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/connector"
-	mockclient "github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone/testutil/mock"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone/connector"
+	mockclient "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone/testutil/mock"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data"
 	"github.com/project-flogo/core/support/log"

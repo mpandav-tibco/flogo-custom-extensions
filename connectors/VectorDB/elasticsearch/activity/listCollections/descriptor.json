@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-list-cols",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/listCollections",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/listCollections",
   "title": "List Collections",
   "image": "icons/list.svg",
   "description": "List all collections / indexes available in the connected VectorDB.",

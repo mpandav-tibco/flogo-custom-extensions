@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-milvus
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus
 
 go 1.25
 

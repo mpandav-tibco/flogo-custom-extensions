@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-redis
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis
 
 go 1.24.1
 

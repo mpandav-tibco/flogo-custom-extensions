@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/connector"
-	mockclient "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/testutil/mock"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/connector"
+	mockclient "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/testutil/mock"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/mapper"
 	"github.com/project-flogo/core/support/connection"

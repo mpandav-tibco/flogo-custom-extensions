@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/connector"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

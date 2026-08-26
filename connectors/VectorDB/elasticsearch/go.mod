@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch
 
 go 1.25
 

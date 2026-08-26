@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-delete",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/deleteDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/deleteDocuments",
   "title": "Delete Documents",
   "description": "Delete documents from an Azure AI Search index by ID or filter.",
   "display": {

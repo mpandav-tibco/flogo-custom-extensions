@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch"
 	"github.com/project-flogo/core/support/connection"
 )
 

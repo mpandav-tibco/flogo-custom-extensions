@@ -42,7 +42,7 @@ import (
 	"testing"
 	"time"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

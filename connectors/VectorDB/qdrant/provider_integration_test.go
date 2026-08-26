@@ -42,7 +42,7 @@ import (
 	"testing"
 	"time"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

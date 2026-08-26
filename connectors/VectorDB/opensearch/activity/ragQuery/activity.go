@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-opensearch/embeddings"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/opensearch/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

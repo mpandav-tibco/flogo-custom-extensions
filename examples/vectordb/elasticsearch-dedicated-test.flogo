@@ -2,23 +2,23 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/listCollections",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/getDocument",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/scrollDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/deleteDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/deleteCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ragQuery",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/createEmbeddings",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/rerank",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/connector",
-    "github.com/project-flogo/contrib/activity/actreturn"
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/connector"
   ],
   "name": "elasticsearch-dedicated-test",
   "description": "Live connector test app for Elasticsearch 8.x using dedicated vectordb-elasticsearch connector - CRUD cycle, RAG ingest/query, embeddings, rerank",
@@ -539,7 +539,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjAwLCJ5Ijo1MH0sIkNyZWF0ZUNvbGxlY3Rpb24iOnsieCI6MzUwLCJ5Ijo1MH0sIkluZ2VzdERvY3MiOnsieCI6NTAwLCJ5Ijo1MH0sIkNvdW50RG9jczEiOnsieCI6NjUwLCJ5Ijo1MH0sIkdldERvYyI6eyJ4Ijo4MDAsInkiOjUwfSwiU2Nyb2xsRG9jcyI6eyJ4Ijo5NTAsInkiOjUwfSwiRGVsZXRlRG9jcyI6eyJ4IjoxMTAwLCJ5Ijo1MH0sIkNvdW50RG9jczIiOnsieCI6MTI1MCwieSI6NTB9LCJEZWxldGVDb2xsZWN0aW9uIjp7IngiOjE0MDAsInkiOjUwfSwiTGlzdEFmdGVyIjp7IngiOjE1NTAsInkiOjUwfSwiTG9nU3VtbWFyeSI6eyJ4IjoxNzAwLCJ5Ijo1MH19",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxpc3RCZWZvcmUiOnsieCI6MjUwLCJ5IjoxNTB9LCJDcmVhdGVDb2xsZWN0aW9uIjp7IngiOjQ1MCwieSI6MjUwfSwiSW5nZXN0RG9jcyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkNvdW50RG9jczEiOnsieCI6ODUwLCJ5Ijo0NTB9LCJHZXREb2MiOnsieCI6MTA1MCwieSI6NTUwfSwiU2Nyb2xsRG9jcyI6eyJ4IjoxMjUwLCJ5Ijo2NTB9LCJEZWxldGVEb2NzIjp7IngiOjE0NTAsInkiOjc1MH0sIkNvdW50RG9jczIiOnsieCI6MTY1MCwieSI6ODUwfSwiRGVsZXRlQ29sbGVjdGlvbiI6eyJ4IjoxODUwLCJ5Ijo5NTB9LCJMaXN0QWZ0ZXIiOnsieCI6MjA1MCwieSI6MTA1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MjI1MCwieSI6MTE1MH0sIlJldHVybiI6eyJ4IjoyNDUwLCJ5IjoxMjUwfX0=",
         "metadata": {
           "input": [],
           "output": [
@@ -749,7 +749,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkNyZWF0ZVJBR0NvbCI6eyJ4IjoyNTAsInkiOjE1MH0sIkluZ2VzdERvY3MiOnsieCI6NDUwLCJ5IjoyNTB9LCJSQUdRdWVyeSI6eyJ4Ijo2NTAsInkiOjM1MH0sIkRlbGV0ZVJBR0NvbCI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkxvZ1N1bW1hcnkiOnsieCI6MTA1MCwieSI6NTUwfSwiUmV0dXJuIjp7IngiOjEyNTAsInkiOjY1MH19",
         "metadata": {
           "input": [],
           "output": [
@@ -877,7 +877,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkVtYmVkU2luZ2xlIjp7IngiOjI1MCwieSI6MTUwfSwiRW1iZWRCYXRjaCI6eyJ4Ijo0NTAsInkiOjI1MH0sIkxvZ1N1bW1hcnkiOnsieCI6NjUwLCJ5IjozNTB9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkVtYmVkU2luZ2xlIjp7IngiOjI1MCwieSI6MTUwfSwiRW1iZWRCYXRjaCI6eyJ4Ijo0NTAsInkiOjI1MH0sIkxvZ1N1bW1hcnkiOnsieCI6NjUwLCJ5IjozNTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo0NTB9fQ==",
         "metadata": {
           "input": [],
           "output": [
@@ -995,7 +995,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlJlcmFua0RvY3MiOnsieCI6MjUwLCJ5IjoxNTB9LCJMb2dTdW1tYXJ5Ijp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlJlcmFua0RvY3MiOnsieCI6MjUwLCJ5IjoxNTB9LCJMb2dTdW1tYXJ5Ijp7IngiOjQ1MCwieSI6MjUwfSwiUmV0dXJuIjp7IngiOjY1MCwieSI6MzUwfX0=",
         "metadata": {
           "input": [],
           "output": [
@@ -1017,61 +1017,6 @@
     }
   ],
   "properties": [
-    {
-      "name": "VectorDB.es-conn.Connection_Name",
-      "type": "string",
-      "value": "es-conn"
-    },
-    {
-      "name": "VectorDB.es-conn.Host",
-      "type": "string",
-      "value": "localhost"
-    },
-    {
-      "name": "VectorDB.es-conn.Port",
-      "type": "float64",
-      "value": 9200
-    },
-    {
-      "name": "VectorDB.es-conn.Username",
-      "type": "string",
-      "value": ""
-    },
-    {
-      "name": "VectorDB.es-conn.Password",
-      "type": "string",
-      "value": ""
-    },
-    {
-      "name": "VectorDB.es-conn.API_Key",
-      "type": "string",
-      "value": ""
-    },
-    {
-      "name": "VectorDB.es-conn.Enable_TLS",
-      "type": "boolean",
-      "value": false
-    },
-    {
-      "name": "VectorDB.es-conn.Timeout_(seconds)",
-      "type": "float64",
-      "value": 30
-    },
-    {
-      "name": "VectorDB.es-conn.Max_Retries",
-      "type": "float64",
-      "value": 3
-    },
-    {
-      "name": "VectorDB.es-conn.Retry_Backoff_(ms)",
-      "type": "float64",
-      "value": 500
-    },
-    {
-      "name": "VectorDB.es-conn.Configure_Embedding_Provider",
-      "type": "boolean",
-      "value": false
-    },
     {
       "name": "EMBED_PROVIDER",
       "type": "string",
@@ -1111,34 +1056,89 @@
       "name": "RERANK_MODEL",
       "type": "string",
       "value": "rerank-english-v3.0"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Connection_Name",
+      "type": "string",
+      "value": "$property[\"VectorDB.es-conn.Connection_Name\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Host",
+      "type": "string",
+      "value": "$property[\"VectorDB.es-conn.Host\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Port",
+      "type": "float64",
+      "value": "$property[\"VectorDB.es-conn.Port\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Username",
+      "type": "string",
+      "value": "$property[\"VectorDB.es-conn.Username\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Password",
+      "type": "string",
+      "value": "SECRET:DhDSXbIyjqFd83F1rnze+h6g6dKuJcLCGVCsHZLiTOFiJQzbtrBGWzW7ipkYCCgdjVMXw36cJak="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].API_Key",
+      "type": "string",
+      "value": "SECRET:jrnCVPqkzSS6+UHM9no7NJ7fn8lRoWnORxvhx33JZRAMwdvz96+n3DVcv94W1I6hh53jUJ2lkw=="
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Enable_TLS",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.es-conn.Enable_TLS\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Timeout_(seconds)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.es-conn.Timeout_(seconds)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Max_Retries",
+      "type": "float64",
+      "value": "$property[\"VectorDB.es-conn.Max_Retries\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Retry_Backoff_(ms)",
+      "type": "float64",
+      "value": "$property[\"VectorDB.es-conn.Retry_Backoff_(ms)\"]"
+    },
+    {
+      "name": "VectorDB.=$property[\"VectorDB_es-conn_Connection_Name\"].Configure_Embedding_Provider",
+      "type": "boolean",
+      "value": "$property[\"VectorDB.es-conn.Configure_Embedding_Provider\"]"
     }
   ],
   "connections": {
     "es-conn": {
       "id": "es-conn",
-      "name": "es-conn",
+      "name": "$property[\"VectorDB.es-conn.Connection_Name\"]",
       "ref": "#connector",
       "isGlobal": false,
       "settings": {
-        "name": "=$property[\"VectorDB.es-conn.Connection_Name\"]",
-        "host": "=$property[\"VectorDB.es-conn.Host\"]",
-        "port": "=$property[\"VectorDB.es-conn.Port\"]",
-        "username": "=$property[\"VectorDB.es-conn.Username\"]",
-        "password": "=$property[\"VectorDB.es-conn.Password\"]",
-        "apiKey": "=$property[\"VectorDB.es-conn.API_Key\"]",
-        "useTLS": "=$property[\"VectorDB.es-conn.Enable_TLS\"]",
+        "name": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Connection_Name\"]",
+        "host": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Host\"]",
+        "port": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Port\"]",
+        "username": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Username\"]",
+        "password": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Password\"]",
+        "apiKey": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].API_Key\"]",
+        "useTLS": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Enable_TLS\"]",
         "tlsInsecureSkipVerify": false,
-        "timeoutSeconds": "=$property[\"VectorDB.es-conn.Timeout_(seconds)\"]",
-        "maxRetries": "=$property[\"VectorDB.es-conn.Max_Retries\"]",
-        "retryBackoffMs": "=$property[\"VectorDB.es-conn.Retry_Backoff_(ms)\"]",
-        "enableEmbedding": "=$property[\"VectorDB.es-conn.Configure_Embedding_Provider\"]",
+        "timeoutSeconds": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Timeout_(seconds)\"]",
+        "maxRetries": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Max_Retries\"]",
+        "retryBackoffMs": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Retry_Backoff_(ms)\"]",
+        "enableEmbedding": "=$property[\"VectorDB.$property[\"VectorDB_es-conn_Connection_Name\"].Configure_Embedding_Provider\"]",
         "embeddingProvider": "OpenAI",
         "embeddingAPIKey": "",
         "embeddingBaseURL": ""
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6Ikxpc3RCZWZvcmUiLCJpZCI6ImVsYXN0aWNzZWFyY2giLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vZWxhc3RpY3NlYXJjaCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuYyIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJSZWRpcyBTdGFjayBWZWN0b3JEQiBDb25uZWN0b3IiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vVmVjdG9yREIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6Ikxpc3RCZWZvcmUiLCJpZCI6ImVsYXN0aWNzZWFyY2giLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vZWxhc3RpY3NlYXJjaCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [
       {

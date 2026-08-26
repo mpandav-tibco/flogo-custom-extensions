@@ -2,7 +2,7 @@
   "name": "tibco-lancedb-count",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/countDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/countDocuments",
   "title": "Count Documents",
   "image": "icons/count.svg",
   "description": "Count documents in a LanceDB table, optionally filtered.",

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-gateway"
 	"github.com/project-flogo/core/support/connection"
 )
 

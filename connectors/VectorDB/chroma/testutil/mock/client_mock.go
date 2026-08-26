@@ -5,7 +5,7 @@ package mock
 import (
 	"context"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-chroma"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma"
 	"github.com/stretchr/testify/mock"
 )
 

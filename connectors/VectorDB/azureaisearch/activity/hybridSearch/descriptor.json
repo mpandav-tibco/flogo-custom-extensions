@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-hybrid",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/hybridSearch",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/hybridSearch",
   "title": "Hybrid Search",
   "image": "icons/hybrid.svg",
   "description": "Hybrid (vector + keyword) search in an Azure AI Search index.",

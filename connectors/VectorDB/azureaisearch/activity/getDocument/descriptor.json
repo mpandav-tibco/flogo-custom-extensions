@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-get",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/getDocument",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/getDocument",
   "title": "Get Document",
   "description": "Retrieve a document by ID from an Azure AI Search index.",
   "display": {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/embeddings"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

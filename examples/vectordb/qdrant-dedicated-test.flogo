@@ -2,25 +2,25 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/listCollections",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/getDocument",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/scrollDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/deleteDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/deleteCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/ragQuery",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/createEmbeddings",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/activity/rerank",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/connector"
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/connector"
   ],
   "name": "qdrant-dedicated-test",
-  "description": "Live connector test app for Qdrant using dedicated vectordb-qdrant connector \u2014 CRUD cycle, RAG ingest/query, embeddings, rerank",
+  "description": "Live connector test app for Qdrant using dedicated vectordb-qdrant connector — CRUD cycle, RAG ingest/query, embeddings, rerank",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -46,7 +46,7 @@
       "id": "TestTrigger",
       "handlers": [
         {
-          "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+          "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -84,7 +84,7 @@
           "name": "crud_cycle"
         },
         {
-          "description": "RAG cycle: createCollection \u2192 ingestDocuments (with Ollama embeddings) \u2192 ragQuery \u2192 deleteCollection",
+          "description": "RAG cycle: createCollection → ingestDocuments (with Ollama embeddings) → ragQuery → deleteCollection",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -122,7 +122,7 @@
           "name": "rag_cycle"
         },
         {
-          "description": "Test createEmbeddings activity with Ollama provider \u2014 generates embeddings for sample texts",
+          "description": "Test createEmbeddings activity with Ollama provider — generates embeddings for sample texts",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -160,7 +160,7 @@
           "name": "embed_test"
         },
         {
-          "description": "Test rerank activity \u2014 calls Cohere rerank API to reorder documents by relevance",
+          "description": "Test rerank activity — calls Cohere rerank API to reorder documents by relevance",
           "settings": {
             "APISpecPath": "",
             "Method": "GET",
@@ -205,7 +205,7 @@
       "id": "flow:crud_cycle",
       "data": {
         "name": "crud_cycle",
-        "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection",
+        "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection",
         "links": [
           {
             "id": 1,
@@ -507,7 +507,7 @@
       "id": "flow:rag_cycle",
       "data": {
         "name": "rag_cycle",
-        "description": "RAG cycle: createCollection \u2192 ingestDocuments (with Ollama embeddings) \u2192 ragQuery \u2192 deleteCollection",
+        "description": "RAG cycle: createCollection → ingestDocuments (with Ollama embeddings) → ragQuery → deleteCollection",
         "links": [
           {
             "id": 1,
@@ -693,7 +693,7 @@
       "id": "flow:embed_test",
       "data": {
         "name": "embed_test",
-        "description": "Test createEmbeddings activity with Ollama provider \u2014 generates embeddings for sample texts",
+        "description": "Test createEmbeddings activity with Ollama provider — generates embeddings for sample texts",
         "links": [
           {
             "id": 1,
@@ -743,7 +743,7 @@
                 "timeoutSeconds": 30
               },
               "input": {
-                "inputText": "Flogo vector connector test \u2014 single embedding"
+                "inputText": "Flogo vector connector test — single embedding"
               }
             }
           },
@@ -802,7 +802,7 @@
       "id": "flow:rerank_test",
       "data": {
         "name": "rerank_test",
-        "description": "Test rerank activity \u2014 calls Cohere rerank API to reorder documents by relevance",
+        "description": "Test rerank activity — calls Cohere rerank API to reorder documents by relevance",
         "links": [
           {
             "id": 1,
@@ -941,7 +941,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItcWRyYW50IiwiaWQiOiJWZWN0b3JEQiIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6InZlY3RvcmRiLXFkcmFudCBDb25uZWN0b3IiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vVmVjdG9yREIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItcWRyYW50IiwiaWQiOiJxZHJhbnQiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJ2ZWN0b3JkYi1xZHJhbnQgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L3FkcmFudCIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -981,7 +981,7 @@
                     }
                   }
                 },
-                "description": "Full CRUD test: createCollection \u2192 upsert 3 docs \u2192 count \u2192 vectorSearch \u2192 getDocument \u2192 scrollDocuments \u2192 deleteDocuments \u2192 count \u2192 deleteCollection"
+                "description": "Full CRUD test: createCollection → upsert 3 docs → count → vectorSearch → getDocument → scrollDocuments → deleteDocuments → count → deleteCollection"
               }
             },
             "/api/test/rag": {
@@ -1005,7 +1005,7 @@
                     }
                   }
                 },
-                "description": "RAG cycle: createCollection \u2192 ingestDocuments (with Ollama embeddings) \u2192 ragQuery \u2192 deleteCollection"
+                "description": "RAG cycle: createCollection → ingestDocuments (with Ollama embeddings) → ragQuery → deleteCollection"
               }
             },
             "/api/test/embed": {
@@ -1029,7 +1029,7 @@
                     }
                   }
                 },
-                "description": "Test createEmbeddings activity with Ollama provider \u2014 generates embeddings for sample texts"
+                "description": "Test createEmbeddings activity with Ollama provider — generates embeddings for sample texts"
               }
             },
             "/api/test/rerank": {
@@ -1053,7 +1053,7 @@
                     }
                   }
                 },
-                "description": "Test rerank activity \u2014 calls Cohere rerank API to reorder documents by relevance"
+                "description": "Test rerank activity — calls Cohere rerank API to reorder documents by relevance"
               }
             }
           },

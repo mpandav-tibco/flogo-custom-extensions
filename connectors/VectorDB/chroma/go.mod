@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-chroma
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma
 
 go 1.25
 

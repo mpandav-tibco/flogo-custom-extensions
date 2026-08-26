@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo/connector"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-gateway"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-gateway/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

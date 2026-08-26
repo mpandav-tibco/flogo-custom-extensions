@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-redis-create-col",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/createCollection",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/createCollection",
   "title": "Create Collection",
   "image": "icons/collection.svg",
   "description": "Create a new vector collection / index in the connected VectorDB.",

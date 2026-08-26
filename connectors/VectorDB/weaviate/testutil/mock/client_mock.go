@@ -5,7 +5,7 @@ package mock
 import (
 	"context"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate"
 	"github.com/stretchr/testify/mock"
 )
 

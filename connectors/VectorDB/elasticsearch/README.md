@@ -5,7 +5,7 @@ A pure-stdlib-Go Flogo connector for [Elasticsearch](https://www.elastic.co/elas
 **Status**: ✅ Active  
 **Transport**: REST (stdlib `net/http`)  
 **Connector Name**: `elasticsearch-connector`  
-**Go Module**: `github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch`
+**Go Module**: `github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch`
 
 ## Connection Settings
 

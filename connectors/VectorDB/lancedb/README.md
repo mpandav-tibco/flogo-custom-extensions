@@ -5,7 +5,7 @@ A pure-stdlib-Go Flogo connector for [LanceDB](https://lancedb.github.io/lancedb
 **Status**: ✅ Active  
 **Transport**: REST (stdlib `net/http`)  
 **Connector Name**: `lancedb-connector`  
-**Go Module**: `github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb`
+**Go Module**: `github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb`
 
 ## Connection Settings
 

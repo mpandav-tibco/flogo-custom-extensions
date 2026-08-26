@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-pinecone
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pinecone
 
 go 1.25
 

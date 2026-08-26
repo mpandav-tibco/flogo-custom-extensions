@@ -5,7 +5,7 @@ package mock
 import (
 	"context"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-milvus"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus"
 	"github.com/stretchr/testify/mock"
 )
 

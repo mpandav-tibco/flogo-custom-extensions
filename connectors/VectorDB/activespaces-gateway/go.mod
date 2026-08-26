@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/pureGo
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-gateway
 
 go 1.24.1
 

@@ -1,4 +1,4 @@
-module github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch
+module github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch
 
 go 1.25
 

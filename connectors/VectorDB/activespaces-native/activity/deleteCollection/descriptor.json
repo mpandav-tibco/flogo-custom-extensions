@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-delete-col",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/deleteCollection",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/deleteCollection",
   "title": "Delete Collection",
   "image": "icons/delete-col.svg",
   "description": "Permanently delete a VectorDB collection and all its data.",

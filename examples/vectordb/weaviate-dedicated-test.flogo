@@ -2,20 +2,20 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/listCollections",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/hybridSearch",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/ragQuery",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/deleteCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/hybridSearch",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/createEmbeddings",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/activity/rerank",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/connector"
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/connector"
   ],
   "name": "weaviate-dedicated-test",
   "description": "Live connector test app for Weaviate using dedicated vectordb-weaviate connector — CRUD cycle, RAG ingest/query, embeddings, rerank",
@@ -886,7 +886,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmMiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJMaXN0QmVmb3JlIiwiaWQiOiJXZWF2aWF0ZSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9XZWF2aWF0ZSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvY29ubmVjdG9ycy9WZWN0b3JEQi93ZWF2aWF0ZSIsImlkIjoiV2VhdmlhdGUiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJWZWN0b3JEQiBSQUcgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L3dlYXZpYXRlIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
   "metadata": {
     "endpoints": [
       {

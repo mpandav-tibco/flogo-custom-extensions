@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-count",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/countDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/countDocuments",
   "title": "Count Documents",
   "image": "icons/count.svg",
   "description": "Count documents in a collection, optionally filtered.",

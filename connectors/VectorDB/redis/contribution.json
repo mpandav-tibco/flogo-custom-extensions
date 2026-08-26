@@ -7,63 +7,63 @@
   "contributions": [
     {
       "type": "flogo:connector",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/connector"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/connector"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/upsertDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/upsertDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/vectorSearch"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/vectorSearch"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/hybridSearch"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/hybridSearch"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/deleteDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/deleteDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/createCollection"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/createCollection"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/deleteCollection"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/deleteCollection"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/listCollections"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/listCollections"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/scrollDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/scrollDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/getDocument"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/getDocument"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/countDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/countDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/rerank"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/rerank"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/ingestDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/ingestDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/createEmbeddings"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/createEmbeddings"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/ragQuery"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/ragQuery"
     }
   ]
 }

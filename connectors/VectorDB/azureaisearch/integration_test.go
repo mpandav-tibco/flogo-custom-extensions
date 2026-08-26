@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

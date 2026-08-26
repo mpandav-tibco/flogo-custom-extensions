@@ -7,63 +7,63 @@
   "contributions": [
     {
       "type": "flogo:connector",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/connector"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/connector"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/upsertDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/upsertDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/vectorSearch"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/vectorSearch"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/hybridSearch"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/hybridSearch"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/deleteDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createCollection"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/createCollection"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/deleteCollection"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/deleteCollection"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/listCollections"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/listCollections"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/scrollDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/scrollDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/getDocument"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/getDocument"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/countDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/countDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/rerank"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/rerank"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ingestDocuments"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/ingestDocuments"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/createEmbeddings"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/createEmbeddings"
     },
     {
       "type": "flogo:activity",
-      "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb/activity/ragQuery"
+      "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/ragQuery"
     }
   ]
 }

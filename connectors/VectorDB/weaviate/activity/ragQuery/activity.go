@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/embeddings"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

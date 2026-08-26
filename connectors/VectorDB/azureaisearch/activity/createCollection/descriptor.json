@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-create-collection",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/createCollection",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/createCollection",
   "title": "Create Index",
   "description": "Create a new Azure AI Search vector index.",
   "display": {

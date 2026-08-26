@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-rerank",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-chroma/activity/rerank",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma/activity/rerank",
   "title": "Rerank Documents",
   "image": "icons/rerank.svg",
   "description": "Re-rank a list of documents by relevance to a query (Cohere, Jina, etc.).",

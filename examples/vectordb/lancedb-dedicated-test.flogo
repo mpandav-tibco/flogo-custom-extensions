@@ -2,22 +2,22 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/listCollections",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/createCollection",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/ingestDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/countDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/getDocument",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/scrollDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/deleteDocuments",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/deleteCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/listCollections",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/createCollection",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/ingestDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/countDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/getDocument",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/scrollDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/deleteDocuments",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/deleteCollection",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/ragQuery",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/createEmbeddings",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/rerank",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/ragQuery",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/createEmbeddings",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/rerank",
     "github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/project-flogo/contrib/function/string",
-    "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/connector",
+    "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/connector",
     "github.com/project-flogo/contrib/activity/actreturn"
   ],
   "name": "lancedb-dedicated-test",
@@ -1115,7 +1115,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItbGFuY2VkYiIsImlkIjoiVmVjdG9yREIiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJ2ZWN0b3JkYi1sYW5jZWRiIENvbm5lY3RvciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9WZWN0b3JEQiIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZGF2LXRpYmNvL2Zsb2dvLWV4dGVuc2lvbnMvdmVjdG9yZGItbGFuY2VkYiIsImlkIjoibGFuY2VkYiIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6InZlY3RvcmRiLWxhbmNlZGIgQ29ubmVjdG9yIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L2xhbmNlZGIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
   "metadata": {
     "endpoints": [
       {

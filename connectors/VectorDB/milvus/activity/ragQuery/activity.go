@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-milvus"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-milvus/embeddings"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/milvus/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

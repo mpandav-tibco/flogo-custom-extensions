@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-create-embeddings",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/createEmbeddings",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/createEmbeddings",
   "title": "Create Embeddings",
   "image": "icons/embed.svg",
   "description": "Generate embedding vectors for a list of texts.",

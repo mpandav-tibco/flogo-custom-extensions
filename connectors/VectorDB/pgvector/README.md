@@ -6,7 +6,7 @@ A Flogo connector for [pgvector](https://github.com/pgvector/pgvector) — the o
 **Go Client**: `github.com/jackc/pgx/v5` (native PostgreSQL driver, no cgo)  
 **Transport**: PostgreSQL wire protocol (pgx connection pool)  
 **Connector Name**: `pgvector-connector`  
-**Go Module**: `github.com/mpandav-tibco/flogo-extensions/vectordb-pgvector`
+**Go Module**: `github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/pgvector`
 
 ## Connection Settings
 

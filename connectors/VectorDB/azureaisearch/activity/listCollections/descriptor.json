@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-list",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/listCollections",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/listCollections",
   "title": "List Indexes",
   "description": "List all Azure AI Search indexes.",
   "display": {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch"
 	"github.com/project-flogo/core/support/connection"
 )
 

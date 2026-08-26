@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-chroma"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/chroma"
 	"github.com/project-flogo/core/support/connection"
 )
 

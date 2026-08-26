@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-redis-count",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-redis/activity/countDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/redis/activity/countDocuments",
   "title": "Count Documents",
   "image": "icons/count.svg",
   "description": "Count documents in a collection, optionally filtered.",

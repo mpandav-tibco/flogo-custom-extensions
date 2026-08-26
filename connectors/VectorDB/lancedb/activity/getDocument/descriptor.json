@@ -2,7 +2,7 @@
   "name": "tibco-lancedb-get-doc",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-lancedb/activity/getDocument",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/lancedb/activity/getDocument",
   "title": "Get Document",
   "image": "icons/get.svg",
   "description": "Retrieve a single document by its ID from a LanceDB table.",

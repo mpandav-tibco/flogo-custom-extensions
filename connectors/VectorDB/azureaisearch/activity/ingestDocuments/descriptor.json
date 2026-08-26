@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-azureaisearch-ingest-documents",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/activity/ingestDocuments",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/activity/ingestDocuments",
   "title": "Ingest Documents",
   "image": "icons/ingest.svg",
   "description": "Embed text documents and store them in Azure AI Search in one step.",

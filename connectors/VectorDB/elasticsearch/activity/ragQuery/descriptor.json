@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-rag",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/vectordb-elasticsearch/activity/ragQuery",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/elasticsearch/activity/ragQuery",
   "title": "RAG Query",
   "image": "icons/rag.svg",
   "description": "Full RAG pipeline: embed query → vector search → format context → LLM generate.",

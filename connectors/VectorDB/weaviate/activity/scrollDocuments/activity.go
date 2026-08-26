@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-weaviate/connector"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

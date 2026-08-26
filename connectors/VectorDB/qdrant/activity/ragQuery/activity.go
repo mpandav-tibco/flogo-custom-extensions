@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-qdrant/embeddings"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/qdrant/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

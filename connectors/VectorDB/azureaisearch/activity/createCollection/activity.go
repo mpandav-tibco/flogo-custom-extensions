@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/connector"
+	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/connector"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

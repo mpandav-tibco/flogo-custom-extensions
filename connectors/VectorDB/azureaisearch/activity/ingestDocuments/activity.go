@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	vectordb "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch"
-	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/connector"
-	vdbembed "github.com/mpandav-tibco/flogo-extensions/vectordb-azureaisearch/embeddings"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch"
+	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/connector"
+	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/azureaisearch/embeddings"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )

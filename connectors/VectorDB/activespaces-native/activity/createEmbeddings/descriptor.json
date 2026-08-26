@@ -2,7 +2,7 @@
   "name": "tibco-vectordb-create-embeddings",
   "version": "1.0.0",
   "type": "flogo:activity",
-  "ref": "github.com/mpandav-tibco/flogo-extensions/VectorDB/activespaces/nativeAS/activity/createEmbeddings",
+  "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/activespaces-native/activity/createEmbeddings",
   "title": "Create Embeddings",
   "image": "icons/embed.svg",
   "description": "Generate vector embeddings from text using OpenAI, Azure OpenAI, Cohere, or Ollama. Supports single text and batch embedding.",
