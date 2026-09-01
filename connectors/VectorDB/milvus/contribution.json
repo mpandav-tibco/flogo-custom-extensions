@@ -1,7 +1,7 @@
 {
   "name": "Milvus VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "milvus",
   "description": "Multi-provider vector database connector for RAG and agentic AI use cases. Supports Qdrant, Weaviate, Chroma, and Milvus with a single shared connection definition.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

@@ -1,7 +1,7 @@
 {
   "name": "Elasticsearch VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "elasticsearch",
   "description": "Elasticsearch connector for vector similarity search and RAG use cases.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

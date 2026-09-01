@@ -1,7 +1,7 @@
 {
   "name": "OpenSearch VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "opensearch",
   "description": "OpenSearch connector for vector similarity search and RAG use cases using k-NN plugin.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

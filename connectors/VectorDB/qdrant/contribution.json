@@ -1,7 +1,7 @@
 {
   "name": "Qdrant VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "qdrant",
   "description": "Multi-provider vector database connector for RAG and agentic AI use cases. Supports Qdrant, Weaviate, Chroma, and Milvus with a single shared connection definition.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

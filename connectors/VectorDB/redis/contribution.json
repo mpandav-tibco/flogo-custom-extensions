@@ -1,7 +1,7 @@
 {
   "name": "Redis Stack VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "redis",
   "description": "Redis Stack (RediSearch + vector module) connector for vector similarity search and RAG use cases.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

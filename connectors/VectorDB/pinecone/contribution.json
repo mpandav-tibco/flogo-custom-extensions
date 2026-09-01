@@ -1,7 +1,7 @@
 {
   "name": "Pinecone VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "pinecone",
   "description": "Dedicated Pinecone vector database connector for RAG and agentic AI use cases. Uses Pinecone serverless REST API with pure stdlib HTTP — no external SDK required.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

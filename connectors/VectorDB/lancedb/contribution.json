@@ -1,7 +1,7 @@
 {
   "name": "LanceDB VectorDB Connector",
   "version": "1.0.0",
-  "category": "VectorDB",
+  "category": "lancedb",
   "description": "LanceDB connector for vector similarity search and RAG use cases — supports self-hosted and LanceDB Cloud.",
   "image": "connector/icons/vectordb.svg",
   "contributions": [

@@ -20,8 +20,7 @@
       "required": true,
       "display": {
         "name": "Connection Name",
-        "description": "Unique name for this connection (used as registry key)",
-        "appPropertySupport": true
+        "description": "Unique name for this connection (used as registry key)"
       }
     },
     {
