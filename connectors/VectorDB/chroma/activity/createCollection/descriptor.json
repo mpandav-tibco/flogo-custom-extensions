@@ -7,7 +7,7 @@
   "image": "icons/collection.svg",
   "description": "Create a new vector collection / index in the connected VectorDB.",
   "display": {
-    "category": "Chroma",
+    "category": "chroma",
     "visible": true,
     "smallIcon": "icons/collection.svg"
   },
@@ -21,9 +21,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "chroma-connector"
-      ]
+      "allowed": ["chroma-connector"]
     }
   ],
   "input": [

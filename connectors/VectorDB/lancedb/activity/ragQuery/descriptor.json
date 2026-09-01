@@ -22,9 +22,7 @@
         "description": "Select the lancedb VectorDB connector to use for retrieval",
         "type": "connection"
       },
-      "allowed": [
-        "lancedb-connector"
-      ]
+      "allowed": ["lancedb-connector"]
     },
     {
       "name": "useConnectorEmbedding",

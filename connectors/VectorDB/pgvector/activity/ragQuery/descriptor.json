@@ -22,9 +22,7 @@
         "description": "Select the pgvector VectorDB connector to use for retrieval",
         "type": "connection"
       },
-      "allowed": [
-        "pgvector-connector"
-      ]
+      "allowed": ["pgvector-connector"]
     },
     {
       "name": "useConnectorEmbedding",

@@ -22,9 +22,7 @@
         "description": "Optional. Select a VectorDB connection to inherit embedding settings from.",
         "type": "connection"
       },
-      "allowed": [
-        "redis-connector"
-      ]
+      "allowed": ["redis-connector"]
     },
     {
       "name": "useConnectorEmbedding",

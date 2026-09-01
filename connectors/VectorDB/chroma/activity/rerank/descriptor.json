@@ -7,7 +7,7 @@
   "image": "icons/rerank.svg",
   "description": "Re-rank a list of documents by relevance to a query (Cohere, Jina, etc.).",
   "display": {
-    "category": "Chroma",
+    "category": "chroma",
     "visible": true,
     "smallIcon": "icons/rerank.svg",
     "description": "Cross-encoder reranking for improved RAG precision"

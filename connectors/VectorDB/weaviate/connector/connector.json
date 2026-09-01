@@ -6,7 +6,7 @@
     "image": "icons/vectordb.svg",
     "ref": "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/connector",
     "display": {
-        "category": "VectorDB",
+        "category": "weaviate",
         "visible": true,
         "connectionsupport": true,
         "smallIcon": "icons/vectordb.svg",

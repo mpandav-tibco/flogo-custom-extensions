@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector (Qdrant, Weaviate, Chroma, Milvus) to store the documents",
         "type": "connection"
       },
-      "allowed": [
-        "redis-connector"
-      ]
+      "allowed": ["redis-connector"]
     },
     {
       "name": "enableChunking",

@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector (ActiveSpaces, Weaviate, Chroma, Milvus) to store the documents",
         "type": "connection"
       },
-      "allowed": [
-        "activespaces-native-connector"
-      ]
+      "allowed": ["activespaces-native-connector"]
     },
     {
       "name": "enableChunking",

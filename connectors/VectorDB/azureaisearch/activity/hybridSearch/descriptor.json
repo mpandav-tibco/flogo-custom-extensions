@@ -21,9 +21,7 @@
         "name": "Azure AI Search Connection",
         "type": "connection"
       },
-      "allowed": [
-        "azureaisearch-connector"
-      ]
+      "allowed": ["azureaisearch-connector"]
     },
     {
       "name": "defaultCollection",

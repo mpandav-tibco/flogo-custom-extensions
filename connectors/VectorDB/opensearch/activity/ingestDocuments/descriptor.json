@@ -22,9 +22,7 @@
         "description": "Select the opensearch VectorDB connector to store the documents",
         "type": "connection"
       },
-      "allowed": [
-        "opensearch-connector"
-      ]
+      "allowed": ["opensearch-connector"]
     },
     {
       "name": "enableChunking",

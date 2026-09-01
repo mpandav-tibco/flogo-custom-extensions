@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector to use for retrieval",
         "type": "connection"
       },
-      "allowed": [
-        "activespaces-gateway-connector"
-      ]
+      "allowed": ["activespaces-gateway-connector"]
     },
     {
       "name": "useConnectorEmbedding",

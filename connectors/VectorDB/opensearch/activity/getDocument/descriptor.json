@@ -21,9 +21,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "opensearch-connector"
-      ]
+      "allowed": ["opensearch-connector"]
     },
     {
       "name": "defaultCollection",

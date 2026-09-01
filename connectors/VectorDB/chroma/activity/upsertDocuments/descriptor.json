@@ -7,7 +7,7 @@
   "image": "icons/upsert.svg",
   "description": "Insert or update documents (vectors + metadata) in a VectorDB collection.",
   "display": {
-    "category": "Chroma",
+    "category": "chroma",
     "visible": true,
     "smallIcon": "icons/upsert.svg",
     "description": "Upsert documents into a VectorDB collection"
@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "chroma-connector"
-      ]
+      "allowed": ["chroma-connector"]
     },
     {
       "name": "defaultCollection",

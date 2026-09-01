@@ -22,9 +22,7 @@
         "description": "Optional. Select a VectorDB connection to inherit embedding settings from.",
         "type": "connection"
       },
-      "allowed": [
-        "activespaces-native-connector"
-      ]
+      "allowed": ["activespaces-native-connector"]
     },
     {
       "name": "useConnectorEmbedding",

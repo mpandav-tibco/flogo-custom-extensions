@@ -7,7 +7,7 @@
   "image": "icons/scroll.svg",
   "description": "Paginate through documents without a query vector. Ideal for memory iteration.",
   "display": {
-    "category": "Milvus",
+    "category": "milvus",
     "visible": true,
     "smallIcon": "icons/scroll.svg"
   },
@@ -21,9 +21,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "milvus-connector"
-      ]
+      "allowed": ["milvus-connector"]
     },
     {
       "name": "defaultCollection",

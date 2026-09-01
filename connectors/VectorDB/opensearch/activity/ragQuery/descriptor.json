@@ -22,9 +22,7 @@
         "description": "Select the opensearch VectorDB connector to use for retrieval",
         "type": "connection"
       },
-      "allowed": [
-        "opensearch-connector"
-      ]
+      "allowed": ["opensearch-connector"]
     },
     {
       "name": "useConnectorEmbedding",

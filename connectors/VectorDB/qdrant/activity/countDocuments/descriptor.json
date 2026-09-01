@@ -7,7 +7,7 @@
   "image": "icons/count.svg",
   "description": "Count documents in a collection, optionally filtered.",
   "display": {
-    "category": "Qdrant",
+    "category": "qdrant",
     "visible": true,
     "smallIcon": "icons/count.svg"
   },
@@ -21,9 +21,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "qdrant-connector"
-      ]
+      "allowed": ["qdrant-connector"]
     },
     {
       "name": "defaultCollection",

@@ -7,7 +7,7 @@
   "image": "icons/ingest.svg",
   "description": "Embed text documents and store them in VectorDB in one step. Generates embeddings from raw text using your chosen provider, then upserts the resulting vectors and metadata into the target collection.",
   "display": {
-    "category": "Pinecone",
+    "category": "pinecone",
     "visible": true,
     "smallIcon": "icons/ingest.svg",
     "description": "Embed + store documents in one step \u2014 ideal for RAG ingestion pipelines"
@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector (Qdrant, Weaviate, Chroma, Milvus) to store the documents",
         "type": "connection"
       },
-      "allowed": [
-        "pinecone-connector"
-      ]
+      "allowed": ["pinecone-connector"]
     },
     {
       "name": "enableChunking",

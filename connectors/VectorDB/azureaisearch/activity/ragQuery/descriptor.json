@@ -22,9 +22,7 @@
         "description": "Select the Azure AI Search VectorDB connector to use for retrieval",
         "type": "connection"
       },
-      "allowed": [
-        "azureaisearch-connector"
-      ]
+      "allowed": ["azureaisearch-connector"]
     },
     {
       "name": "useConnectorEmbedding",

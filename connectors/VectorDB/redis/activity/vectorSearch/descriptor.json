@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "redis-connector"
-      ]
+      "allowed": ["redis-connector"]
     },
     {
       "name": "defaultCollection",

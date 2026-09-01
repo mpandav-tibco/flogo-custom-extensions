@@ -22,9 +22,7 @@
         "description": "Select the lancedb VectorDB connector to store the documents",
         "type": "connection"
       },
-      "allowed": [
-        "lancedb-connector"
-      ]
+      "allowed": ["lancedb-connector"]
     },
     {
       "name": "enableChunking",

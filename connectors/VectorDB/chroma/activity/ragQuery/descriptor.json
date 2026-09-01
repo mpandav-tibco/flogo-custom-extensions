@@ -7,7 +7,7 @@
   "image": "icons/rag.svg",
   "description": "Full RAG pipeline: embed query text \u2192 vector search \u2192 format context for LLM. Combines embedding generation and semantic retrieval in one activity.",
   "display": {
-    "category": "Chroma",
+    "category": "chroma",
     "visible": true,
     "smallIcon": "icons/rag.svg",
     "description": "Retrieval-Augmented Generation: embed \u2192 search \u2192 format context"
@@ -22,9 +22,7 @@
         "description": "Select the VectorDB connector to use for retrieval",
         "type": "connection"
       },
-      "allowed": [
-        "chroma-connector"
-      ]
+      "allowed": ["chroma-connector"]
     },
     {
       "name": "useConnectorEmbedding",

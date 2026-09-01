@@ -22,9 +22,7 @@
         "description": "Select the Azure AI Search VectorDB connector to store the documents",
         "type": "connection"
       },
-      "allowed": [
-        "azureaisearch-connector"
-      ]
+      "allowed": ["azureaisearch-connector"]
     },
     {
       "name": "enableChunking",

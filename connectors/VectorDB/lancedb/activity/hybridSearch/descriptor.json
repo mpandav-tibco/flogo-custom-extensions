@@ -22,9 +22,7 @@
         "description": "Select the LanceDB connector to use",
         "type": "connection"
       },
-      "allowed": [
-        "lancedb-connector"
-      ]
+      "allowed": ["lancedb-connector"]
     },
     {
       "name": "defaultCollection",
