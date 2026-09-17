@@ -10,18 +10,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 |-----------|---------|------|-------------|
 | [SSE Connector](connectors/sse/) | 1.0.0 | Connector | Server-Sent Events real-time streaming with event buffering and topic filtering |
 | [Kafka Stream Connector](connectors/KafkaStream/) | 1.0.0 | Connector | Stateful windowed stream processing for Kafka messages — filtering, windowed aggregation, content-based routing, and event-time processing |
-| [VectorDB — ActiveSpaces](connectors/VectorDB/activespaces/) | 1.0.0 | Connector | TIBCO ActiveSpaces 5.2 vector store — dual connectors: gateway (pure-Go, portable) and native (tibdg/CGO), sharing the 14-activity surface for RAG and agentic AI pipelines |
-| [VectorDB — Qdrant](connectors/VectorDB/qdrant/) | 1.0.0 | Connector | Qdrant connector — high-performance ANN search via REST and gRPC, TLS support, purpose-built for RAG and agentic AI pipelines |
-| [VectorDB — Weaviate](connectors/VectorDB/weaviate/) | 1.0.0 | Connector | Weaviate connector — native hybrid (BM25 + vector) search, GraphQL-backed, purpose-built for RAG pipelines |
-| [VectorDB — Chroma](connectors/VectorDB/chroma/) | 1.0.0 | Connector | Chroma connector — lightweight embedding-first store via REST v2, purpose-built for RAG pipelines |
-| [VectorDB — Milvus](connectors/VectorDB/milvus/) | 1.0.0 | Connector | Milvus connector — enterprise-grade, cloud-native, high-throughput gRPC-backed store for large-scale AI |
-| [VectorDB — pgvector](connectors/VectorDB/pgvector/) | 1.0.0 | Connector | pgvector connector — PostgreSQL + pgvector extension; ACID guarantees, JSONB metadata, native full-text hybrid search |
-| [VectorDB — Pinecone](connectors/VectorDB/pinecone/) | 1.0.0 | Connector | Pinecone connector — fully-managed serverless vector database with native sparse-dense hybrid search |
-| [VectorDB — Redis](connectors/VectorDB/redis/) | 1.0.0 | Connector | Redis Stack connector — HNSW vector search + RediSearch BM25 hybrid, sub-millisecond latency |
-| [VectorDB — Elasticsearch](connectors/VectorDB/elasticsearch/) | 1.0.0 | Connector | Elasticsearch 8.x connector — `dense_vector` HNSW with native k-NN + BM25 hybrid search |
-| [VectorDB — OpenSearch](connectors/VectorDB/opensearch/) | 1.0.0 | Connector | OpenSearch 2.x connector — `knn_vector` HNSW with native k-NN + BM25 hybrid search |
-| [VectorDB — Azure AI Search](connectors/VectorDB/azureaisearch/) | 1.0.0 | Connector | Azure AI Search connector — managed cloud vector search with RRF hybrid ranking |
-| [VectorDB — LanceDB](connectors/VectorDB/lancedb/) | 1.0.0 | Connector | LanceDB connector — embedded columnar vector store with RRF hybrid (dense + FTS) via custom REST server |
+| [VectorDB Connectors](connectors/VectorDB/) | 1.0.0 | Connector | 12 dedicated vector store connectors (ActiveSpaces, Qdrant, Weaviate, Chroma, Milvus, pgvector, Pinecone, Redis, Elasticsearch, OpenSearch, Azure AI Search, LanceDB) sharing a common 14-activity surface for RAG and agentic AI pipelines |
 
 > See [connectors/VectorDB/README.md](connectors/VectorDB/README.md) for the full feature matrix, Tier 1 vs Tier 2 comparison, and connector selection guide.
 
@@ -49,7 +38,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [XML Filter](activity/xmlfilter/) | 0.1.0 | XML Processing | Filter XML content using XPath expressions with AND/OR logic support |
 | [Avro Schema Transform](activity/schema-transform/avroschematransform/) | 1.0.0 | Schema Transform | Transform Avro schemas to JSON Schema and/or XSD formats |
 | [JSON Schema Transform](activity/schema-transform/jsonschematransform/) | 1.0.0 | Schema Transform | Transform JSON Schema to XSD and Avro formats |
-| [XSD Schema Transform](activity/schema-transform/xsdschematransform/) | 1.0.0 | Schema Transform | Transform XSD schemas to JSON Schema and Avro formats |
+| [XSD Schema Transform](activity/schema-transform/xsdschematransform/) | 1.0.0 | Schema Transform | Transform XSD schemas to JSON Schema, Avro, and OpenAPI 3.1.x/3.0.x formats with equivalent restriction mapping |
 | [SOAP Client](activity/soapclient/) | 1.0.0 | Web Services | SOAP 1.1/1.2 client with WSDL support, JSON/XML modes, mutual TLS, WS-Security headers, OpenTelemetry tracing, and Flogo retry/circuit-breaker |
 | [REST Fire & Forget](activity/rest-fire-forget/) | 1.0.0 | HTTP | Asynchronous fire-and-forget HTTP client — dispatches a request (any method) with mappable headers, query params, and JSON body, then returns immediately without waiting for the response; bounded concurrency and a hardened HTTP client |
 
@@ -83,7 +72,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 
 | Example | Components Used | Description |
 |---------|----------------|-------------|
-| [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, and Avro |
+| [Schema Converter API](examples/schema_converter/) | Schema Transform Activities | REST API for schema conversions between JSON Schema, XSD, Avro, and OpenAPI |
 | [SSE Demo](examples/sse_connector/) | SSE Trigger and SSE Activity | Real-time data streaming demo with timer-based events and SSE broadcasting |
 | [PostgreSQL Listener Demo](examples/postgrelistener/) | PostgreSQL Listener Trigger, Write Log Activity | Database change notification demo with NOTIFY/LISTEN and logging |
 | [MySQL Binlog Listener Demo](examples/mysqllistener/) | MySQL Binlog Listener Trigger, Write Log Activity | Real-time MySQL/MariaDB binlog streaming demo for change data capture |

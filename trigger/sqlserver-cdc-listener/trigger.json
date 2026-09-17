@@ -8,7 +8,7 @@
     "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/trigger/sqlserver-cdc-listener",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/trigger/sqlserver-cdc-listener",
     "display": {
-        "category": "SQLServer",
+        "category": "sqlserver-cdc-listener",
         "visible": true,
         "description": "Streams committed row changes from SQL Server using native Change Data Capture (CDC) change tables",
         "smallIcon": "icons/ic-sqlserver-connection.png",

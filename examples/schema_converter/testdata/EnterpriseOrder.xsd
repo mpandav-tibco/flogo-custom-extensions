@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Enterprise-grade sample XSD used to exercise the xsdschematransform -> OpenAPI
+  restriction mapping (outputFormat=openapi). Every XSD restriction facet the
+  activity currently understands is represented at least once:
+
+    xs:pattern (single + multiple/union), xs:enumeration, xs:minLength/maxLength,
+    xs:minInclusive/maxInclusive, xs:minExclusive/maxExclusive, xs:totalDigits/
+    fractionDigits, minOccurs/maxOccurs (bounded + unbounded arrays), nillable,
+    xs:default/xs:fixed, xs:choice, xs:list, xs:all, attributes (use=required/
+    optional, fixed).
+
+  NOTE: all complex types are declared inline rather than as named/reusable
+  <xs:complexType name="..."> definitions referenced via type="tns:X". Testing
+  this activity showed that named-type references are not resolved back to
+  their definition by mapXSDTypeToUniversal (only built-in xs: types and inline
+  complexType/simpleType are handled), so named-type reuse and xs:union
+  (member types resolved by name) are tracked as a known limitation rather than
+  exercised here. See examples/schema_converter/testdata/README.md.
+
+  POST this file's content as { "xsd": "<contents>" } to /xsd2openapi/v1.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/enterprise/order"
+           xmlns:tns="http://example.com/enterprise/order"
+           elementFormDefault="qualified">
+
+  <xs:element name="PurchaseOrder">
+    <xs:complexType>
+      <xs:sequence>
+
+        <!-- xs:pattern -->
+        <xs:element name="orderId">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:pattern value="ORD-[0-9]{6}"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <xs:element name="orderDate" type="xs:date"/>
+
+        <!-- inline complex type -->
+        <xs:element name="customer">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="customerId">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:pattern value="CUST-[0-9]{8}"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="name">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:minLength value="1"/>
+                    <xs:maxLength value="120"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <!-- xs:totalDigits / xs:fractionDigits + xs:minInclusive / xs:maxInclusive -->
+              <xs:element name="creditLimit">
+                <xs:simpleType>
+                  <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="10"/>
+                    <xs:fractionDigits value="2"/>
+                    <xs:minInclusive value="0"/>
+                    <xs:maxInclusive value="1000000"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <!-- minOccurs/maxOccurs unbounded -> array of inline complex type -->
+        <xs:element name="items" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="sku">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:pattern value="SKU-[A-Z0-9]{8}"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="quantity">
+                <xs:simpleType>
+                  <xs:restriction base="xs:int">
+                    <xs:minInclusive value="1"/>
+                    <xs:maxInclusive value="9999"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <!-- xs:minExclusive -->
+              <xs:element name="unitPrice">
+                <xs:simpleType>
+                  <xs:restriction base="xs:decimal">
+                    <xs:totalDigits value="10"/>
+                    <xs:fractionDigits value="2"/>
+                    <xs:minExclusive value="0"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="totalAmount">
+          <xs:simpleType>
+            <xs:restriction base="xs:decimal">
+              <xs:totalDigits value="12"/>
+              <xs:fractionDigits value="2"/>
+              <xs:minInclusive value="0"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- xs:enumeration -->
+        <xs:element name="currency">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="USD"/>
+              <xs:enumeration value="EUR"/>
+              <xs:enumeration value="GBP"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- xs:enumeration + xs:default -->
+        <xs:element name="status" default="PENDING">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="PENDING"/>
+              <xs:enumeration value="APPROVED"/>
+              <xs:enumeration value="SHIPPED"/>
+              <xs:enumeration value="CANCELLED"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- xs:minExclusive / xs:maxExclusive -->
+        <xs:element name="discountPercent" minOccurs="0">
+          <xs:simpleType>
+            <xs:restriction base="xs:decimal">
+              <xs:minExclusive value="0"/>
+              <xs:maxExclusive value="100"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- multiple xs:pattern facets (union/OR semantics) -->
+        <xs:element name="promoCode" minOccurs="0">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:pattern value="PROMO-[A-Z]{4}"/>
+              <xs:pattern value="VIP-[0-9]{4}"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- xs:minLength / xs:maxLength, nillable -->
+        <xs:element name="notes" minOccurs="0" nillable="true">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="0"/>
+              <xs:maxLength value="500"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- xs:list -> array of a restricted simple type -->
+        <xs:element name="tags" minOccurs="0">
+          <xs:simpleType>
+            <xs:list>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:minLength value="1"/>
+                  <xs:maxLength value="20"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:list>
+          </xs:simpleType>
+        </xs:element>
+
+        <!-- xs:choice -> oneOf, each branch an inline complex type -->
+        <xs:choice>
+          <xs:element name="standardShipping">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="carrier" type="xs:string"/>
+                <xs:element name="estimatedDays">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:int">
+                      <xs:minInclusive value="3"/>
+                      <xs:maxInclusive value="10"/>
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:element>
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="expressShipping">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="carrier" type="xs:string"/>
+                <xs:element name="guaranteedByHour">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:int">
+                      <xs:minInclusive value="1"/>
+                      <xs:maxInclusive value="48"/>
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:element>
+                <xs:element name="surcharge">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:decimal">
+                      <xs:totalDigits value="8"/>
+                      <xs:fractionDigits value="2"/>
+                      <xs:minInclusive value="0"/>
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:element>
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+
+        <!-- xs:all -> object with all properties optional -->
+        <xs:element name="auditInfo">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="createdBy" type="xs:string"/>
+              <xs:element name="approvedBy" type="xs:string" minOccurs="0"/>
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+
+      </xs:sequence>
+
+      <!-- attributes: use=required + xs:fixed / use=optional + inline enumeration -->
+      <xs:attribute name="version" type="xs:string" use="required" fixed="1.0"/>
+      <xs:attribute name="region" use="optional">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="NA"/>
+            <xs:enumeration value="EMEA"/>
+            <xs:enumeration value="APAC"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

@@ -3,6 +3,7 @@ package xsdschematransform
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 // generateJSONSchema converts universal schema to JSON Schema
@@ -81,6 +82,7 @@ func convertUniversalToJSONSchema(universal *UniversalSchema, jsonSchema *JSONSc
 		}
 
 		if len(requiredFields) > 0 {
+			sort.Strings(requiredFields) // deterministic output regardless of map iteration order
 			jsonSchema.Required = requiredFields
 		}
 	}
@@ -225,6 +227,47 @@ func convertUniversalPropertyToJSONSchema(prop *UniversalProperty, jsonSchema *J
 				return err
 			}
 			jsonSchema.Properties[propName] = nestedSchema
+		}
+	}
+
+	// Handle array items (e.g. xs:list)
+	if prop.Items != nil {
+		itemSchema := &JSONSchema{}
+		if err := convertUniversalToJSONSchema(prop.Items, itemSchema, input); err != nil {
+			return err
+		}
+		jsonSchema.Items = itemSchema
+	}
+
+	// Handle oneOf/anyOf/allOf (e.g. xs:choice inside an inline complex type)
+	if len(prop.OneOf) > 0 {
+		jsonSchema.OneOf = make([]*JSONSchema, len(prop.OneOf))
+		for i, s := range prop.OneOf {
+			branchSchema := &JSONSchema{}
+			if err := convertUniversalToJSONSchema(s, branchSchema, input); err != nil {
+				return err
+			}
+			jsonSchema.OneOf[i] = branchSchema
+		}
+	}
+	if len(prop.AnyOf) > 0 {
+		jsonSchema.AnyOf = make([]*JSONSchema, len(prop.AnyOf))
+		for i, s := range prop.AnyOf {
+			branchSchema := &JSONSchema{}
+			if err := convertUniversalToJSONSchema(s, branchSchema, input); err != nil {
+				return err
+			}
+			jsonSchema.AnyOf[i] = branchSchema
+		}
+	}
+	if len(prop.AllOf) > 0 {
+		jsonSchema.AllOf = make([]*JSONSchema, len(prop.AllOf))
+		for i, s := range prop.AllOf {
+			branchSchema := &JSONSchema{}
+			if err := convertUniversalToJSONSchema(s, branchSchema, input); err != nil {
+				return err
+			}
+			jsonSchema.AllOf[i] = branchSchema
 		}
 	}
 

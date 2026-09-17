@@ -19,6 +19,9 @@ const (
 	ivPreserveOrder  = "preserveOrder"  // Preserve element order when possible
 	ivOptimizeOutput = "optimizeOutput" // Optimize output schema structure
 
+	// maxXSDStringLength bounds untrusted XSD input to guard against memory/CPU exhaustion (DoS).
+	maxXSDStringLength = 10 * 1024 * 1024 // 10 MB
+
 	// JSON Schema options
 	ivJSONSchemaVersion = "jsonSchemaVersion" // "draft-04", "draft-07", "2019-09", "2020-12"
 	ivJSONSchemaTitle   = "jsonSchemaTitle"   // Schema title
@@ -38,13 +41,23 @@ const (
 	ivNamespaceHandling = "namespaceHandling" // "ignore", "prefix", "separate"
 	ivComplexTypeMode   = "complexTypeMode"   // "inline", "definitions", "refs"
 
+	// OpenAPI options
+	ivOpenAPIVersion     = "openApiVersion"     // "3.0.3" or "3.1.0" (default)
+	ivOpenAPISchemaName  = "openApiSchemaName"  // Name of the root schema under components.schemas
+	ivOpenAPITitle       = "openApiTitle"       // OpenAPI document info.title
+	ivOpenAPIInfoVersion = "openApiInfoVersion" // OpenAPI document info.version (default "1.0.0")
+
+	// Strict mode
+	ivStrictAdditionalProperties = "strictAdditionalProperties" // Set additionalProperties:false on closed XSD complex types (opt-in)
+
 	// Output parameters
-	ovJSONSchemaString = "jsonSchemaString"
-	ovAvroSchemaString = "avroSchemaString"
-	ovValidationResult = "validationResult"
-	ovConversionStats  = "conversionStats"
-	ovError            = "error"
-	ovErrorMessage     = "errorMessage"
+	ovJSONSchemaString    = "jsonSchemaString"
+	ovAvroSchemaString    = "avroSchemaString"
+	ovOpenAPISchemaString = "openApiSchemaString"
+	ovValidationResult    = "validationResult"
+	ovConversionStats     = "conversionStats"
+	ovError               = "error"
+	ovErrorMessage        = "errorMessage"
 )
 
 // Activity is the structure for the XSD Schema transformation activity
@@ -102,24 +115,25 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	// Convert Input to ConversionOptions
 	options := ConversionOptions{
-		OutputFormat:      input.OutputFormat,
-		ValidateInput:     input.ValidateInput,
-		PreserveOrder:     input.PreserveOrder,
-		OptimizeOutput:    input.OptimizeOutput,
-		JSONSchemaVersion: input.JSONSchemaVersion,
-		JSONSchemaTitle:   input.JSONSchemaTitle,
-		JSONSchemaID:      input.JSONSchemaID,
-		AddExamples:       input.AddExamples,
-		AvroRecordName:    input.AvroRecordName,
-		AvroNamespace:     input.AvroNamespace,
-		AvroLogicalTypes:  input.AvroLogicalTypes,
-		AvroUnionMode:     input.AvroUnionMode,
-		HandleAny:         input.HandleAny,
-		HandleChoice:      input.HandleChoice,
-		IncludeAttributes: input.IncludeAttributes,
-		NamespaceHandling: input.NamespaceHandling,
-		ComplexTypeMode:   input.ComplexTypeMode,
-		SkipUnsupported:   true, // Always skip unsupported for now
+		OutputFormat:               input.OutputFormat,
+		ValidateInput:              input.ValidateInput,
+		PreserveOrder:              input.PreserveOrder,
+		OptimizeOutput:             input.OptimizeOutput,
+		JSONSchemaVersion:          input.JSONSchemaVersion,
+		JSONSchemaTitle:            input.JSONSchemaTitle,
+		JSONSchemaID:               input.JSONSchemaID,
+		AddExamples:                input.AddExamples,
+		AvroRecordName:             input.AvroRecordName,
+		AvroNamespace:              input.AvroNamespace,
+		AvroLogicalTypes:           input.AvroLogicalTypes,
+		AvroUnionMode:              input.AvroUnionMode,
+		HandleAny:                  input.HandleAny,
+		HandleChoice:               input.HandleChoice,
+		IncludeAttributes:          input.IncludeAttributes,
+		NamespaceHandling:          input.NamespaceHandling,
+		ComplexTypeMode:            input.ComplexTypeMode,
+		SkipUnsupported:            true, // Always skip unsupported for now
+		StrictAdditionalProperties: input.StrictAdditionalProperties,
 	}
 
 	universalSchema, err := convertXSDToUniversal(input.XSDString, options)
@@ -141,7 +155,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	// --- 5. Generate output schemas ---
 	outputFormat := strings.ToLower(input.OutputFormat)
-	var jsonSchemaString, avroSchemaString string
+	var jsonSchemaString, avroSchemaString, openAPISchemaString string
 
 	if outputFormat == "jsonschema" || outputFormat == "both" {
 		logger.Debug("Generating JSON Schema")
@@ -163,10 +177,21 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		}
 	}
 
+	if outputFormat == "openapi" {
+		logger.Debug("Generating OpenAPI Schema")
+		openAPISchemaString, err = generateOpenAPISchema(universalSchema, input)
+		if err != nil {
+			logger.Errorf("Failed to generate OpenAPI Schema: %v", err)
+			setErrorOutputs(ctx, fmt.Sprintf("OpenAPI Schema generation failed: %v", err), "OPENAPI_GENERATION_ERROR")
+			return true, nil
+		}
+	}
+
 	// --- 6. Set success outputs ---
 	logger.Info("Successfully transformed XSD Schema")
 	ctx.SetOutput(ovJSONSchemaString, jsonSchemaString)
 	ctx.SetOutput(ovAvroSchemaString, avroSchemaString)
+	ctx.SetOutput(ovOpenAPISchemaString, openAPISchemaString)
 
 	if validationResult != nil {
 		validationJSON, _ := json.Marshal(validationResult)
@@ -209,16 +234,26 @@ type Input struct {
 	IncludeAttributes bool   `md:"includeAttributes"`
 	NamespaceHandling string `md:"namespaceHandling"`
 	ComplexTypeMode   string `md:"complexTypeMode"`
+
+	// OpenAPI options
+	OpenAPIVersion     string `md:"openApiVersion"`
+	OpenAPISchemaName  string `md:"openApiSchemaName"`
+	OpenAPITitle       string `md:"openApiTitle"`
+	OpenAPIInfoVersion string `md:"openApiInfoVersion"`
+
+	// Strict mode
+	StrictAdditionalProperties bool `md:"strictAdditionalProperties"`
 }
 
 // Output struct for transformation results
 type Output struct {
-	JSONSchemaString string `md:"jsonSchemaString"`
-	AvroSchemaString string `md:"avroSchemaString"`
-	ValidationResult string `md:"validationResult"`
-	ConversionStats  string `md:"conversionStats"`
-	Error            bool   `md:"error"`
-	ErrorMessage     string `md:"errorMessage"`
+	JSONSchemaString    string `md:"jsonSchemaString"`
+	AvroSchemaString    string `md:"avroSchemaString"`
+	OpenAPISchemaString string `md:"openApiSchemaString"`
+	ValidationResult    string `md:"validationResult"`
+	ConversionStats     string `md:"conversionStats"`
+	Error               bool   `md:"error"`
+	ErrorMessage        string `md:"errorMessage"`
 }
 
 // --- Universal Schema Types ---
@@ -262,7 +297,11 @@ type UniversalProperty struct {
 	MaxOccurs            *int                          `json:"maxOccurs,omitempty"`
 	Constraints          *UniversalConstraints         `json:"constraints,omitempty"`
 	Properties           map[string]*UniversalProperty `json:"properties,omitempty"`
+	Items                *UniversalSchema              `json:"items,omitempty"`
 	AdditionalProperties interface{}                   `json:"additionalProperties,omitempty"`
+	OneOf                []*UniversalSchema            `json:"oneOf,omitempty"`
+	AnyOf                []*UniversalSchema            `json:"anyOf,omitempty"`
+	AllOf                []*UniversalSchema            `json:"allOf,omitempty"`
 }
 
 // UniversalConstraints holds validation constraints
@@ -297,24 +336,33 @@ type UniversalConstraints struct {
 
 // ConversionOptions holds configuration for conversion
 type ConversionOptions struct {
-	OutputFormat      string
-	ValidateInput     bool
-	PreserveOrder     bool
-	OptimizeOutput    bool
-	JSONSchemaVersion string
-	JSONSchemaTitle   string
-	JSONSchemaID      string
-	AddExamples       bool
-	AvroRecordName    string
-	AvroNamespace     string
-	AvroLogicalTypes  bool
-	AvroUnionMode     string
-	HandleAny         string
-	HandleChoice      string
-	IncludeAttributes bool
-	NamespaceHandling string
-	ComplexTypeMode   string
-	SkipUnsupported   bool
+	OutputFormat               string
+	ValidateInput              bool
+	PreserveOrder              bool
+	OptimizeOutput             bool
+	JSONSchemaVersion          string
+	JSONSchemaTitle            string
+	JSONSchemaID               string
+	AddExamples                bool
+	AvroRecordName             string
+	AvroNamespace              string
+	AvroLogicalTypes           bool
+	AvroUnionMode              string
+	HandleAny                  string
+	HandleChoice               string
+	IncludeAttributes          bool
+	NamespaceHandling          string
+	ComplexTypeMode            string
+	SkipUnsupported            bool
+	StrictAdditionalProperties bool
+
+	// resolving tracks named XSD types currently being expanded on the active recursion path,
+	// so a type that (directly or transitively) references itself is detected and truncated
+	// instead of recursing until the stack overflows. It is a map (reference type) so the same
+	// underlying set is shared across every by-value copy of ConversionOptions made while
+	// threading options through the converter call tree; it must be initialized once per
+	// top-level convertXSDToUniversal call (never shared across concurrent Eval invocations).
+	resolving map[string]bool
 }
 
 // ValidationResult holds schema validation results
@@ -350,6 +398,9 @@ func coerceAndValidateInputs(ctx activity.Context) (*Input, error) {
 	if err != nil || strings.TrimSpace(input.XSDString) == "" {
 		return nil, fmt.Errorf("input 'xsdString' is required and cannot be empty")
 	}
+	if len(input.XSDString) > maxXSDStringLength {
+		return nil, fmt.Errorf("input 'xsdString' exceeds maximum allowed size of %d bytes", maxXSDStringLength)
+	}
 
 	// Optional inputs with defaults
 	input.OutputFormat, err = coerce.ToString(ctx.GetInput(ivOutputFormat))
@@ -359,7 +410,7 @@ func coerceAndValidateInputs(ctx activity.Context) (*Input, error) {
 
 	// Validate output format
 	outputFormat := strings.ToLower(input.OutputFormat)
-	if outputFormat != "jsonschema" && outputFormat != "avro" && outputFormat != "both" {
+	if outputFormat != "jsonschema" && outputFormat != "avro" && outputFormat != "both" && outputFormat != "openapi" {
 		return nil, fmt.Errorf("invalid outputFormat '%s'. Must be 'jsonschema', 'avro', or 'both'", input.OutputFormat)
 	}
 	input.OutputFormat = outputFormat
@@ -412,6 +463,28 @@ func coerceAndValidateInputs(ctx activity.Context) (*Input, error) {
 	if input.NamespaceHandling == "" {
 		input.NamespaceHandling = "ignore"
 	}
+
+	input.OpenAPIVersion, _ = coerce.ToString(ctx.GetInput(ivOpenAPIVersion))
+	if input.OpenAPIVersion == "" {
+		input.OpenAPIVersion = "3.1.0"
+	}
+	if !isValidOpenAPIVersion(input.OpenAPIVersion) {
+		return nil, fmt.Errorf("invalid openApiVersion '%s'. Must be a 3.0.x or 3.1.x version (e.g. '3.1.0')", input.OpenAPIVersion)
+	}
+
+	input.OpenAPISchemaName, _ = coerce.ToString(ctx.GetInput(ivOpenAPISchemaName))
+	if input.OpenAPISchemaName == "" {
+		input.OpenAPISchemaName = "RootSchema"
+	}
+
+	input.OpenAPITitle, _ = coerce.ToString(ctx.GetInput(ivOpenAPITitle))
+
+	input.OpenAPIInfoVersion, _ = coerce.ToString(ctx.GetInput(ivOpenAPIInfoVersion))
+	if input.OpenAPIInfoVersion == "" {
+		input.OpenAPIInfoVersion = "1.0.0"
+	}
+
+	input.StrictAdditionalProperties, _ = coerce.ToBool(ctx.GetInput(ivStrictAdditionalProperties))
 
 	input.ComplexTypeMode, _ = coerce.ToString(ctx.GetInput(ivComplexTypeMode))
 	if input.ComplexTypeMode == "" {
@@ -487,6 +560,7 @@ func isValidURI(uri string) bool {
 func setErrorOutputs(ctx activity.Context, message, code string) {
 	ctx.SetOutput(ovJSONSchemaString, "")
 	ctx.SetOutput(ovAvroSchemaString, "")
+	ctx.SetOutput(ovOpenAPISchemaString, "")
 	ctx.SetOutput(ovValidationResult, "")
 	ctx.SetOutput(ovConversionStats, "")
 	ctx.SetOutput(ovError, true)

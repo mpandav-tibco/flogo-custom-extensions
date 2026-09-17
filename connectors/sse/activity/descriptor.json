@@ -6,7 +6,7 @@
     "description": "Send a Server-Sent Events (SSE) event to connected clients. Supports broadcast to all clients, topic-filtered broadcast, or targeted delivery to a specific connection.",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/sse/activity",
     "display": {
-        "category": "Default",
+        "category": "SSE",
         "visible": true,
         "smallIcon": "icons/sse-send.svg",
         "description": "Send an event to SSE clients"

@@ -200,10 +200,19 @@ func getAvroTypeFromUniversalProperty(prop *UniversalProperty, input *Input) (in
 	case "boolean":
 		return "boolean", nil
 	case "array":
-		// Handle array properties
+		// xs:list -> array of the declared item type (named or inline); falls back to string
+		// when no item schema was captured (e.g. minOccurs/maxOccurs repetition wrapping).
+		itemType := interface{}("string")
+		if prop.Items != nil {
+			resolved, err := convertUniversalToAvroType(prop.Items, input)
+			if err != nil {
+				return nil, err
+			}
+			itemType = resolved
+		}
 		return map[string]interface{}{
 			"type":  "array",
-			"items": "string", // Default, could be enhanced
+			"items": itemType,
 		}, nil
 	case "object":
 		return convertObjectPropertyToAvro(prop, input)

@@ -6,7 +6,7 @@
     "description": "Server-Sent Events trigger. Starts an HTTP server on the configured port and path. Connected clients receive real-time events pushed from the SSE Send activity. Supports CORS, topic filtering, and configurable heartbeat keep-alives.",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/sse/trigger",
     "display": {
-        "category": "Default",
+        "category": "SSE",
         "visible": true,
         "smallIcon": "icons/sse-trigger.svg",
         "description": "Server-Sent Events trigger for real-time streaming to browser clients"

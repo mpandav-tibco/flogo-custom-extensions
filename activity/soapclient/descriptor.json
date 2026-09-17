@@ -7,7 +7,7 @@
     "description": "Invoke a SOAP 1.1/1.2 service with optional WSDL-driven operation discovery, auto soapAction injection, and request-body skeleton generation.",
     "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/activity/soapclient",
     "display": {
-        "category": "SOAP",
+        "category": "soapclient",
         "visible": true,
         "smallIcon": "icons/soap-client.svg",
         "largeIcon": "icons/soap-client.svg",

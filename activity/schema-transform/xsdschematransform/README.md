@@ -15,7 +15,7 @@ This activity uses no global settings - all configuration is provided through in
 | Input | Type | Required | Description | Default |
 |-------|------|----------|-------------|---------|
 | xsdString | string | Yes | XSD schema string to transform | - |
-| outputFormat | string | No | Output format: 'jsonschema', 'avro', or 'both' | "both" |
+| outputFormat | string | No | Output format: 'jsonschema', 'avro', 'openapi', or 'both' (jsonschema+avro) | "both" |
 | validateInput | boolean | No | Validate XSD schema before conversion | false |
 | preserveOrder | boolean | No | Preserve element order when possible | false |
 | optimizeOutput | boolean | No | Optimize output schema structure | false |
@@ -32,13 +32,19 @@ This activity uses no global settings - all configuration is provided through in
 | includeAttributes | boolean | No | Include XML attributes in conversion | true |
 | namespaceHandling | string | No | Namespace handling: 'ignore', 'prefix', 'separate' | "ignore" |
 | complexTypeMode | string | No | Complex type handling: 'inline', 'definitions', 'refs' | "inline" |
+| openApiVersion | string | No | OpenAPI Schema Object dialect: '3.1.0' (default, full JSON Schema 2020-12) or '3.0.3' (nullable flag, boolean exclusiveMin/Max) | "3.1.0" |
+| openApiSchemaName | string | No | Name of the root schema entry under `components.schemas` | "RootSchema" |
+| openApiTitle | string | No | OpenAPI document `info.title` (defaults to openApiSchemaName) | - |
+| openApiInfoVersion | string | No | OpenAPI document `info.version` | "1.0.0" |
+| strictAdditionalProperties | boolean | No | Set `additionalProperties:false` on XSD complex types with no `xs:any`/`xs:anyAttribute` wildcard, matching XSD's implicit closed content model. Opt-in — off by default so existing output is unchanged | false |
 
 ### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| jsonSchemaString | string | Generated JSON Schema string (empty if outputFormat is 'avro') |
-| avroSchemaString | string | Generated Avro Schema string (empty if outputFormat is 'jsonschema') |
+| jsonSchemaString | string | Generated JSON Schema string (empty unless outputFormat is 'jsonschema' or 'both') |
+| avroSchemaString | string | Generated Avro Schema string (empty unless outputFormat is 'avro' or 'both') |
+| openApiSchemaString | string | Generated OpenAPI document string, with the schema under `components.schemas` (empty unless outputFormat is 'openapi') |
 | validationResult | string | XSD validation result as JSON string |
 | conversionStats | string | Conversion statistics as JSON string |
 | error | boolean | Whether an error occurred during conversion |
@@ -104,6 +110,57 @@ Generated Avro Schema with logical types support:
   ]
 }
 ```
+
+### OpenAPI Schema
+Generated as a complete, valid OpenAPI document with the converted schema(s) placed under
+`components.schemas` so the output can be merged straight into a larger spec. Choose the
+dialect with `openApiVersion`:
+
+- **3.1.0** (default) — OpenAPI's Schema Object is 100% JSON Schema 2020-12, so every XSD
+  restriction facet maps losslessly (numeric `exclusiveMinimum`/`exclusiveMaximum`, `const`, etc.).
+- **3.0.3** — uses the older JSON-Schema-like subset (boolean `exclusiveMinimum`/`exclusiveMaximum`,
+  `nullable: true` flag instead of a `null` type entry, no `const`).
+
+```json
+{
+  "openapi": "3.1.0",
+  "info": { "title": "RootSchema", "version": "1.0.0" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "RootSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^ORD-[0-9]{6}$" },
+          "quantity": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "status": { "type": "string", "enum": ["PENDING", "SHIPPED"] },
+          "tag": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
+```
+
+#### XSD → OpenAPI restriction mapping
+
+| XSD Restriction / Construct | OpenAPI 3.1.x | OpenAPI 3.0.x | Notes |
+|---|---|---|---|
+| `xs:minLength` / `xs:maxLength` | `minLength` / `maxLength` | same | Direct equivalent |
+| `xs:pattern` | `pattern` | same | XSD regex vs ECMA-262 regex dialects differ slightly; multiple `xs:pattern` facets (OR union) are combined into one alternation `(?:p1)|(?:p2)` |
+| `xs:enumeration` | `enum` | same | Direct equivalent |
+| `xs:minInclusive` / `xs:maxInclusive` | `minimum` / `maximum` | same | Direct equivalent |
+| `xs:minExclusive` / `xs:maxExclusive` | `exclusiveMinimum`/`exclusiveMaximum` as the **numeric bound** | `minimum`/`maximum` + `exclusiveMinimum`/`exclusiveMaximum: true` **boolean** | Dialect-specific shape, both fully equivalent |
+| `xs:totalDigits` | `x-xsdTotalDigits` (vendor extension) | same | No native OpenAPI keyword; precision is preserved, not enforced |
+| `xs:fractionDigits` | `x-xsdFractionDigits` + derived `multipleOf` | same | `multipleOf` approximates the decimal-place restriction |
+| `minOccurs`/`maxOccurs` > 1 or `unbounded` | `type: array` wrapping the element, with `minItems`/`maxItems` | same | Repeating elements become arrays, matching JSON/Avro behavior |
+| `xs:list` | `type: array`, `items` from the list item type | same | Already produced by the shared universal-schema conversion |
+| `xs:union` / `xs:choice` | `oneOf` | same | |
+| `xs:all` | object with all properties optional | same | |
+| `nillable="true"` | `type: [<type>, "null"]` | `nullable: true` | Dialect-specific shape |
+| `default` | `default` | same | |
+| `fixed` | single-value `enum` + matching `default` | same | No native `fixed` keyword; this combination enforces the same "only this value is valid" behavior |
+| `xs:key` / `xs:keyref` / `xs:unique` | not representable | not representable | Cross-field/identity constraints have no OpenAPI/JSON Schema equivalent |
 
 ## Supported XSD Features
 
@@ -201,6 +258,7 @@ The activity provides comprehensive error handling with specific error categorie
 - **XSD_CONVERSION_ERROR** - Error during XSD to universal format conversion
 - **JSONSCHEMA_GENERATION_ERROR** - Error generating JSON Schema output
 - **AVRO_GENERATION_ERROR** - Error generating Avro Schema output
+- **OPENAPI_GENERATION_ERROR** - Error generating OpenAPI document output
 
 ## Testing
 
@@ -216,6 +274,9 @@ go test -v -run TestXSDSchemaTransformActivity_JSONSchemaOnly
 go test -v -run TestXSDSchemaTransformActivity_AvroOnly
 go test -v -run TestXSDSchemaTransformActivity_InvalidXSD
 go test -v -run TestXSDSchemaTransformActivity_EmptyXSD
+go test -v -run TestXSDSchemaTransformActivity_OpenAPIDefault31
+go test -v -run TestXSDSchemaTransformActivity_OpenAPI_EnterpriseOrder
+go test -v -run TestXSDSchemaTransformActivity_OpenAPI30ExclusiveBounds
 
 # Run with coverage
 go test -v -cover
@@ -258,3 +319,8 @@ go test -v -cover
 - Complex XSD features like substitution groups have limited support
 - Performance scales well with schema complexity
 - Compatible with all major schema registries and documentation tools
+- Named `<xs:complexType>`/`<xs:simpleType>` references (`type="tns:Foo"`), `xs:complexContent`
+  `xs:extension` inheritance, and `xs:list`/`xs:union` with inline (anonymous) item/member types
+  are all resolved, including transitively; a type that references itself directly or indirectly
+  is truncated at the cycle with an opaque object rather than expanded again (no `$ref` support)
+- `xsdString` is capped at 10 MB to bound memory/CPU usage on untrusted input

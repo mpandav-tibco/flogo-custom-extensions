@@ -318,7 +318,7 @@ type XSDComplexExtension struct {
 
 // XSDComplexRestriction represents xs:restriction in complexContent
 type XSDComplexRestriction struct {
-	XMLName        xml.Name              `xml:"extension"`
+	XMLName        xml.Name              `xml:"restriction"`
 	Base           string                `xml:"base,attr"`
 	Sequence       *XSDSequence          `xml:"sequence,omitempty"`
 	Choice         *XSDChoice            `xml:"choice,omitempty"`

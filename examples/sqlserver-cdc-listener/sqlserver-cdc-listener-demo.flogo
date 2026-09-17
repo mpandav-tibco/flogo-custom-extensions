@@ -166,7 +166,7 @@
   ],
   "properties": [],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvIiwiaWQiOiJTUUxTZXJ2ZXIiLCJ2ZXJzaW9uIjoiMi42LjEgSEYtMSIsInRhZyI6IjIuNi4xLWIwMyIsIm5hbWUiOiJNaWNyb3NvZnQgU1FMIFNlcnZlciIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9TUUxTZXJ2ZXIiLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvIiwiaWQiOiJzcWxzZXJ2ZXItY2RjLWxpc3RlbmVyIiwidmVyc2lvbiI6IjIuNi4xIEhGLTEiLCJ0YWciOiIyLjYuMS1iMDMiLCJuYW1lIjoiTWljcm9zb2Z0IFNRTCBTZXJ2ZXIiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vc3Fsc2VydmVyLWNkYy1saXN0ZW5lciIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX1d",
   "metadata": {
     "endpoints": [],
     "flogoVersion": "2.26.5"

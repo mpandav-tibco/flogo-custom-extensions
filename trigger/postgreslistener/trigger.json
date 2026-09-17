@@ -7,7 +7,7 @@
   "image": "icons/postgres-listener.svg",
   "description": "A PostgreSQL listenertrigger that listens for PostgreSQL NOTIFY messages with enhanced logging, OpenTelemetry tracing, and enterprise-grade connection management",
   "display": {
-    "category": "PostgreSQL",
+    "category": "postgreslistener",
     "visible": true,
     "description": "Listens for PostgreSQL LISTEN/NOTIFY messages and fires a Flogo flow for each notification",
     "smallIcon": "icons/ic-postgres-connection@2x.png",

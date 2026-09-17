@@ -16,6 +16,10 @@ func convertXSDToUniversal(xsdData string, options ConversionOptions) (*Universa
 		return nil, fmt.Errorf("failed to parse XSD: %w", err)
 	}
 
+	// Shared across every by-value copy of options made while threading it through the
+	// converter call tree; see the ConversionOptions.resolving doc comment.
+	options.resolving = make(map[string]bool)
+
 	universal := &UniversalSchema{
 		Type:        "object",
 		Properties:  make(map[string]*UniversalProperty),
@@ -112,7 +116,7 @@ func convertXSDElement(element *XSDElement, schema *XSDSchema, options Conversio
 
 	// Determine type
 	if element.Type != "" {
-		// Reference to existing type
+		// Reference to existing type (built-in, or a named complexType/simpleType)
 		universalType, err := mapXSDTypeToUniversal(element.Type, schema, options)
 		if err != nil {
 			return nil, err
@@ -121,6 +125,12 @@ func convertXSDElement(element *XSDElement, schema *XSDSchema, options Conversio
 		prop.Format = universalType.Format
 		prop.Constraints = universalType.Constraints
 		prop.EnumValues = universalType.EnumValues
+		prop.Properties = universalType.Properties
+		prop.AdditionalProperties = universalType.AdditionalProperties
+		prop.OneOf = universalType.OneOf
+		prop.AnyOf = universalType.AnyOf
+		prop.AllOf = universalType.AllOf
+		prop.Items = universalType.Items
 
 	} else if element.ComplexType != nil {
 		// Inline complex type
@@ -131,6 +141,9 @@ func convertXSDElement(element *XSDElement, schema *XSDSchema, options Conversio
 		prop.Type = complexSchema.Type
 		prop.Properties = complexSchema.Properties
 		prop.AdditionalProperties = complexSchema.AdditionalProperties
+		prop.OneOf = complexSchema.OneOf
+		prop.AnyOf = complexSchema.AnyOf
+		prop.AllOf = complexSchema.AllOf
 
 	} else if element.SimpleType != nil {
 		// Inline simple type
@@ -142,6 +155,8 @@ func convertXSDElement(element *XSDElement, schema *XSDSchema, options Conversio
 		prop.Format = simpleSchema.Format
 		prop.Constraints = simpleSchema.Constraints
 		prop.EnumValues = simpleSchema.EnumValues
+		prop.Items = simpleSchema.Items
+		prop.OneOf = simpleSchema.OneOf
 
 	} else {
 		// Default to string if no type specified
@@ -224,6 +239,8 @@ func convertXSDComplexType(complexType *XSDComplexType, schema *XSDSchema, optio
 		}
 	}
 
+	applyStrictAdditionalProperties(universal, hasWildcardContent(complexType.Sequence, complexType.Choice, complexType.AnyAttribute), options)
+
 	return universal, nil
 }
 
@@ -300,6 +317,8 @@ func convertXSDComplexTypeDef(complexType *XSDComplexTypeDef, schema *XSDSchema,
 		}
 	}
 
+	applyStrictAdditionalProperties(universal, hasWildcardContent(complexType.Sequence, complexType.Choice, complexType.AnyAttribute), options)
+
 	return universal, nil
 }
 
@@ -325,32 +344,8 @@ func convertXSDSimpleType(simpleType *XSDSimpleType, schema *XSDSchema, options 
 		}
 	}
 
-	if simpleType.List != nil {
-		universal.Type = "array"
-		if simpleType.List.ItemType != "" {
-			itemSchema, err := mapXSDTypeToUniversal(simpleType.List.ItemType, schema, options)
-			if err != nil {
-				return nil, err
-			}
-			universal.Items = itemSchema
-		}
-	}
-
-	if simpleType.Union != nil {
-		universal.OneOf = []*UniversalSchema{}
-		if simpleType.Union.MemberTypes != "" {
-			memberTypes := strings.Fields(simpleType.Union.MemberTypes)
-			for _, memberType := range memberTypes {
-				memberSchema, err := mapXSDTypeToUniversal(memberType, schema, options)
-				if err != nil {
-					if options.SkipUnsupported {
-						continue
-					}
-					return nil, err
-				}
-				universal.OneOf = append(universal.OneOf, memberSchema)
-			}
-		}
+	if err := applyXSDListAndUnion(simpleType.List, simpleType.Union, universal, schema, options); err != nil {
+		return nil, err
 	}
 
 	return universal, nil
@@ -378,35 +373,62 @@ func convertXSDSimpleTypeDef(simpleType *XSDSimpleTypeDef, schema *XSDSchema, op
 		}
 	}
 
-	if simpleType.List != nil {
+	if err := applyXSDListAndUnion(simpleType.List, simpleType.Union, universal, schema, options); err != nil {
+		return nil, err
+	}
+
+	return universal, nil
+}
+
+// applyXSDListAndUnion converts an xs:list / xs:union facet into the equivalent universal
+// array/oneOf representation. Item and member types may be a named type reference (resolved via
+// mapXSDTypeToUniversal, including named complex/simple types) or an inline anonymous simpleType.
+func applyXSDListAndUnion(list *XSDList, union *XSDUnion, universal *UniversalSchema, schema *XSDSchema, options ConversionOptions) error {
+	if list != nil {
 		universal.Type = "array"
-		if simpleType.List.ItemType != "" {
-			itemSchema, err := mapXSDTypeToUniversal(simpleType.List.ItemType, schema, options)
+		switch {
+		case list.ItemType != "":
+			itemSchema, err := mapXSDTypeToUniversal(list.ItemType, schema, options)
 			if err != nil {
-				return nil, err
+				return err
+			}
+			universal.Items = itemSchema
+		case list.SimpleType != nil:
+			itemSchema, err := convertXSDSimpleType(list.SimpleType, schema, options)
+			if err != nil {
+				return err
 			}
 			universal.Items = itemSchema
 		}
 	}
 
-	if simpleType.Union != nil {
+	if union != nil {
 		universal.OneOf = []*UniversalSchema{}
-		if simpleType.Union.MemberTypes != "" {
-			memberTypes := strings.Fields(simpleType.Union.MemberTypes)
-			for _, memberType := range memberTypes {
+		if union.MemberTypes != "" {
+			for _, memberType := range strings.Fields(union.MemberTypes) {
 				memberSchema, err := mapXSDTypeToUniversal(memberType, schema, options)
 				if err != nil {
 					if options.SkipUnsupported {
 						continue
 					}
-					return nil, err
+					return err
 				}
 				universal.OneOf = append(universal.OneOf, memberSchema)
 			}
 		}
+		for i := range union.SimpleTypes {
+			memberSchema, err := convertXSDSimpleType(&union.SimpleTypes[i], schema, options)
+			if err != nil {
+				if options.SkipUnsupported {
+					continue
+				}
+				return err
+			}
+			universal.OneOf = append(universal.OneOf, memberSchema)
+		}
 	}
 
-	return universal, nil
+	return nil
 }
 
 // convertXSDAttribute converts XSD attribute to universal property
@@ -448,6 +470,8 @@ func convertXSDAttribute(attr *XSDAttribute, schema *XSDSchema, options Conversi
 		prop.Format = universalType.Format
 		prop.Constraints = universalType.Constraints
 		prop.EnumValues = universalType.EnumValues
+		prop.Items = universalType.Items
+		prop.OneOf = universalType.OneOf
 
 	} else if attr.SimpleType != nil {
 		simpleSchema, err := convertXSDSimpleType(attr.SimpleType, schema, options)
@@ -458,6 +482,8 @@ func convertXSDAttribute(attr *XSDAttribute, schema *XSDSchema, options Conversi
 		prop.Format = simpleSchema.Format
 		prop.Constraints = simpleSchema.Constraints
 		prop.EnumValues = simpleSchema.EnumValues
+		prop.Items = simpleSchema.Items
+		prop.OneOf = simpleSchema.OneOf
 
 	} else {
 		// Default to string for attributes
@@ -706,9 +732,22 @@ func processXSDSimpleContent(simpleContent *XSDSimpleContent, universal *Univers
 // processXSDComplexContent processes XSD complex content
 func processXSDComplexContent(complexContent *XSDComplexContent, universal *UniversalSchema, schema *XSDSchema, options ConversionOptions) error {
 	if complexContent.Extension != nil {
-		// Extend base type
-		// This is a simplified implementation - in reality you'd need to resolve the base type
-		// and merge its properties
+		// xs:extension = base type's own members plus whatever new content is declared here.
+		if complexContent.Extension.Base != "" {
+			baseSchema, err := mapXSDTypeToUniversal(complexContent.Extension.Base, schema, options)
+			if err != nil {
+				if !options.SkipUnsupported {
+					return err
+				}
+			} else {
+				for name, baseProp := range baseSchema.Properties {
+					universal.Properties[name] = baseProp
+				}
+				if baseSchema.AdditionalProperties != nil && universal.AdditionalProperties == nil {
+					universal.AdditionalProperties = baseSchema.AdditionalProperties
+				}
+			}
+		}
 
 		// Process new content
 		if complexContent.Extension.Sequence != nil {
@@ -867,7 +906,10 @@ func mapXSDTypeToUniversal(xsdType string, schema *XSDSchema, options Conversion
 		}
 
 	default:
-		// Check if it's a user-defined type
+		if resolved, found, err := resolveNamedXSDType(xsdType, schema, options); found {
+			return resolved, err
+		}
+		// Genuinely unknown type (e.g. a typo) rather than an unresolved named reference.
 		if options.SkipUnsupported {
 			universal.Type = "string" // Default fallback
 		} else {
@@ -876,4 +918,102 @@ func mapXSDTypeToUniversal(xsdType string, schema *XSDSchema, options Conversion
 	}
 
 	return universal, nil
+}
+
+// resolveNamedXSDType looks up a named <xs:complexType>/<xs:simpleType> declared in the schema and
+// converts it. It guards against direct/indirect self-reference (a type that contains an element,
+// list item, or union member of its own type) via options.resolving, since the universal schema
+// model has no $ref/pointer mechanism and would otherwise recurse until the stack overflows.
+// The bool return reports whether xsdType matched a named type at all (as opposed to being unknown).
+func resolveNamedXSDType(typeName string, schema *XSDSchema, options ConversionOptions) (*UniversalSchema, bool, error) {
+	for _, ct := range schema.ComplexTypes {
+		if ct.Name != typeName {
+			continue
+		}
+		if options.resolving[typeName] {
+			// Cycle: truncate here with an opaque object instead of recursing forever.
+			return &UniversalSchema{Type: "object"}, true, nil
+		}
+		options.resolving[typeName] = true
+		defer delete(options.resolving, typeName)
+		resolved, err := convertXSDComplexTypeDef(&ct, schema, options)
+		return resolved, true, err
+	}
+
+	for _, st := range schema.SimpleTypes {
+		if st.Name != typeName {
+			continue
+		}
+		if options.resolving[typeName] {
+			return &UniversalSchema{Type: "string"}, true, nil
+		}
+		options.resolving[typeName] = true
+		defer delete(options.resolving, typeName)
+		resolved, err := convertXSDSimpleTypeDef(&st, schema, options)
+		return resolved, true, err
+	}
+
+	return nil, false, nil
+}
+
+// hasWildcardContent reports whether a complex type's immediate content model permits arbitrary
+// additional elements/attributes via xs:any / xs:anyAttribute. XSD complex types are implicitly
+// "closed" (no undeclared members) unless such a wildcard is present. Wildcards nested inside a
+// simpleContent/complexContent extension or restriction are not inspected (kept deliberately simple).
+func hasWildcardContent(sequence *XSDSequence, choice *XSDChoice, anyAttribute *XSDAnyAttribute) bool {
+	if anyAttribute != nil {
+		return true
+	}
+	if sequence != nil && sequenceHasAny(sequence) {
+		return true
+	}
+	if choice != nil && choiceHasAny(choice) {
+		return true
+	}
+	return false
+}
+
+func sequenceHasAny(sequence *XSDSequence) bool {
+	if len(sequence.Any) > 0 {
+		return true
+	}
+	for i := range sequence.Choices {
+		if choiceHasAny(&sequence.Choices[i]) {
+			return true
+		}
+	}
+	for i := range sequence.Sequences {
+		if sequenceHasAny(&sequence.Sequences[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func choiceHasAny(choice *XSDChoice) bool {
+	if len(choice.Any) > 0 {
+		return true
+	}
+	for i := range choice.Choices {
+		if choiceHasAny(&choice.Choices[i]) {
+			return true
+		}
+	}
+	for i := range choice.Sequences {
+		if sequenceHasAny(&choice.Sequences[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+// applyStrictAdditionalProperties sets additionalProperties:false on closed XSD complex types when
+// strict mode is enabled (matching XSD's implicit closed content model), or true when a wildcard
+// grants open content. Opt-in via strictAdditionalProperties so the existing (permissive) default
+// output is unchanged for callers that haven't asked for it.
+func applyStrictAdditionalProperties(universal *UniversalSchema, hasWildcard bool, options ConversionOptions) {
+	if !options.StrictAdditionalProperties || universal.AdditionalProperties != nil {
+		return
+	}
+	universal.AdditionalProperties = hasWildcard
 }

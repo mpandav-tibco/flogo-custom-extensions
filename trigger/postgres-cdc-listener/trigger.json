@@ -8,7 +8,7 @@
     "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/trigger/postgres-cdc-listener",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/trigger/postgres-cdc-listener",
     "display": {
-        "category": "PostgreSQL",
+        "category": "postgres-cdc-listener",
         "visible": true,
         "description": "Streams real-time row changes from PostgreSQL using logical replication (pgoutput) and fires a Flogo flow for each INSERT, UPDATE, or DELETE",
         "smallIcon": "icons/ic-postgres-connection.png",

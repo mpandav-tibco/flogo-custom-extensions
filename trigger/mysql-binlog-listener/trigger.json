@@ -7,7 +7,7 @@
   "description": "A dedicated MySQL/MariaDB binlog streaming trigger that captures real-time database changes",
   "homepage": "https://github.com/project-flogo/contrib",
   "display": {
-    "category": "MySQL",
+    "category": "mysql-binlog-listener",
     "visible": true,
     "description": "Listens for MySQL/MariaDB binary log (binlog) events and fires a Flogo flow for each INSERT, UPDATE, or DELETE",
     "smallIcon": "icons/my_sql.png",

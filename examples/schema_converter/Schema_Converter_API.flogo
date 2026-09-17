@@ -31,6 +31,9 @@
         "APISpecUpdate": false,
         "swagger": "",
         "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
         "apiVersion": "1.0.0",
         "secureConnection": false,
         "serverKey": "",
@@ -261,6 +264,123 @@
             }
           },
           "name": "AVRO_To_Other_Schema_Format"
+        },
+        {
+          "description": "Convert XSD Schema to OpenAPI Schema (3.1.x / 3.0.x) with restriction mapping",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/xsd2openapi/v1",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:XSD_To_OpenAPI"
+            },
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{\n}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"xsd\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\n    \"xsd\":\"\"\n}"
+              }
+            }
+          },
+          "name": "XSD_To_OpenAPI"
+        },
+        {
+          "description": "Convert XSD Schema to OpenAPI Schema (3.1.x / 3.0.x) with restriction mapping",
+          "settings": {
+            "Method": "POST",
+            "reqType": "multipart/form-data",
+            "Path": "/xsd/v1",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:XSD_To_OpenAPI_1"
+            },
+            "input": {
+              "headers": "=$.headers",
+              "multipartFormData": "=$.multipartFormData",
+              "requestURI": "=$.requestURI",
+              "method": "=$.method"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": {}
+          },
+          "schemas": {
+            "reply": {
+              "data": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "multipartFormData": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"file\":{\"type\":\"any\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"file\":{\"type\":\"any\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"required\":{\"type\":\"string\"},\"schema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"name\":\"file\",\"type\":\"filecontent\",\"required\":\"\",\"schema\":\"\"}]"
+              }
+            }
+          },
+          "name": "XSD_To_OpenAPI_1"
         }
       ]
     }
@@ -324,6 +444,9 @@
             "description": "Transforms JSON Schema to XSD, Avro, and other formats. Supports conversion to XSD, Avro, or both formats simultaneously with comprehensive feature support.",
             "activity": {
               "ref": "#jsonschematransform",
+              "settings": {
+                "outputFormat": "both"
+              },
               "input": {
                 "jsonSchemaString": "=$flow.body.jsonSchema",
                 "outputFormat": "",
@@ -334,9 +457,6 @@
               },
               "output": {
                 "error": false
-              },
-              "settings": {
-                "outputFormat": "both"
               }
             }
           },
@@ -519,7 +639,12 @@
                 "handleChoice": "union",
                 "includeAttributes": true,
                 "namespaceHandling": "ignore",
-                "complexTypeMode": "inline"
+                "complexTypeMode": "inline",
+                "openApiVersion": "3.1.0",
+                "openApiSchemaName": "RootSchema",
+                "openApiTitle": "",
+                "openApiInfoVersion": "1.0.0",
+                "strictAdditionalProperties": false
               }
             }
           },
@@ -807,14 +932,14 @@
             "description": "Transforms Avro schema to JSON Schema and/or XSD format. Supports conversion to JSON Schema, XSD, or both formats simultaneously.",
             "activity": {
               "ref": "#avroschematransform",
+              "settings": {
+                "outputFormat": "both"
+              },
               "input": {
                 "avroSchemaString": "=coerce.toString($flow.body)",
                 "outputFormat": "",
                 "rootElementName": "root",
                 "targetNamespace": ""
-              },
-              "settings": {
-                "outputFormat": "both"
               }
             }
           },
@@ -916,6 +1041,374 @@
         },
         "explicitReply": true
       }
+    },
+    {
+      "id": "flow:XSD_To_OpenAPI",
+      "data": {
+        "name": "XSD_To_OpenAPI",
+        "description": "Convert XSD Schema to OpenAPI Schema (3.1.x / 3.0.x) with restriction mapping",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "StartActivity_1",
+            "type": "label",
+            "label": "StartActivity to StartActivity_1"
+          },
+          {
+            "id": 2,
+            "from": "StartActivity_1",
+            "to": "XSDToOpenAPI",
+            "type": "label",
+            "label": "StartActivity_1 to XSDToOpenAPI"
+          },
+          {
+            "id": 3,
+            "from": "XSDToOpenAPI",
+            "to": "LogSuccess",
+            "type": "expression",
+            "label": "XSDToOpenAPI to LogSuccess",
+            "value": "$activity[XSDToOpenAPI].error != boolean.true()"
+          },
+          {
+            "id": 4,
+            "from": "LogSuccess",
+            "to": "Return200",
+            "type": "label",
+            "label": "LogSuccess to Return200"
+          },
+          {
+            "id": 5,
+            "from": "XSDToOpenAPI",
+            "to": "LogError",
+            "type": "exprOtherwise",
+            "label": "XSDToOpenAPI to LogError"
+          },
+          {
+            "id": 6,
+            "from": "LogError",
+            "to": "Return500",
+            "type": "label",
+            "label": "LogError to Return500"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "StartActivity_1",
+            "name": "StartActivity_1",
+            "description": "No-op start activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "XSDToOpenAPI",
+            "name": "XSDToOpenAPI",
+            "description": "Converts XSD Schema into an OpenAPI document (components.schemas) with equivalent restriction mapping",
+            "activity": {
+              "ref": "#xsdschematransform",
+              "input": {
+                "xsdString": "=$flow.body.xsd",
+                "outputFormat": "openapi",
+                "validateInput": false,
+                "preserveOrder": false,
+                "optimizeOutput": false,
+                "jsonSchemaVersion": "2020-12",
+                "addExamples": false,
+                "avroRecordName": "RootRecord",
+                "avroNamespace": "com.example",
+                "avroLogicalTypes": false,
+                "avroUnionMode": "nullable",
+                "handleAny": "object",
+                "handleChoice": "union",
+                "includeAttributes": true,
+                "namespaceHandling": "ignore",
+                "complexTypeMode": "inline",
+                "openApiVersion": "3.1.0",
+                "openApiSchemaName": "RootSchema",
+                "openApiInfoVersion": "1.0.0",
+                "strictAdditionalProperties": false
+              }
+            }
+          },
+          {
+            "id": "LogSuccess",
+            "name": "LogSuccess",
+            "description": "Log successful OpenAPI conversion",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"###### Transformed XSD to OpenAPI - \", coerce.toString($activity[XSDToOpenAPI]))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return200",
+            "name": "Return200",
+            "description": "Return 200 with generated OpenAPI document",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=$activity[XSDToOpenAPI]"
+                }
+              }
+            }
+          },
+          {
+            "id": "LogError",
+            "name": "LogError",
+            "description": "Log conversion error",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"###### ERROR in XSD to OpenAPI Conversion - \", $activity[XSDToOpenAPI].errorMessage)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return500",
+            "name": "Return500",
+            "description": "Return 500 with error details",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 500,
+                  "data": "=$activity[XSDToOpenAPI]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlN0YXJ0QWN0aXZpdHlfMSI6eyJ4IjoyNTAsInkiOjE1MH0sIlhTRFRvT3BlbkFQSSI6eyJ4Ijo0NTAsInkiOjI1MH0sIkxvZ1N1Y2Nlc3MiOnsieCI6NjUwLCJ5IjozNTB9LCJSZXR1cm4yMDAiOnsieCI6ODUwLCJ5Ijo0NTB9LCJMb2dFcnJvciI6eyJ4Ijo2NTAsInkiOjU1MH0sIlJldHVybjUwMCI6eyJ4Ijo4NTAsInkiOjY1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:XSD_To_OpenAPI_1",
+      "data": {
+        "name": "XSD_To_OpenAPI_1",
+        "description": "Convert XSD Schema to OpenAPI Schema (3.1.x / 3.0.x) with restriction mapping",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "XSDToOpenAPI",
+            "type": "label",
+            "label": "StartActivity to XSDToOpenAPI"
+          },
+          {
+            "id": 2,
+            "from": "XSDToOpenAPI",
+            "to": "LogSuccess",
+            "type": "expression",
+            "label": "XSDToOpenAPI to LogSuccess",
+            "value": "$activity[XSDToOpenAPI].error != boolean.true()"
+          },
+          {
+            "id": 3,
+            "from": "LogSuccess",
+            "to": "Return200",
+            "type": "label",
+            "label": "LogSuccess to Return200"
+          },
+          {
+            "id": 4,
+            "from": "XSDToOpenAPI",
+            "to": "LogError",
+            "type": "exprOtherwise",
+            "label": "XSDToOpenAPI to LogError"
+          },
+          {
+            "id": 5,
+            "from": "LogError",
+            "to": "Return500",
+            "type": "label",
+            "label": "LogError to Return500"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "XSDToOpenAPI",
+            "name": "XSDToOpenAPI",
+            "description": "Converts XSD Schema into an OpenAPI document (components.schemas) with equivalent restriction mapping",
+            "activity": {
+              "ref": "#xsdschematransform",
+              "input": {
+                "xsdString": "=coerce.toString($flow.multipartFormData.file[0])",
+                "outputFormat": "openapi",
+                "validateInput": false,
+                "preserveOrder": false,
+                "optimizeOutput": false,
+                "jsonSchemaVersion": "2020-12",
+                "jsonSchemaTitle": "",
+                "jsonSchemaId": "",
+                "addExamples": false,
+                "avroRecordName": "RootRecord",
+                "avroNamespace": "com.example",
+                "avroLogicalTypes": false,
+                "avroUnionMode": "nullable",
+                "handleAny": "object",
+                "handleChoice": "union",
+                "includeAttributes": true,
+                "namespaceHandling": "ignore",
+                "complexTypeMode": "inline",
+                "openApiVersion": "3.1.0",
+                "openApiSchemaName": "RootSchema",
+                "openApiTitle": "",
+                "openApiInfoVersion": "1.0.0",
+                "strictAdditionalProperties": false
+              }
+            }
+          },
+          {
+            "id": "LogSuccess",
+            "name": "LogSuccess",
+            "description": "Log successful OpenAPI conversion",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"###### Transformed XSD to OpenAPI - \", coerce.toString($activity[XSDToOpenAPI]))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return200",
+            "name": "Return200",
+            "description": "Return 200 with generated OpenAPI document",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": "=coerce.toObject($activity[XSDToOpenAPI].openApiSchemaString)"
+                }
+              }
+            }
+          },
+          {
+            "id": "LogError",
+            "name": "LogError",
+            "description": "Log conversion error",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"###### ERROR in XSD to OpenAPI Conversion - \", $activity[XSDToOpenAPI].errorMessage)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "Return500",
+            "name": "Return500",
+            "description": "Return 500 with error details",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 500,
+                  "data": "=$activity[XSDToOpenAPI]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlhTRFRvT3BlbkFQSSI6eyJ4IjoyOTksInkiOjQ0fSwiTG9nU3VjY2VzcyI6eyJ4Ijo2MDUsInkiOjQ1fSwiUmV0dXJuMjAwIjp7IngiOjg2NCwieSI6NDF9LCJMb2dFcnJvciI6eyJ4Ijo2MDYsInkiOjE4MX0sIlJldHVybjUwMCI6eyJ4Ijo4NTgsInkiOjE3OH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "headers",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"file\":{\"type\":\"any\"}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"multipartFormData\":{\"type\":\"object\",\"properties\":{\"file\":{\"type\":\"any\"}}},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}},\"required\":[]}"
+          }
+        },
+        "explicitReply": true
+      }
     }
   ],
   "properties": [],
@@ -927,7 +1420,7 @@
     }
   },
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTEiLCJ0YWciOiIxLjYuMTEtYjAyIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYW5kYXYvYWN0aXZpdHkvanNvbnNjaGVtYXRyYW5zZm9ybSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS9EZWZhdWx0L2FjdGl2aXR5L2pzb25zY2hlbWF0cmFuc2Zvcm0ifSx7InJlZiI6ImdpdGh1Yi5jb20vcHJvamVjdC1mbG9nby9jdXN0b20tZXh0ZW5zaW9ucy9hY3Rpdml0eS94c2RzY2hlbWF0cmFuc2Zvcm0iLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC9hY3Rpdml0eS94c2RzY2hlbWF0cmFuc2Zvcm0ifSx7InJlZiI6ImdpdGh1Yi5jb20vbWlsaW5kcGFuZGF2L2FjdGl2aXR5L2F2cm9zY2hlbWF0cmFuc2Zvcm0iLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vRGVmYXVsdC9hY3Rpdml0eS9hdnJvc2NoZW1hdHJhbnNmb3JtIn1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9taWxpbmRwYSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IkpTT05TY2hlbWFUcmFuc2Zvcm1lcjEiLCJpZCI6Impzb25zY2hlbWF0cmFuc2Zvcm0iLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vanNvbnNjaGVtYXRyYW5zZm9ybSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL3Byb2plY3QiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMCIsIm5hbWUiOiJYU0RTY2hlbWFUcmFuc2Zvcm0iLCJpZCI6InhzZHNjaGVtYXRyYW5zZm9ybSIsInMzbG9jYXRpb24iOiJ7VVNFUklEfS94c2RzY2hlbWF0cmFuc2Zvcm0iLCJpc1VzZXJFeHRlbnNpb24iOnRydWV9XQ==",
   "metadata": {
     "endpoints": [
       {
@@ -1060,6 +1553,69 @@
                   "application/json"
                 ]
               }
+            },
+            "/xsd2openapi/v1": {
+              "post": {
+                "summary": "XSD_To_OpenAPI",
+                "operationId": "post_xsd2openapi_v1",
+                "parameters": [
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema3"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
+                "description": "Convert XSD Schema to OpenAPI Schema (3.1.x / 3.0.x) with restriction mapping",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/xsd/v1": {
+              "post": {
+                "summary": "XSD_To_OpenAPI_1",
+                "operationId": "post_xsd_v1",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "file",
+                    "in": "formData",
+                    "description": "Form Data Parameter",
+                    "required": false,
+                    "type": "file"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
+                "description": "Convert XSD Schema to OpenAPI Schema (3.1.x / 3.0.x) with restriction mapping",
+                "consumes": [
+                  "multipart/form-data"
+                ]
+              }
             }
           },
           "definitions": {
@@ -1093,6 +1649,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.0"
+    "flogoVersion": "2.26.5"
   }
 }

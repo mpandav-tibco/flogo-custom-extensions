@@ -7,7 +7,7 @@
   "description": "Transforms JSON Schema to XSD, Avro, and other formats. Supports conversion to XSD, Avro, or both formats simultaneously with comprehensive feature support.",
   "ref": "github.com/milindpandav/activity/jsonschematransform",
   "display": {
-    "category": "SchemaTransform",
+    "category": "jsonschematransform",
     "visible": true,
     "smallIcon": "icons/json-schema-transform.svg",
     "description": "Convert JSON Schema to XSD, Avro, or both"

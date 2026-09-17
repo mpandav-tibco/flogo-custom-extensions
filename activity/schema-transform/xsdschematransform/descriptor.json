@@ -8,7 +8,7 @@
   "author": "Flogo Custom Extensions",
   "homepage": "https://github.com/project-flogo/contrib/tree/master/activity/xsdschematransform",
   "display": {
-    "category": "SchemaTransform",
+    "category": "xsdschematransform",
     "visible": true,
     "smallIcon": "icons/xsd-schema-transform.svg",
     "description": "Convert XSD schema to JSON Schema or Avro"
@@ -24,7 +24,7 @@
     {
       "name": "outputFormat",
       "type": "string",
-      "description": "Output format: 'jsonschema', 'avro', or 'both'",
+      "description": "Output format: 'jsonschema', 'avro', 'openapi', or 'both' (jsonschema+avro)",
       "value": "both"
     },
     {
@@ -120,6 +120,35 @@
       "type": "string",
       "description": "Complex type handling: 'inline', 'definitions', 'refs'",
       "value": "inline"
+    },
+    {
+      "name": "openApiVersion",
+      "type": "string",
+      "description": "OpenAPI Schema Object dialect: '3.1.0' (default, full JSON Schema 2020-12) or '3.0.3' (nullable flag, boolean exclusiveMin/Max)",
+      "value": "3.1.0"
+    },
+    {
+      "name": "openApiSchemaName",
+      "type": "string",
+      "description": "Name of the root schema entry under components.schemas",
+      "value": "RootSchema"
+    },
+    {
+      "name": "openApiTitle",
+      "type": "string",
+      "description": "OpenAPI document info.title (defaults to openApiSchemaName)"
+    },
+    {
+      "name": "openApiInfoVersion",
+      "type": "string",
+      "description": "OpenAPI document info.version",
+      "value": "1.0.0"
+    },
+    {
+      "name": "strictAdditionalProperties",
+      "type": "boolean",
+      "description": "Set additionalProperties:false on XSD complex types with no xs:any/xs:anyAttribute wildcard (matches XSD's implicit closed content model); opt-in, off by default to preserve existing output",
+      "value": false
     }
   ],
   "outputs": [
@@ -132,6 +161,11 @@
       "name": "avroSchemaString",
       "type": "string",
       "description": "Generated Avro Schema string"
+    },
+    {
+      "name": "openApiSchemaString",
+      "type": "string",
+      "description": "Generated OpenAPI document (components.schemas) string"
     },
     {
       "name": "validationResult",
