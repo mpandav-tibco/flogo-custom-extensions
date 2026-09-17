@@ -20,6 +20,16 @@ func convertXSDToUniversal(xsdData string, options ConversionOptions) (*Universa
 	// converter call tree; see the ConversionOptions.resolving doc comment.
 	options.resolving = make(map[string]bool)
 
+	// Parse any additional (xs:include/xs:import-referenced) schemas the caller supplied, so
+	// named types declared only in those files can be resolved. See ConversionOptions doc.
+	for i, extra := range options.AdditionalSchemas {
+		var extraSchema XSDSchema
+		if err := xml.Unmarshal([]byte(extra), &extraSchema); err != nil {
+			return nil, fmt.Errorf("failed to parse additionalSchemas[%d]: %w", i, err)
+		}
+		options.parsedAdditionalSchemas = append(options.parsedAdditionalSchemas, &extraSchema)
+	}
+
 	universal := &UniversalSchema{
 		Type:        "object",
 		Properties:  make(map[string]*UniversalProperty),
@@ -40,7 +50,7 @@ func convertXSDToUniversal(xsdData string, options ConversionOptions) (*Universa
 			}
 			return nil, err
 		}
-		universal.Properties[element.Name] = prop
+		universal.Properties[elementPropertyName(&element)] = prop
 	}
 
 	// Process global complex types
@@ -158,6 +168,45 @@ func convertXSDElement(element *XSDElement, schema *XSDSchema, options Conversio
 		prop.Items = simpleSchema.Items
 		prop.OneOf = simpleSchema.OneOf
 
+	} else if element.Ref != "" {
+		// <xs:element ref="..."/>: expand the referenced global <xs:element name="..."> declaration.
+		// Occurrence/nillable/default/fixed set at THIS reference site (already handled above) take
+		// precedence; only the type/structure and any description not overridden here are inherited.
+		if resolved, found := resolveGlobalElement(element.Ref, schema, options); found {
+			key := "elem:" + resolved.Name
+			if options.resolving[key] {
+				// Cycle: truncate here with an opaque object instead of recursing forever.
+				prop.Type = "object"
+			} else {
+				options.resolving[key] = true
+				resolvedProp, err := convertXSDElement(resolved, schema, options)
+				delete(options.resolving, key)
+				if err != nil {
+					return nil, err
+				}
+				prop.Type = resolvedProp.Type
+				prop.Format = resolvedProp.Format
+				prop.Constraints = resolvedProp.Constraints
+				prop.EnumValues = resolvedProp.EnumValues
+				prop.Properties = resolvedProp.Properties
+				prop.AdditionalProperties = resolvedProp.AdditionalProperties
+				prop.OneOf = resolvedProp.OneOf
+				prop.AnyOf = resolvedProp.AnyOf
+				prop.AllOf = resolvedProp.AllOf
+				prop.Items = resolvedProp.Items
+				if prop.Default == nil {
+					prop.Default = resolvedProp.Default
+				}
+				if prop.Description == "" {
+					prop.Description = resolvedProp.Description
+				}
+			}
+		} else if options.SkipUnsupported {
+			prop.Type = "string"
+		} else {
+			return nil, fmt.Errorf("unresolved element reference: %s", element.Ref)
+		}
+
 	} else {
 		// Default to string if no type specified
 		prop.Type = "string"
@@ -211,6 +260,12 @@ func convertXSDComplexType(complexType *XSDComplexType, schema *XSDSchema, optio
 		}
 	}
 
+	if complexType.Group != nil {
+		if err := processXSDGroupRef(complexType.Group, universal, schema, options); err != nil {
+			return nil, err
+		}
+	}
+
 	// Process attributes
 	for _, attr := range complexType.Attributes {
 		prop, err := convertXSDAttribute(&attr, schema, options)
@@ -220,7 +275,13 @@ func convertXSDComplexType(complexType *XSDComplexType, schema *XSDSchema, optio
 			}
 			return nil, err
 		}
-		universal.Properties[attr.Name] = prop
+		universal.Properties[attributePropertyName(&attr)] = prop
+	}
+
+	if complexType.AttributeGroup != nil {
+		if err := processXSDAttributeGroupRef(complexType.AttributeGroup, universal, schema, options); err != nil {
+			return nil, err
+		}
 	}
 
 	// Handle simple content
@@ -289,6 +350,12 @@ func convertXSDComplexTypeDef(complexType *XSDComplexTypeDef, schema *XSDSchema,
 		}
 	}
 
+	if complexType.Group != nil {
+		if err := processXSDGroupRef(complexType.Group, universal, schema, options); err != nil {
+			return nil, err
+		}
+	}
+
 	// Process attributes
 	for _, attr := range complexType.Attributes {
 		prop, err := convertXSDAttribute(&attr, schema, options)
@@ -298,7 +365,13 @@ func convertXSDComplexTypeDef(complexType *XSDComplexTypeDef, schema *XSDSchema,
 			}
 			return nil, err
 		}
-		universal.Properties[attr.Name] = prop
+		universal.Properties[attributePropertyName(&attr)] = prop
+	}
+
+	if complexType.AttributeGroup != nil {
+		if err := processXSDAttributeGroupRef(complexType.AttributeGroup, universal, schema, options); err != nil {
+			return nil, err
+		}
 	}
 
 	// Handle simple content
@@ -485,6 +558,39 @@ func convertXSDAttribute(attr *XSDAttribute, schema *XSDSchema, options Conversi
 		prop.Items = simpleSchema.Items
 		prop.OneOf = simpleSchema.OneOf
 
+	} else if attr.Ref != "" {
+		// <xs:attribute ref="..."/>: expand the referenced global <xs:attribute name="..."> declaration.
+		// use="required" set at THIS reference site (already handled above) takes precedence.
+		if resolved, found := resolveGlobalAttribute(attr.Ref, schema, options); found {
+			key := "attr:" + resolved.Name
+			if options.resolving[key] {
+				prop.Type = "string"
+			} else {
+				options.resolving[key] = true
+				resolvedProp, err := convertXSDAttribute(resolved, schema, options)
+				delete(options.resolving, key)
+				if err != nil {
+					return nil, err
+				}
+				prop.Type = resolvedProp.Type
+				prop.Format = resolvedProp.Format
+				prop.Constraints = resolvedProp.Constraints
+				prop.EnumValues = resolvedProp.EnumValues
+				prop.Items = resolvedProp.Items
+				prop.OneOf = resolvedProp.OneOf
+				if prop.Default == nil {
+					prop.Default = resolvedProp.Default
+				}
+				if prop.Description == "" {
+					prop.Description = resolvedProp.Description
+				}
+			}
+		} else if options.SkipUnsupported {
+			prop.Type = "string"
+		} else {
+			return nil, fmt.Errorf("unresolved attribute reference: %s", attr.Ref)
+		}
+
 	} else {
 		// Default to string for attributes
 		prop.Type = "string"
@@ -503,7 +609,7 @@ func processXSDSequence(sequence *XSDSequence, universal *UniversalSchema, schem
 			}
 			return err
 		}
-		universal.Properties[element.Name] = prop
+		universal.Properties[elementPropertyName(&element)] = prop
 	}
 
 	// Process nested sequences and choices
@@ -517,6 +623,13 @@ func processXSDSequence(sequence *XSDSequence, universal *UniversalSchema, schem
 	for _, nestedSequence := range sequence.Sequences {
 		err := processXSDSequence(&nestedSequence, universal, schema, options)
 		if err != nil {
+			return err
+		}
+	}
+
+	// <xs:group ref="..."/> particles: merge the referenced group's own content model in directly.
+	for _, groupRef := range sequence.Groups {
+		if err := processXSDGroupRef(&groupRef, universal, schema, options); err != nil {
 			return err
 		}
 	}
@@ -544,8 +657,67 @@ func processXSDChoice(choice *XSDChoice, universal *UniversalSchema, schema *XSD
 			}
 			return err
 		}
-		choiceSchema.Properties[element.Name] = prop
+		choiceSchema.Properties[elementPropertyName(&element)] = prop
 		universal.OneOf = append(universal.OneOf, choiceSchema)
+	}
+
+	// A nested <xs:sequence> branch: its whole element group is a single alternative.
+	for _, nestedSequence := range choice.Sequences {
+		branch := &UniversalSchema{Type: "object", Properties: make(map[string]*UniversalProperty)}
+		if err := processXSDSequence(&nestedSequence, branch, schema, options); err != nil {
+			return err
+		}
+		universal.OneOf = append(universal.OneOf, branch)
+	}
+
+	// A nested <xs:choice> flattens into the parent's alternatives rather than nesting oneOf-in-oneOf.
+	for _, nestedChoice := range choice.Choices {
+		nestedUniversal := &UniversalSchema{}
+		if err := processXSDChoice(&nestedChoice, nestedUniversal, schema, options); err != nil {
+			return err
+		}
+		universal.OneOf = append(universal.OneOf, nestedUniversal.OneOf...)
+	}
+
+	// A <xs:group ref="..."/> branch: its content model becomes one alternative, unless the
+	// referenced group's own content is itself a choice, in which case it flattens in too.
+	for _, groupRef := range choice.Groups {
+		group, found := resolveGroupDef(groupRef.Ref, schema, options)
+		if !found {
+			if options.SkipUnsupported {
+				continue
+			}
+			return fmt.Errorf("unresolved group reference: %s", groupRef.Ref)
+		}
+		key := "group:" + group.Name
+		if options.resolving[key] {
+			continue // cycle - skip re-expansion
+		}
+		options.resolving[key] = true
+
+		if group.Choice != nil {
+			nestedUniversal := &UniversalSchema{}
+			err := processXSDChoice(group.Choice, nestedUniversal, schema, options)
+			delete(options.resolving, key)
+			if err != nil {
+				return err
+			}
+			universal.OneOf = append(universal.OneOf, nestedUniversal.OneOf...)
+			continue
+		}
+
+		branch := &UniversalSchema{Type: "object", Properties: make(map[string]*UniversalProperty)}
+		var err error
+		if group.Sequence != nil {
+			err = processXSDSequence(group.Sequence, branch, schema, options)
+		} else if group.All != nil {
+			err = processXSDAll(group.All, branch, schema, options)
+		}
+		delete(options.resolving, key)
+		if err != nil {
+			return err
+		}
+		universal.OneOf = append(universal.OneOf, branch)
 	}
 
 	return nil
@@ -562,7 +734,7 @@ func processXSDAll(all *XSDAll, universal *UniversalSchema, schema *XSDSchema, o
 			}
 			return err
 		}
-		universal.Properties[element.Name] = prop
+		universal.Properties[elementPropertyName(&element)] = prop
 	}
 
 	return nil
@@ -688,7 +860,7 @@ func processXSDSimpleContent(simpleContent *XSDSimpleContent, universal *Univers
 				}
 				return err
 			}
-			universal.Properties[attr.Name] = prop
+			universal.Properties[attributePropertyName(&attr)] = prop
 		}
 	}
 
@@ -722,7 +894,7 @@ func processXSDSimpleContent(simpleContent *XSDSimpleContent, universal *Univers
 				}
 				return err
 			}
-			universal.Properties[attr.Name] = prop
+			universal.Properties[attributePropertyName(&attr)] = prop
 		}
 	}
 
@@ -773,7 +945,7 @@ func processXSDComplexContent(complexContent *XSDComplexContent, universal *Univ
 				}
 				return err
 			}
-			universal.Properties[attr.Name] = prop
+			universal.Properties[attributePropertyName(&attr)] = prop
 		}
 	}
 
@@ -802,7 +974,7 @@ func processXSDComplexContent(complexContent *XSDComplexContent, universal *Univ
 				}
 				return err
 			}
-			universal.Properties[attr.Name] = prop
+			universal.Properties[attributePropertyName(&attr)] = prop
 		}
 	}
 
@@ -925,7 +1097,27 @@ func mapXSDTypeToUniversal(xsdType string, schema *XSDSchema, options Conversion
 // list item, or union member of its own type) via options.resolving, since the universal schema
 // model has no $ref/pointer mechanism and would otherwise recurse until the stack overflows.
 // The bool return reports whether xsdType matched a named type at all (as opposed to being unknown).
+// Lookup searches schema first, then any options.AdditionalSchemas (xs:include/xs:import content
+// supplied by the caller) so types split across files can still be found. Matching is by local
+// name only across all schemas (namespaces are not distinguished), consistent with this activity's
+// namespaceHandling="ignore" default.
 func resolveNamedXSDType(typeName string, schema *XSDSchema, options ConversionOptions) (*UniversalSchema, bool, error) {
+	if resolved, found, err := resolveNamedXSDTypeInSchema(typeName, schema, options); found {
+		return resolved, found, err
+	}
+	for _, extra := range options.parsedAdditionalSchemas {
+		if extra == schema {
+			continue
+		}
+		if resolved, found, err := resolveNamedXSDTypeInSchema(typeName, extra, options); found {
+			return resolved, found, err
+		}
+	}
+	return nil, false, nil
+}
+
+// resolveNamedXSDTypeInSchema is the single-schema lookup used by resolveNamedXSDType.
+func resolveNamedXSDTypeInSchema(typeName string, schema *XSDSchema, options ConversionOptions) (*UniversalSchema, bool, error) {
 	for _, ct := range schema.ComplexTypes {
 		if ct.Name != typeName {
 			continue
@@ -954,6 +1146,191 @@ func resolveNamedXSDType(typeName string, schema *XSDSchema, options ConversionO
 	}
 
 	return nil, false, nil
+}
+
+// localName strips a namespace prefix from a QName-style reference (e.g. "tns:Foo" -> "Foo").
+func localName(qname string) string {
+	if idx := strings.LastIndex(qname, ":"); idx >= 0 {
+		return qname[idx+1:]
+	}
+	return qname
+}
+
+// elementPropertyName returns the map key for an XSD element particle: its own name, or - for a
+// <xs:element ref="..."/> particle, which has no name of its own - the local name of the
+// referenced global element.
+func elementPropertyName(element *XSDElement) string {
+	if element.Name != "" {
+		return element.Name
+	}
+	return localName(element.Ref)
+}
+
+// attributePropertyName returns the map key for an XSD attribute particle: its own name, or -
+// for a <xs:attribute ref="..."/> particle - the local name of the referenced global attribute.
+func attributePropertyName(attr *XSDAttribute) string {
+	if attr.Name != "" {
+		return attr.Name
+	}
+	return localName(attr.Ref)
+}
+
+// resolveGlobalElement looks up a top-level <xs:element name="..."> declaration referenced by a
+// local <xs:element ref="..."/> particle, searching schema first then any additionalSchemas.
+func resolveGlobalElement(ref string, schema *XSDSchema, options ConversionOptions) (*XSDElement, bool) {
+	name := localName(ref)
+	for i := range schema.Elements {
+		if schema.Elements[i].Name == name {
+			return &schema.Elements[i], true
+		}
+	}
+	for _, extra := range options.parsedAdditionalSchemas {
+		if extra == schema {
+			continue
+		}
+		for i := range extra.Elements {
+			if extra.Elements[i].Name == name {
+				return &extra.Elements[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+// resolveGlobalAttribute looks up a top-level <xs:attribute name="..."> declaration referenced
+// by a local <xs:attribute ref="..."/> particle.
+func resolveGlobalAttribute(ref string, schema *XSDSchema, options ConversionOptions) (*XSDAttribute, bool) {
+	name := localName(ref)
+	for i := range schema.Attributes {
+		if schema.Attributes[i].Name == name {
+			return &schema.Attributes[i], true
+		}
+	}
+	for _, extra := range options.parsedAdditionalSchemas {
+		if extra == schema {
+			continue
+		}
+		for i := range extra.Attributes {
+			if extra.Attributes[i].Name == name {
+				return &extra.Attributes[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+// resolveGroupDef looks up a named <xs:group name="..."> declaration referenced by <xs:group ref="...">.
+func resolveGroupDef(ref string, schema *XSDSchema, options ConversionOptions) (*XSDGroup, bool) {
+	name := localName(ref)
+	for i := range schema.Groups {
+		if schema.Groups[i].Name == name {
+			return &schema.Groups[i], true
+		}
+	}
+	for _, extra := range options.parsedAdditionalSchemas {
+		if extra == schema {
+			continue
+		}
+		for i := range extra.Groups {
+			if extra.Groups[i].Name == name {
+				return &extra.Groups[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+// resolveAttributeGroupDef looks up a named <xs:attributeGroup name="..."> declaration referenced
+// by <xs:attributeGroup ref="...">.
+func resolveAttributeGroupDef(ref string, schema *XSDSchema, options ConversionOptions) (*XSDAttributeGroup, bool) {
+	name := localName(ref)
+	for i := range schema.AttributeGroups {
+		if schema.AttributeGroups[i].Name == name {
+			return &schema.AttributeGroups[i], true
+		}
+	}
+	for _, extra := range options.parsedAdditionalSchemas {
+		if extra == schema {
+			continue
+		}
+		for i := range extra.AttributeGroups {
+			if extra.AttributeGroups[i].Name == name {
+				return &extra.AttributeGroups[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+// processXSDGroupRef resolves a <xs:group ref="..."/> particle and merges its content model
+// (sequence/choice/all) directly into universal, guarding against a group that (directly or
+// indirectly) references itself.
+func processXSDGroupRef(ref *XSDGroupRef, universal *UniversalSchema, schema *XSDSchema, options ConversionOptions) error {
+	group, found := resolveGroupDef(ref.Ref, schema, options)
+	if !found {
+		if options.SkipUnsupported {
+			return nil
+		}
+		return fmt.Errorf("unresolved group reference: %s", ref.Ref)
+	}
+	key := "group:" + group.Name
+	if options.resolving[key] {
+		return nil // cycle - skip re-expansion
+	}
+	options.resolving[key] = true
+	defer delete(options.resolving, key)
+
+	if group.Sequence != nil {
+		if err := processXSDSequence(group.Sequence, universal, schema, options); err != nil {
+			return err
+		}
+	}
+	if group.Choice != nil {
+		if err := processXSDChoice(group.Choice, universal, schema, options); err != nil {
+			return err
+		}
+	}
+	if group.All != nil {
+		if err := processXSDAll(group.All, universal, schema, options); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// processXSDAttributeGroupRef resolves a <xs:attributeGroup ref="..."/> particle and merges its
+// attributes (and any nested attributeGroup refs, recursively) into universal.Properties.
+func processXSDAttributeGroupRef(ref *XSDAttributeGroupRef, universal *UniversalSchema, schema *XSDSchema, options ConversionOptions) error {
+	group, found := resolveAttributeGroupDef(ref.Ref, schema, options)
+	if !found {
+		if options.SkipUnsupported {
+			return nil
+		}
+		return fmt.Errorf("unresolved attributeGroup reference: %s", ref.Ref)
+	}
+	key := "attrgroup:" + group.Name
+	if options.resolving[key] {
+		return nil // cycle - skip re-expansion
+	}
+	options.resolving[key] = true
+	defer delete(options.resolving, key)
+
+	for _, attr := range group.Attributes {
+		prop, err := convertXSDAttribute(&attr, schema, options)
+		if err != nil {
+			if options.SkipUnsupported {
+				continue
+			}
+			return err
+		}
+		universal.Properties[attributePropertyName(&attr)] = prop
+	}
+	for _, nested := range group.AttributeGroups {
+		if err := processXSDAttributeGroupRef(&nested, universal, schema, options); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // hasWildcardContent reports whether a complex type's immediate content model permits arbitrary

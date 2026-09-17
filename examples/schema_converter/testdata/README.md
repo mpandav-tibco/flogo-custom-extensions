@@ -40,11 +40,37 @@ It exercises the most common XSD restriction facets found in real-world enterpri
 
 ## Request format
 
-`POST /xsd2openapi/v1` expects a JSON body with the raw XSD text under `xsd`:
+`POST /xsd2openapi/v1` expects a JSON body with the raw XSD text under `xsd`, and optionally an
+`additionalSchemas` array for any `xs:include`/`xs:import`-referenced files:
 
 ```json
-{ "xsd": "<?xml version=\"1.0\"...?><xs:schema>...</xs:schema>" }
+{ "xsd": "<?xml version=\"1.0\"...?><xs:schema>...</xs:schema>", "additionalSchemas": ["<...>"] }
 ```
+
+## Multi-file schemas (xs:include / xs:import): EnterpriseOrderWithIncludes.xsd
+
+Real enterprise schemas are frequently split across files, with shared domain types (address,
+contact, audit metadata, ...) factored into a common file and pulled in via `xs:include`/
+`xs:import`. `EnterpriseOrderWithIncludes.xsd` + `EnterpriseOrderCommonTypes.xsd` demonstrate this:
+the order schema declares `shipTo`/`billTo`/`contact`/`auditInfo` as named types (`AddressType`,
+`ContactType`, `AuditInfoType`) that only exist in the separate common-types file. The activity
+never dereferences `schemaLocation` itself (SSRF/path-traversal risk) — the referenced file's
+content must be supplied via `additionalSchemas`:
+
+```bash
+python3 - <<'EOF'
+import json
+main = open("EnterpriseOrderWithIncludes.xsd").read()
+common = open("EnterpriseOrderCommonTypes.xsd").read()
+json.dump({"xsd": main, "additionalSchemas": [common]}, open("/tmp/req.json", "w"))
+EOF
+curl -s -X POST http://localhost:9999/xsd2openapi/v1 -H "Content-Type: application/json" \
+  --data @/tmp/req.json | jq -r '.openApiSchemaString' | jq '.components.schemas.RootSchema.properties.PurchaseOrder.properties'
+```
+
+Without `additionalSchemas`, `shipTo`/`billTo`/`contact`/`auditInfo` fall back to a generic
+`{"type":"string"}` (the named type is unresolvable); with it, each expands to its full object
+structure from the common-types file.
 
 ## Try it against the running app
 

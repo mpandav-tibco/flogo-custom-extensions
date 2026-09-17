@@ -13,14 +13,17 @@ import (
 
 // Constants for identifying inputs and outputs
 const (
-	ivXSDString      = "xsdString"      // XSD schema input
-	ivOutputFormat   = "outputFormat"   // "jsonschema", "avro", or "both"
-	ivValidateInput  = "validateInput"  // Validate XSD before conversion
-	ivPreserveOrder  = "preserveOrder"  // Preserve element order when possible
-	ivOptimizeOutput = "optimizeOutput" // Optimize output schema structure
+	ivXSDString         = "xsdString"         // XSD schema input
+	ivAdditionalSchemas = "additionalSchemas" // Raw content of xs:include/xs:import-referenced schemas
+	ivOutputFormat      = "outputFormat"      // "jsonschema", "avro", or "both"
+	ivValidateInput     = "validateInput"     // Validate XSD before conversion
+	ivPreserveOrder     = "preserveOrder"     // Preserve element order when possible
+	ivOptimizeOutput    = "optimizeOutput"    // Optimize output schema structure
 
 	// maxXSDStringLength bounds untrusted XSD input to guard against memory/CPU exhaustion (DoS).
 	maxXSDStringLength = 10 * 1024 * 1024 // 10 MB
+	// maxAdditionalSchemas caps how many included/imported schemas can be supplied per request.
+	maxAdditionalSchemas = 25
 
 	// JSON Schema options
 	ivJSONSchemaVersion = "jsonSchemaVersion" // "draft-04", "draft-07", "2019-09", "2020-12"
@@ -136,6 +139,8 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		StrictAdditionalProperties: input.StrictAdditionalProperties,
 	}
 
+	options.AdditionalSchemas = input.AdditionalSchemas
+
 	universalSchema, err := convertXSDToUniversal(input.XSDString, options)
 	if err != nil {
 		logger.Errorf("Failed to convert XSD to universal format: %v", err)
@@ -210,11 +215,12 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 // Input struct holds all configuration parameters
 type Input struct {
-	XSDString      string `md:"xsdString,required"`
-	OutputFormat   string `md:"outputFormat"`
-	ValidateInput  bool   `md:"validateInput"`
-	PreserveOrder  bool   `md:"preserveOrder"`
-	OptimizeOutput bool   `md:"optimizeOutput"`
+	XSDString         string   `md:"xsdString,required"`
+	AdditionalSchemas []string `md:"additionalSchemas"`
+	OutputFormat      string   `md:"outputFormat"`
+	ValidateInput     bool     `md:"validateInput"`
+	PreserveOrder     bool     `md:"preserveOrder"`
+	OptimizeOutput    bool     `md:"optimizeOutput"`
 
 	// JSON Schema options
 	JSONSchemaVersion string `md:"jsonSchemaVersion"`
@@ -355,6 +361,15 @@ type ConversionOptions struct {
 	ComplexTypeMode            string
 	SkipUnsupported            bool
 	StrictAdditionalProperties bool
+	// AdditionalSchemas holds raw XSD content for files referenced by the main schema via
+	// xs:include/xs:import. schemaLocation is never dereferenced automatically (SSRF/path-
+	// traversal risk for a server-side activity) - callers must supply the referenced content.
+	AdditionalSchemas []string
+
+	// parsedAdditionalSchemas caches the parsed form of AdditionalSchemas for the duration of a
+	// single convertXSDToUniversal call, so resolveNamedXSDType can search across every supplied
+	// schema (matched by local type name only, consistent with namespaceHandling="ignore").
+	parsedAdditionalSchemas []*XSDSchema
 
 	// resolving tracks named XSD types currently being expanded on the active recursion path,
 	// so a type that (directly or transitively) references itself is detected and truncated
@@ -400,6 +415,29 @@ func coerceAndValidateInputs(ctx activity.Context) (*Input, error) {
 	}
 	if len(input.XSDString) > maxXSDStringLength {
 		return nil, fmt.Errorf("input 'xsdString' exceeds maximum allowed size of %d bytes", maxXSDStringLength)
+	}
+
+	// additionalSchemas: raw content of any xs:include/xs:import-referenced schemas
+	if raw := ctx.GetInput(ivAdditionalSchemas); raw != nil {
+		arr, err := coerce.ToArray(raw)
+		if err != nil {
+			return nil, fmt.Errorf("input 'additionalSchemas' must be an array of strings: %v", err)
+		}
+		if len(arr) > maxAdditionalSchemas {
+			return nil, fmt.Errorf("input 'additionalSchemas' exceeds maximum allowed count of %d", maxAdditionalSchemas)
+		}
+		for i, v := range arr {
+			s, err := coerce.ToString(v)
+			if err != nil {
+				return nil, fmt.Errorf("input 'additionalSchemas[%d]' must be a string: %v", i, err)
+			}
+			if len(s) > maxXSDStringLength {
+				return nil, fmt.Errorf("input 'additionalSchemas[%d]' exceeds maximum allowed size of %d bytes", i, maxXSDStringLength)
+			}
+			if strings.TrimSpace(s) != "" {
+				input.AdditionalSchemas = append(input.AdditionalSchemas, s)
+			}
+		}
 	}
 
 	// Optional inputs with defaults

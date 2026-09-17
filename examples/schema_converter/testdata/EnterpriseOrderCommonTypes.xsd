@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shared/reusable enterprise types, split out into their own file the way a real
+  organization typically factors common domain types (Address, Contact, Audit
+  metadata) out of every individual message schema. This file is never posted on
+  its own - it is referenced by EnterpriseOrderWithIncludes.xsd via
+  <xs:include schemaLocation="EnterpriseOrderCommonTypes.xsd"/> and must be
+  supplied to the xsdschematransform activity via the additionalSchemas input,
+  since the activity does not (and, for SSRF/path-traversal safety, should not)
+  dereference schemaLocation itself.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/enterprise/order"
+           xmlns:tns="http://example.com/enterprise/order"
+           elementFormDefault="qualified">
+
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="street" type="xs:string"/>
+      <xs:element name="city" type="xs:string"/>
+      <xs:element name="state" type="xs:string" minOccurs="0"/>
+      <xs:element name="postalCode" type="xs:string"/>
+      <xs:element name="country" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ContactType">
+    <xs:sequence>
+      <xs:element name="email" type="xs:string"/>
+      <xs:element name="phone" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuditInfoType">
+    <xs:sequence>
+      <xs:element name="createdBy" type="xs:string"/>
+      <xs:element name="createdDate" type="xs:dateTime"/>
+      <xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

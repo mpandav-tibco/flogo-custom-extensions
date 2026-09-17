@@ -22,6 +22,12 @@
       "description": "XSD schema string to transform"
     },
     {
+      "name": "additionalSchemas",
+      "type": "array",
+      "schema": "{\"type\": \"array\", \"items\": {\"type\": \"string\"}}",
+      "description": "Raw XSD content of any files referenced by the main schema via xs:include/xs:import (schemaLocation is never fetched automatically), so named types defined only in those files can be resolved"
+    },
+    {
       "name": "outputFormat",
       "type": "string",
       "description": "Output format: 'jsonschema', 'avro', 'openapi', or 'both' (jsonschema+avro)",

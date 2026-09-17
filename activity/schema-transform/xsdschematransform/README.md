@@ -15,6 +15,7 @@ This activity uses no global settings - all configuration is provided through in
 | Input | Type | Required | Description | Default |
 |-------|------|----------|-------------|---------|
 | xsdString | string | Yes | XSD schema string to transform | - |
+| additionalSchemas | array of string | No | Raw content of any files referenced by `xsdString` via `xs:include`/`xs:import` (schemaLocation is never fetched automatically - see Notes below) | - |
 | outputFormat | string | No | Output format: 'jsonschema', 'avro', 'openapi', or 'both' (jsonschema+avro) | "both" |
 | validateInput | boolean | No | Validate XSD schema before conversion | false |
 | preserveOrder | boolean | No | Preserve element order when possible | false |
@@ -316,11 +317,33 @@ go test -v -cover
 - Conversion statistics provide detailed processing information
 - Error handling is comprehensive but non-blocking where possible
 - The activity supports the most common XSD features used in enterprise environments
-- Complex XSD features like substitution groups have limited support
 - Performance scales well with schema complexity
 - Compatible with all major schema registries and documentation tools
 - Named `<xs:complexType>`/`<xs:simpleType>` references (`type="tns:Foo"`), `xs:complexContent`
   `xs:extension` inheritance, and `xs:list`/`xs:union` with inline (anonymous) item/member types
   are all resolved, including transitively; a type that references itself directly or indirectly
   is truncated at the cycle with an opaque object rather than expanded again (no `$ref` support)
+- `<xs:group ref="...">`/`<xs:attributeGroup ref="...">` (including nested `attributeGroup` refs)
+  are resolved and merged into the containing type - both at the complex-type level and inside
+  `xs:sequence`/`xs:choice`. `<xs:element ref="...">`/`<xs:attribute ref="...">` (references to a
+  global element/attribute declaration) are resolved to that declaration's own type; occurrence
+  constraints (`minOccurs`/`maxOccurs`) set at the reference site are honored, not overridden by
+  the resolved declaration. Reference cycles are truncated the same way as named-type cycles
+- `xs:choice` branches that are themselves an `<xs:sequence>` (a multi-element alternative) or an
+  `<xs:group ref="...">` are each expanded into a full `oneOf` alternative rather than dropped; a
+  nested `<xs:choice>` inside a choice flattens into the parent's alternative list
 - `xsdString` is capped at 10 MB to bound memory/CPU usage on untrusted input
+- `xs:include`/`xs:import` elements are parsed but their `schemaLocation` is **never** dereferenced
+  automatically (fetching an arbitrary caller-supplied path/URL server-side would be an SSRF/
+  path-traversal risk). If the main schema references a named type, global element/attribute, or
+  group/attributeGroup declared only in an included or imported file, supply that file's raw
+  content via `additionalSchemas` (one array entry per referenced file) - it is parsed and searched
+  alongside the main schema when resolving any of the above. Matching is by local name only, across
+  all supplied schemas (namespaces on `xs:import` are not distinguished), consistent with
+  `namespaceHandling: "ignore"`. Without the matching entry in `additionalSchemas`, an unresolvable
+  reference falls back to a generic `string` rather than failing the whole conversion. Capped at 25
+  entries / 10 MB each
+- Not modeled (accepted limitations): `substitutionGroup` (an element declared as substitutable for
+  another is not treated as a polymorphic alternative anywhere the base element is referenced),
+  identity constraints (`xs:key`/`xs:keyref`/`xs:unique` - cross-instance uniqueness rules with no
+  JSON Schema/OpenAPI equivalent), and `xs:redefine`

@@ -1117,6 +1117,7 @@
               "ref": "#xsdschematransform",
               "input": {
                 "xsdString": "=$flow.body.xsd",
+                "additionalSchemas": "=$flow.body.additionalSchemas",
                 "outputFormat": "openapi",
                 "validateInput": false,
                 "preserveOrder": false,

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Multi-file enterprise schema demonstrating xs:include support. This file
+  references AddressType/ContactType/AuditInfoType which are declared only in
+  EnterpriseOrderCommonTypes.xsd (same targetNamespace, split by convention into
+  a separate "common types" file - a very common real-world enterprise pattern).
+
+  To convert this schema, POST both files' content to the activity:
+    xsdString        = contents of this file
+    additionalSchemas = ["<contents of EnterpriseOrderCommonTypes.xsd>"]
+
+  The activity does not fetch schemaLocation="EnterpriseOrderCommonTypes.xsd"
+  automatically (SSRF/path-traversal risk for a server-side activity) - the
+  referenced content must be supplied explicitly via additionalSchemas.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/enterprise/order"
+           xmlns:tns="http://example.com/enterprise/order"
+           elementFormDefault="qualified">
+
+  <xs:include schemaLocation="EnterpriseOrderCommonTypes.xsd"/>
+
+  <xs:element name="PurchaseOrder">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="orderId" type="xs:string"/>
+        <xs:element name="orderDate" type="xs:date"/>
+        <xs:element name="shipTo" type="tns:AddressType"/>
+        <xs:element name="billTo" type="tns:AddressType"/>
+        <xs:element name="contact" type="tns:ContactType"/>
+        <xs:element name="auditInfo" type="tns:AuditInfoType"/>
+        <xs:element name="totalAmount" type="xs:decimal"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

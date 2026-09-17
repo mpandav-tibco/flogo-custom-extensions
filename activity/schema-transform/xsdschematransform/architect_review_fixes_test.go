@@ -254,3 +254,68 @@ func TestXSDStringSizeLimit(t *testing.T) {
 	assert.True(t, tc.GetOutput(ovError).(bool))
 	assert.Contains(t, tc.GetOutput(ovErrorMessage).(string), "exceeds maximum allowed size")
 }
+
+// TestAdditionalSchemasResolvesIncludedType verifies a type referenced via xs:include/xs:import
+// (declared only in a separate schema file) is fully resolved when its content is supplied via
+// the additionalSchemas input, instead of degrading to a generic/opaque type.
+func TestAdditionalSchemasResolvesIncludedType(t *testing.T) {
+	main := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://example.com/order" targetNamespace="http://example.com/order">
+  <xs:include schemaLocation="common-types.xsd"/>
+  <xs:element name="order">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="shipTo" type="tns:AddressType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>`
+
+	common := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://example.com/order" targetNamespace="http://example.com/order">
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="street" type="xs:string"/>
+      <xs:element name="city" type="xs:string"/>
+      <xs:element name="zip" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>`
+
+	// Without the included schema supplied, AddressType is unresolvable and SkipUnsupported
+	// (always on) falls back to a bare string - the structure is silently lost.
+	docMissing := runOpenAPI(t, main, nil)
+	rootMissing := docMissing["components"].(map[string]interface{})["schemas"].(map[string]interface{})["RootSchema"].(map[string]interface{})
+	shipToMissing := rootMissing["properties"].(map[string]interface{})["order"].(map[string]interface{})["properties"].(map[string]interface{})["shipTo"].(map[string]interface{})
+	assert.Equal(t, "string", shipToMissing["type"])
+
+	// With additionalSchemas supplied, AddressType resolves and its real structure is expanded.
+	docResolved := runOpenAPI(t, main, map[string]interface{}{ivAdditionalSchemas: []string{common}})
+	rootResolved := docResolved["components"].(map[string]interface{})["schemas"].(map[string]interface{})["RootSchema"].(map[string]interface{})
+	shipTo := rootResolved["properties"].(map[string]interface{})["order"].(map[string]interface{})["properties"].(map[string]interface{})["shipTo"].(map[string]interface{})
+	assert.Equal(t, "object", shipTo["type"])
+	addrProps := shipTo["properties"].(map[string]interface{})
+	assert.Equal(t, "string", addrProps["street"].(map[string]interface{})["type"])
+	assert.Equal(t, "string", addrProps["city"].(map[string]interface{})["type"])
+	assert.Equal(t, "string", addrProps["zip"].(map[string]interface{})["type"])
+}
+
+// TestAdditionalSchemasCountLimit verifies an excessive additionalSchemas count is rejected.
+func TestAdditionalSchemasCountLimit(t *testing.T) {
+	act := &Activity{}
+	tc := test.NewActivityContext(act.Metadata())
+
+	extras := make([]string, maxAdditionalSchemas+1)
+	for i := range extras {
+		extras[i] = `<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"/>`
+	}
+	tc.SetInput(ivXSDString, `<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="x" type="xs:string"/></xs:schema>`)
+	tc.SetInput(ivAdditionalSchemas, extras)
+	tc.SetInput(ivOutputFormat, "jsonschema")
+
+	done, err := act.Eval(tc)
+	assert.True(t, done)
+	assert.NoError(t, err)
+	assert.True(t, tc.GetOutput(ovError).(bool))
+	assert.Contains(t, tc.GetOutput(ovErrorMessage).(string), "exceeds maximum allowed count")
+}
