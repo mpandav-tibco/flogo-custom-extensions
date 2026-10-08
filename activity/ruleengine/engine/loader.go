@@ -8,7 +8,6 @@ import (
 	"strings"
 	"sync"
 	"text/template"
-	"time"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/model"
 	"gopkg.in/yaml.v3"
@@ -17,27 +16,25 @@ import (
 // ── Rule cache ────────────────────────────────────────────────────────────────
 
 type rulesEntry struct {
-	rules    []*model.RuleDef
-	warnings []string
-	dirMtime time.Time
+	rules       []*model.RuleDef
+	warnings    []string
+	fingerprint string
 }
 
-// rulesCache stores parsed rule sets keyed by rulesPath.
-// Entries are invalidated when the directory's own modification time changes
-// (i.e., when files are added or removed). For content changes inside existing
-// files the service must be restarted — rules are treated as static at runtime.
+// rulesCache stores parsed rule sets keyed by rulesPath. An entry is reused only
+// while the fingerprint of every .yaml file under the directory (path, size and
+// modification time) is unchanged, so adding, removing or editing a rule file
+// takes effect on the next evaluation without restarting the service.
 var rulesCache sync.Map // rulesPath → *rulesEntry
 
-// loadRules returns the rules for rulesPath, using a directory-mtime cache to
-// avoid re-parsing on every Flogo activity invocation.
+// loadRules returns the rules for rulesPath, using a fingerprint cache to avoid
+// re-parsing on every Flogo activity invocation.
 func loadRules(rulesPath string) ([]*model.RuleDef, []string) {
-	// Stat the directory first so we can check the cache.
-	info, statErr := os.Stat(rulesPath)
+	fingerprint, cacheable := rulesFingerprint(rulesPath)
 
-	if statErr == nil {
+	if cacheable {
 		if cached, ok := rulesCache.Load(rulesPath); ok {
-			entry := cached.(*rulesEntry)
-			if !info.ModTime().After(entry.dirMtime) {
+			if entry := cached.(*rulesEntry); entry.fingerprint == fingerprint {
 				return entry.rules, entry.warnings
 			}
 		}
@@ -46,14 +43,34 @@ func loadRules(rulesPath string) ([]*model.RuleDef, []string) {
 	// Cache miss or stale — load fresh.
 	rules, warnings := loadRulesFresh(rulesPath)
 
-	if statErr == nil {
+	if cacheable {
 		rulesCache.Store(rulesPath, &rulesEntry{
-			rules:    rules,
-			warnings: warnings,
-			dirMtime: info.ModTime(),
+			rules:       rules,
+			warnings:    warnings,
+			fingerprint: fingerprint,
 		})
 	}
 	return rules, warnings
+}
+
+// rulesFingerprint summarises the .yaml files under rulesPath (path, size and
+// modification time, in walk order). cacheable is false when the directory does
+// not exist, in which case nothing is cached and every call reports the problem.
+func rulesFingerprint(rulesPath string) (fingerprint string, cacheable bool) {
+	if _, err := os.Stat(rulesPath); err != nil {
+		return "", false
+	}
+	var sb strings.Builder
+	err := filepath.Walk(rulesPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil // loadRulesFresh reports it as a warning
+		}
+		if !info.IsDir() && strings.EqualFold(filepath.Ext(path), ".yaml") {
+			fmt.Fprintf(&sb, "%s|%d|%d\n", path, info.Size(), info.ModTime().UnixNano())
+		}
+		return nil
+	})
+	return sb.String(), err == nil
 }
 
 // loadRulesFresh reads all .yaml files from rulesPath (recursively) and returns

@@ -56,6 +56,13 @@
             "items": {
                 "type": "string"
             }
+        },
+        {
+            "name": "strict",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "description": "Fail the activity instead of reporting a clean result when rules were skipped while loading or no rule was evaluated"
         }
     ],
     "output": [

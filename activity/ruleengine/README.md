@@ -10,7 +10,8 @@ Supports:
 - Tag and disable filters — run only a tagged subset of rules, or skip specific rule IDs at call time
 - Go template interpolation — `{{.Scope.*}}`, `{{.Root.*}}`, `{{.File.*}}`, `{{.Match}}` in descriptions and locations; template syntax errors are reported in the finding output
 - Parallel rule evaluation — rules run concurrently; safe because all Document implementations are read-only after parsing
-- Rule set caching — parsed rules are cached in memory and re-read only when the directory's modification time changes
+- Rule set caching — parsed rules are cached in memory and re-read automatically when any rule file is added, removed or edited
+- Strict mode — opt-in `strict` input that fails the activity instead of reporting a clean result when rules were skipped while loading or none was evaluated
 
 ---
 
@@ -24,6 +25,7 @@ Supports:
 | `parserOverride` | string | | Force a parser: `json`, `xml`, `yaml`, `kv`, `lines` |
 | `disabledRules` | array | | Rule IDs to skip for this call (e.g. `["FLOGO-001"]`) |
 | `tags` | array | | Only evaluate rules that carry at least one of these tags |
+| `strict` | boolean | | Fail the activity instead of reporting a clean result when rules were skipped while loading or no rule was evaluated (default `false`, see [Strict Mode](#strict-mode)) |
 
 ---
 
@@ -184,7 +186,27 @@ If a template executes with an error (e.g. a valid template that fails due to a 
 
 ## Rule Caching
 
-Parsed rule sets are cached in memory keyed by `rulesPath`. The cache is invalidated only when the directory's own modification time changes (i.e., when files are added or removed). Changes to the **content** of existing rule files require a service restart to take effect — rules are treated as static at runtime.
+Parsed rule sets are cached in memory keyed by `rulesPath`. Each evaluation compares the path, size and modification time of every `.yaml` file under the directory with the cached copy and re-parses only when something changed, so adding, removing or editing a rule file takes effect on the next evaluation without a restart. An edit that changes neither the size nor the modification time of a file is not detected.
+
+---
+
+## Strict Mode
+
+By default a rule file that cannot be loaded is skipped: it is listed in `overview.warnings`, logged as a warning, and the remaining rules still run. If **no** rule loads, the result is indistinguishable from a document with no findings (`success=true`, `errorCount=0`, `overview.rules_run=0`), which is dangerous when the activity gates a request.
+
+Set `strict` to `true` for such gates. The activity then fails (the flow's error handler runs) instead of returning a clean result when:
+
+- any rule file or rule was skipped while loading (unreadable directory, YAML error, invalid rule, duplicate ID), or
+- no rule was evaluated for the request (for example the `tags` filter selected nothing), or
+- the document cannot be parsed or `rulesPath` is missing.
+
+| Code | Meaning |
+|------|---------|
+| `RULEENGINE-4001` | Rules were skipped while loading, or none was evaluated; the skipped files are listed in the message and in the error data |
+| `RULEENGINE-4002` | The document could not be parsed or evaluated |
+| `RULEENGINE-4003` | `rulesPath` is missing |
+
+With `strict` off nothing changes except that skipped rules and an empty rule set are now logged at WARN level.
 
 ---
 
@@ -290,7 +312,7 @@ rule:
 | Area | Limitation |
 |------|------------|
 | **XML path resolution** | Scope items are `*xmlquery.Node`; match paths must be valid XPath from that node. Dot-notation does not apply to XML. |
-| **Rule content hot-reload** | Content changes to existing rule files require a service restart; only directory-level changes (files added/removed) are picked up automatically via mtime invalidation. |
+| **Rule content hot-reload** | Edits are detected by file size and modification time; an edit that changes neither is not reloaded until the service restarts. |
 | **Expression match type** | `type: expression` (JavaScript sandbox via goja) is reserved for Phase 2 and returns a clear error if used: `"expression match type is not supported in this build; use regex, any_of, or all_of for complex conditions"`. |
 | **GOOD rule suppression summary** | When a GOOD (strength) rule hits `max_occurrences`, the suppression summary finding still goes to `findings` (not `positives`) because it is a meta-finding about the cap, not an actual strength. |
 

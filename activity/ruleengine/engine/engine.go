@@ -22,6 +22,7 @@ type Request struct {
 	ParserOverride string   // "json"|"xml"|"yaml"|"kv"|"lines" — overrides extension detection
 	DisabledRules  []string // rule IDs to skip
 	Tags           []string // only evaluate rules with at least one of these tags
+	Strict         bool     // fail with *StrictError instead of reporting a clean result when the rule set is not intact
 }
 
 // Evaluate runs all applicable rules against the provided document content.
@@ -39,6 +40,14 @@ func Evaluate(req Request) (*model.Result, error) {
 	ext := strings.ToLower(filepath.Ext(req.FileName))
 	rules := filterRules(allRules, ext, parserName, req.DisabledRules, req.Tags)
 	rules = filterByParser(rules, parserName)
+
+	// 2b. Strict mode: a rule set that was only partly loaded, or that selected no
+	// rule at all, must never be reported as a clean result.
+	if req.Strict {
+		if err := checkStrict(req, warnings, len(rules)); err != nil {
+			return nil, err
+		}
+	}
 
 	// 3. Run evaluation
 	findings, positives := evaluator.Run(rules, doc, req.FileName)

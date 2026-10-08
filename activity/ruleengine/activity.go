@@ -1,6 +1,10 @@
 package ruleengine
 
 import (
+	"errors"
+	"fmt"
+	"strings"
+
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/coerce"
@@ -14,6 +18,13 @@ func init() {
 	_ = activity.Register(&Activity{}, New)
 }
 
+// Error codes raised in strict mode. The flow's error handler sees them as $error.code.
+const (
+	ErrCodeRuleSet = "RULEENGINE-4001" // rules were skipped while loading, or none was evaluated
+	ErrCodeEval    = "RULEENGINE-4002" // the document could not be parsed or evaluated
+	ErrCodeConfig  = "RULEENGINE-4003" // a required input is missing
+)
+
 // ─── Input ────────────────────────────────────────────────────────────────────
 
 type Input struct {
@@ -23,6 +34,7 @@ type Input struct {
 	ParserOverride string   `md:"parserOverride"`
 	DisabledRules  []string `md:"disabledRules"`
 	Tags           []string `md:"tags"`
+	Strict         bool     `md:"strict"`
 }
 
 func (i *Input) ToMap() map[string]interface{} {
@@ -33,6 +45,7 @@ func (i *Input) ToMap() map[string]interface{} {
 		"parserOverride": i.ParserOverride,
 		"disabledRules":  i.DisabledRules,
 		"tags":           i.Tags,
+		"strict":         i.Strict,
 	}
 }
 
@@ -49,6 +62,11 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 	}
 	if i.ParserOverride, err = coerce.ToString(values["parserOverride"]); err != nil {
 		return err
+	}
+	if v := values["strict"]; v != nil && v != "" {
+		if i.Strict, err = coerce.ToBool(v); err != nil {
+			return err
+		}
 	}
 	if v := values["disabledRules"]; v != nil {
 		if arr, ok := v.([]interface{}); ok {
@@ -155,6 +173,9 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	}
 
 	if in.RulesPath == "" {
+		if in.Strict {
+			return false, activity.NewError("rulesPath input is required", ErrCodeConfig, nil)
+		}
 		return true, ctx.SetOutputObject(&Output{
 			Success: false,
 			Error:   "rulesPath input is required",
@@ -191,6 +212,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		ParserOverride: in.ParserOverride,
 		DisabledRules:  in.DisabledRules,
 		Tags:           in.Tags,
+		Strict:         in.Strict,
 	})
 
 	// Finish span after evaluation — record result attributes and any error.
@@ -209,9 +231,22 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	out := &Output{}
 	if evalErr != nil {
+		var strictErr *engine.StrictError
+		switch {
+		case errors.As(evalErr, &strictErr):
+			a.logger.Errorf("RuleEngine: %s", evalErr)
+			return false, activity.NewError(evalErr.Error(), ErrCodeRuleSet, strictErr.Warnings)
+		case in.Strict:
+			a.logger.Errorf("RuleEngine: evaluation failed: %s", evalErr)
+			return false, activity.NewError(evalErr.Error(), ErrCodeEval, nil)
+		}
 		out.Success = false
 		out.Error = evalErr.Error()
 		return true, ctx.SetOutputObject(out)
+	}
+
+	if msg := loadProblems(in, result.Overview); msg != "" {
+		a.logger.Warnf("%s", msg)
 	}
 
 	out.Success = true
@@ -225,4 +260,19 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	out.Overview = result.Overview
 
 	return true, ctx.SetOutputObject(out)
+}
+
+// loadProblems describes why an evaluation may not have used the full rule set, or
+// returns "" when every rule loaded and at least one rule ran. Without it a broken
+// rules directory is invisible: the result looks like a document with no findings.
+func loadProblems(in *Input, overview map[string]interface{}) string {
+	if warnings, _ := overview["warnings"].([]string); len(warnings) > 0 {
+		return fmt.Sprintf("RuleEngine: %d problem(s) loading rules from %q, affected rules were skipped: %s",
+			len(warnings), in.RulesPath, strings.Join(warnings, "; "))
+	}
+	if run, _ := overview["rules_run"].(int); run == 0 {
+		return fmt.Sprintf("RuleEngine: no rules were evaluated for %q (rulesPath=%q, tags=%v)",
+			in.FileName, in.RulesPath, in.Tags)
+	}
+	return ""
 }
