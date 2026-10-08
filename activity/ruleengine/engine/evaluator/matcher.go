@@ -31,6 +31,8 @@ func EvaluateCondition(cond model.Condition, doc parser.Document, scope interfac
 		return evalMissing(cond, doc, scope)
 	case "exists":
 		return evalExists(cond, doc, scope)
+	case "not_exists":
+		return evalNotExists(cond, doc, scope)
 	case "equals":
 		return evalEquals(cond, doc, scope)
 	case "not_equals":
@@ -60,10 +62,10 @@ func EvaluateCondition(cond model.Condition, doc parser.Document, scope interfac
 		return evalExists(cond, doc, scope)
 	case "regex_match":
 		return evalRegex(cond, doc, scope)
-
-	// ── Extended match types ──────────────────────────────────────────────
+	// count_greater_than is a readability alias: it accepts min_count (int) instead of
+	// value (interface{}) but delegates to evalCountExceeds which handles both.
 	case "count_greater_than":
-		return evalCountGreaterThan(cond, doc, scope)
+		return evalCountExceeds(cond, doc, scope)
 	case "all_missing":
 		return evalAllMissing(cond, doc, scope)
 	case "none_contain":
@@ -76,8 +78,9 @@ func EvaluateCondition(cond model.Condition, doc parser.Document, scope interfac
 		return evalCredentialHeaderLiteral(cond, doc, scope)
 
 	case "expression":
-		// Phase 2: JavaScript sandbox via goja. Log and skip for now.
-		return MatchResult{}, fmt.Errorf("expression match type not yet implemented (Phase 2)")
+		// Phase 2: JavaScript sandbox via goja — not available in this build.
+		// Use regex, any_of, or all_of for complex multi-condition logic instead.
+		return MatchResult{}, fmt.Errorf("expression match type is not supported in this build; use regex, any_of, or all_of for complex conditions (Phase 2 feature)")
 	default:
 		return MatchResult{}, fmt.Errorf("unknown match type: %q", cond.Type)
 	}
@@ -113,6 +116,14 @@ func evalExists(cond model.Condition, doc parser.Document, scope interface{}) (M
 	return MatchResult{Matched: true, Value: val}, nil
 }
 
+// evalNotExists fires when the path is completely absent from the document.
+// Unlike "missing" (absent OR empty), "not_exists" fires ONLY when the key is
+// not present at all — empty strings, zero values, and empty arrays do NOT match.
+func evalNotExists(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
+	_, found := doc.ResolvePath(scope, cond.Path)
+	return MatchResult{Matched: !found}, nil
+}
+
 func evalEquals(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
 	val, found := doc.ResolvePath(scope, cond.Path)
 	if !found {
@@ -124,11 +135,15 @@ func evalEquals(cond model.Condition, doc parser.Document, scope interface{}) (M
 }
 
 func evalNotEquals(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
-	r, err := evalEquals(cond, doc, scope)
-	if err != nil {
-		return r, err
+	val, found := doc.ResolvePath(scope, cond.Path)
+	// A missing field is not a match: "not_equals" means the field exists but has a different value.
+	// Delegating to evalEquals and inverting would incorrectly fire on objects that lack the field.
+	if !found {
+		return MatchResult{Matched: false}, nil
 	}
-	return MatchResult{Matched: !r.Matched, Value: r.Value}, nil
+	matched := !(reflect.DeepEqual(val, cond.Value) ||
+		fmt.Sprintf("%v", val) == fmt.Sprintf("%v", cond.Value))
+	return MatchResult{Matched: matched, Value: val}, nil
 }
 
 func evalContains(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
@@ -141,11 +156,14 @@ func evalContains(cond model.Condition, doc parser.Document, scope interface{}) 
 }
 
 func evalNotContains(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
-	r, err := evalContains(cond, doc, scope)
-	if err != nil {
-		return r, err
+	val, found := doc.ResolvePath(scope, cond.Path)
+	// A missing field is not a match: "not_contains" means the field exists but lacks the substring.
+	// Delegating to evalContains and inverting would incorrectly fire on objects that lack the field.
+	if !found || val == nil {
+		return MatchResult{Matched: false}, nil
 	}
-	return MatchResult{Matched: !r.Matched, Value: r.Value}, nil
+	s := stringify(val)
+	return MatchResult{Matched: !strings.Contains(s, cond.Substring), Value: val}, nil
 }
 
 func evalContainsAny(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
@@ -236,9 +254,17 @@ func evalCountExceeds(cond model.Condition, doc parser.Document, scope interface
 	if !ok {
 		return MatchResult{Matched: false}, nil
 	}
-	thresh, err := toFloat64(cond.Value)
-	if err != nil {
-		return MatchResult{}, err
+	// Accept threshold from value field (interface{}) or min_count field (int).
+	// min_count takes precedence when both are set.
+	var thresh float64
+	if cond.Value != nil {
+		var err error
+		thresh, err = toFloat64(cond.Value)
+		if err != nil {
+			return MatchResult{}, err
+		}
+	} else {
+		thresh = float64(cond.MinCount)
 	}
 	return MatchResult{Matched: float64(len(arr)) > thresh, Value: len(arr)}, nil
 }
@@ -296,19 +322,6 @@ func evalNoneOf(cond model.Condition, doc parser.Document, scope interface{}) (M
 }
 
 // ── Extended match implementations ───────────────────────────────────────────
-
-// evalCountGreaterThan fires when the array at path has more than MinCount elements.
-func evalCountGreaterThan(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
-	val, found := doc.ResolvePath(scope, cond.Path)
-	if !found || val == nil {
-		return MatchResult{Matched: false}, nil
-	}
-	arr, ok := val.([]interface{})
-	if !ok {
-		return MatchResult{Matched: false}, nil
-	}
-	return MatchResult{Matched: len(arr) > cond.MinCount, Value: len(arr)}, nil
-}
 
 // evalAllMissing fires when every path in cond.Paths resolves to missing/empty.
 func evalAllMissing(cond model.Condition, doc parser.Document, scope interface{}) (MatchResult, error) {
@@ -484,6 +497,12 @@ func stringify(v interface{}) string {
 		return s
 	case json.Number:
 		return s.String()
+	}
+	// Use JSON marshalling for maps and slices — encoding/json sorts map keys
+	// alphabetically (since Go 1.12), ensuring deterministic output for
+	// contains/not_contains/contains_any applied to structured objects.
+	if b, err := json.Marshal(v); err == nil {
+		return string(b)
 	}
 	return fmt.Sprintf("%v", v)
 }

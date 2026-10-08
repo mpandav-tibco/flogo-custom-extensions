@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -108,10 +109,10 @@ func TestInterpolate_NilMatch_EmptyString(t *testing.T) {
 }
 
 func TestInterpolate_InvalidTemplate_ReturnOriginal(t *testing.T) {
-	// An unparseable template returns the original string
+	// An unparseable template now returns a descriptive error string
 	result := Interpolate("{{.Invalid...syntax", TemplateContext{})
-	if result != "{{.Invalid...syntax" {
-		t.Fatalf("expected original string for invalid template, got %q", result)
+	if !strings.HasPrefix(result, "[template parse error:") {
+		t.Fatalf("expected template parse error string, got %q", result)
 	}
 }
 

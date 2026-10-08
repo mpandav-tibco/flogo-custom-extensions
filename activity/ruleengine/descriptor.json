@@ -10,7 +10,7 @@
         "visible": true,
         "smallIcon": "icons/ruleengine.svg",
         "largeIcon": "icons/ruleengine.svg",
-        "description": "Evaluate YAML rules against structured documents \u2014 JSON, XML, YAML, config files, logs"
+        "description": "Evaluate YAML rules against structured documents — JSON, XML, YAML, config files, logs"
     },
     "inputs": [
         {
@@ -159,6 +159,11 @@
             "name": "infoCount",
             "type": "integer",
             "description": "Number of INFO severity findings"
+        },
+        {
+            "name": "goodCount",
+            "type": "integer",
+            "description": "Number of GOOD severity findings (strengths)"
         },
         {
             "name": "markdown",

@@ -90,13 +90,14 @@ func (d *kvDocument) ResolveScope(path string) ([]interface{}, error) {
 		}
 		return []interface{}{d.root}, nil
 	}
-	// Strip a trailing [*] wildcard. Rule authors familiar with JSONPath may write
-	// "spec.containers[*]" to mean "iterate containers". For YAML/KV the bare path
-	// "spec.containers" is sufficient — the scope resolver expands arrays
-	// element-by-element. Without this stripping, dotGet fails silently because
-	// parseArrayIndex rejects the non-numeric "*" index, yielding an empty scope
-	// and zero findings with no error reported.
-	cleanedPath := strings.TrimSuffix(path, "[*]")
+	// Normalise the path so both simple dot-notation ("spec.containers") and
+	// JSONPath-style notation ("$.spec.containers[*]") are accepted.
+	// Strip a leading "$." prefix — rule authors familiar with JSONPath may include it.
+	// Strip a trailing "[*]" wildcard — for YAML/KV the bare path is sufficient;
+	// the scope resolver expands arrays element-by-element automatically.
+	// Without stripping, dotGet fails silently and yields an empty scope with zero findings.
+	cleanedPath := strings.TrimPrefix(path, "$.")
+	cleanedPath = strings.TrimSuffix(cleanedPath, "[*]")
 	val, ok := dotGet(d.root, cleanedPath)
 	if !ok {
 		return nil, nil

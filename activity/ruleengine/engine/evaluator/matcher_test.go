@@ -248,12 +248,13 @@ func TestMatcher_NotEquals_SameValue_NoMatch(t *testing.T) {
 	}
 }
 
-func TestMatcher_NotEquals_AbsentField_Matches(t *testing.T) {
-	// Absent field → equals returns false → not_equals returns true
+func TestMatcher_NotEquals_AbsentField_NoMatch(t *testing.T) {
+	// Absent field → no finding: not_equals requires the field to exist with a different value.
+	// (Previous buggy behaviour inverted equals's "not found" false → true, producing false positives.)
 	d := doc()
 	r, _ := EvaluateCondition(cond("not_equals", "missing", "value", "x"), d, d.root)
-	if !r.Matched {
-		t.Fatal("expected match for absent field (not_equals semantics)")
+	if r.Matched {
+		t.Fatal("absent field must not match not_equals — use 'missing' to detect absent fields")
 	}
 }
 
@@ -309,12 +310,13 @@ func TestMatcher_NotContains_SubstringPresent(t *testing.T) {
 	}
 }
 
-func TestMatcher_NotContains_AbsentField_Matches(t *testing.T) {
-	// Absent field → contains returns false → not_contains returns true
+func TestMatcher_NotContains_AbsentField_NoMatch(t *testing.T) {
+	// Absent field → no finding: not_contains requires the field to exist without the substring.
+	// (Previous buggy behaviour inverted contains's "not found" false → true, producing false positives.)
 	d := doc()
 	r, _ := EvaluateCondition(cond("not_contains", "image", "substring", ":latest"), d, d.root)
-	if !r.Matched {
-		t.Fatal("expected match for absent field (not_contains semantics)")
+	if r.Matched {
+		t.Fatal("absent field must not match not_contains — use 'missing' to detect absent fields")
 	}
 }
 

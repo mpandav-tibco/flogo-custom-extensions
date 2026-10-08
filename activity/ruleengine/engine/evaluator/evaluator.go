@@ -3,35 +3,63 @@ package evaluator
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/model"
 	"github.com/mpandav-tibco/flogo-custom-extensions/activity/ruleengine/engine/parser"
 )
 
 // Run evaluates a set of rules against a parsed document and returns all findings.
+// Rules are evaluated in parallel (one goroutine per rule); the Document
+// implementations are read-only after construction so concurrent access is safe.
+// Output order follows severity priority (ERROR → WARNING → INFO) then rule ID,
+// matching the sort applied by sortedRules.
 func Run(rules []*model.RuleDef, doc parser.Document, fileName string) (findings []model.Finding, positives []model.Finding) {
+	if len(rules) == 0 {
+		return
+	}
+
 	fileInfo := FileInfo{
 		Name:      filepath.Base(fileName),
 		Extension: strings.ToLower(filepath.Ext(fileName)),
 	}
 
-	// Sort rules: ERROR → WARNING → INFO → GOOD, then alphabetically by ID
 	sorted := sortedRules(rules)
 
-	for _, rule := range sorted {
-		newFindings, newPositives := evalRule(rule, doc, fileInfo)
-		if rule.Severity == model.SeverityGood {
-			positives = append(positives, newPositives...)
-		} else {
-			findings = append(findings, newFindings...)
-		}
+	type result struct {
+		findings  []model.Finding
+		positives []model.Finding
+	}
+
+	results := make([]result, len(sorted))
+	var wg sync.WaitGroup
+	for i, rule := range sorted {
+		wg.Add(1)
+		go func(idx int, r *model.RuleDef) {
+			defer wg.Done()
+			f, p := evalRule(r, doc, fileInfo)
+			results[idx] = result{f, p}
+		}(i, rule)
+	}
+	wg.Wait()
+
+	for _, r := range results {
+		findings = append(findings, r.findings...)
+		positives = append(positives, r.positives...)
 	}
 	return
 }
 
 func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (findings []model.Finding, positives []model.Finding) {
+	// Condition-DSL rules take a dedicated path (human-readable `condition:` string).
+	if rule.Condition != "" {
+		return evalConditionRule(rule, doc, fileInfo)
+	}
+
 	// Expand scope — the set of objects this rule evaluates against
 	scopeItems, err := doc.ResolveScope(rule.Scope)
 	if err != nil {
@@ -49,6 +77,8 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 		return
 	}
 
+	maxOcc := rule.MaxOccurrences // 0 = unlimited
+	matchCount := 0               // total matches (including suppressed ones)
 	var whenErr, matchErr error
 	for _, scopeItem := range scopeItems {
 		// Apply when pre-filter if present
@@ -71,6 +101,13 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 		}
 
 		if !result.Matched {
+			continue
+		}
+
+		matchCount++
+
+		// Enforce max_occurrences — count all matches but only emit up to the cap.
+		if maxOcc > 0 && matchCount > maxOcc {
 			continue
 		}
 
@@ -101,6 +138,19 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 		}
 	}
 
+	// If max_occurrences was hit, append a single INFO finding summarising how
+	// many additional matches were suppressed.
+	if maxOcc > 0 && matchCount > maxOcc {
+		suppressed := matchCount - maxOcc
+		findings = append(findings, model.Finding{
+			RuleID:   rule.ID,
+			Severity: model.SeverityInfo,
+			Title:    fmt.Sprintf("[%s] %d additional occurrence(s) suppressed", rule.ID, suppressed),
+			Message:  fmt.Sprintf("max_occurrences limit of %d reached; %d further match(es) not shown", maxOcc, suppressed),
+			Tags:     rule.Tags,
+		})
+	}
+
 	// Surface evaluation errors as diagnostic INFO findings rather than
 	// swallowing them silently — a rule author needs to know their rule is broken.
 	if whenErr != nil {
@@ -117,6 +167,112 @@ func evalRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (find
 			Severity: model.SeverityInfo,
 			Title:    fmt.Sprintf("Rule %s: match error", rule.ID),
 			Message:  matchErr.Error(),
+		})
+	}
+	return
+}
+
+// fieldTemplateRe matches {{ field }} / {{ length(field) }} interpolation tokens
+// used in condition-rule messages.
+var fieldTemplateRe = regexp.MustCompile(`\{\{\s*([^}]+?)\s*\}\}`)
+
+// interpolateFields renders condition-rule message templates of the form
+// "... {{ field }} ... {{ length(field) }} ..." by resolving each token against
+// the document scope. Unknown tokens render as empty string.
+func interpolateFields(text string, doc parser.Document, scope interface{}) string {
+	if text == "" || !strings.Contains(text, "{{") {
+		return text
+	}
+	return fieldTemplateRe.ReplaceAllStringFunc(text, func(m string) string {
+		inner := strings.TrimSpace(fieldTemplateRe.FindStringSubmatch(m)[1])
+		if strings.HasPrefix(strings.ToLower(inner), "length(") && strings.HasSuffix(inner, ")") {
+			field := strings.TrimSpace(inner[len("length(") : len(inner)-1])
+			val, _ := doc.ResolvePath(scope, field)
+			return strconv.Itoa(valueLength(val))
+		}
+		val, _ := doc.ResolvePath(scope, inner)
+		return valueToString(val)
+	})
+}
+
+// evalConditionRule evaluates a condition-DSL rule against the document and emits
+// findings. It mirrors the structured-match path (scope expansion, max_occurrences,
+// severity routing) but uses the condition evaluator and {{ field }} interpolation.
+func evalConditionRule(rule *model.RuleDef, doc parser.Document, fileInfo FileInfo) (findings []model.Finding, positives []model.Finding) {
+	scopeItems, err := doc.ResolveScope(rule.Scope)
+	if err != nil {
+		findings = append(findings, model.Finding{
+			RuleID:   rule.ID,
+			Severity: model.SeverityInfo,
+			Title:    fmt.Sprintf("Scope error for rule %s", rule.ID),
+			Message:  err.Error(),
+		})
+		return
+	}
+	if len(scopeItems) == 0 {
+		return
+	}
+
+	msgTemplate := rule.Message
+	if msgTemplate == "" {
+		msgTemplate = rule.Description
+	}
+
+	maxOcc := rule.MaxOccurrences
+	matchCount := 0
+	var condErr error
+	for _, scopeItem := range scopeItems {
+		matched, err := EvalConditionDSL(rule.Condition, doc, scopeItem)
+		if err != nil {
+			condErr = err
+			break
+		}
+		if !matched {
+			continue
+		}
+
+		matchCount++
+		if maxOcc > 0 && matchCount > maxOcc {
+			continue
+		}
+
+		finding := model.Finding{
+			RuleID:         rule.ID,
+			Severity:       rule.Severity,
+			Category:       rule.Category,
+			Title:          rule.Title,
+			Location:       interpolateFields(rule.Location, doc, scopeItem),
+			Message:        interpolateFields(msgTemplate, doc, scopeItem),
+			Recommendation: interpolateFields(rule.Recommendation, doc, scopeItem),
+			Tags:           rule.Tags,
+			RootCauses:     rule.RootCauses,
+			Fixes:          rule.Fixes,
+		}
+
+		if rule.Severity == model.SeverityGood {
+			positives = append(positives, finding)
+		} else {
+			findings = append(findings, finding)
+		}
+	}
+
+	if maxOcc > 0 && matchCount > maxOcc {
+		suppressed := matchCount - maxOcc
+		findings = append(findings, model.Finding{
+			RuleID:   rule.ID,
+			Severity: model.SeverityInfo,
+			Title:    fmt.Sprintf("[%s] %d additional occurrence(s) suppressed", rule.ID, suppressed),
+			Message:  fmt.Sprintf("max_occurrences limit of %d reached; %d further match(es) not shown", maxOcc, suppressed),
+			Tags:     rule.Tags,
+		})
+	}
+
+	if condErr != nil {
+		findings = append(findings, model.Finding{
+			RuleID:   rule.ID,
+			Severity: model.SeverityInfo,
+			Title:    fmt.Sprintf("Rule %s: condition error", rule.ID),
+			Message:  condErr.Error(),
 		})
 	}
 	return

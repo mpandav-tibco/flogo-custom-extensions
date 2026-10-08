@@ -53,14 +53,14 @@ func Interpolate(tmpl string, ctx TemplateContext) string {
 		var err error
 		t, err = template.New("").Option("missingkey=zero").Parse(tmpl)
 		if err != nil {
-			return tmpl // return raw template on parse error
+			return fmt.Sprintf("[template parse error: %v]", err)
 		}
 		compiledTemplates.Store(tmpl, t)
 	}
 
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
-		return tmpl
+		return fmt.Sprintf("[template error: %v]", err)
 	}
 	// missingkey=zero yields nil for interface{} maps, which renders as "<no value>"; suppress it.
 	return strings.ReplaceAll(buf.String(), "<no value>", "")

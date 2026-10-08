@@ -21,6 +21,7 @@ type Result struct {
 	ErrorCount   int                    `json:"error_count"`
 	WarningCount int                    `json:"warning_count"`
 	InfoCount    int                    `json:"info_count"`
+	GoodCount    int                    `json:"good_count"`
 	Markdown     string                 `json:"markdown"`
 	Overview     map[string]interface{} `json:"overview"`
 }
