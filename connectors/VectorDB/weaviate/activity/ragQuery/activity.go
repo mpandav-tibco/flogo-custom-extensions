@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate"
+	vectordb "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate"
 	vectordbconnector "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/connector"
 	vdbembed "github.com/mpandav-tibco/flogo-extensions/connectors/VectorDB/weaviate/embeddings"
 	"github.com/project-flogo/core/activity"
@@ -419,9 +419,11 @@ func buildPrompt(systemPrompt, context_, query string) string {
 
 // ollamaGenerateRequest is the Ollama /api/generate request body.
 type ollamaGenerateRequest struct {
-	Model  string `json:"model"`
-	Prompt string `json:"prompt"`
-	Stream bool   `json:"stream"`
+	Model     string                 `json:"model"`
+	Prompt    string                 `json:"prompt"`
+	Stream    bool                   `json:"stream"`
+	Options   map[string]interface{} `json:"options,omitempty"`
+	KeepAlive string                 `json:"keep_alive,omitempty"`
 }
 
 // ollamaGenerateResponse is the non-streaming Ollama response.
@@ -434,10 +436,13 @@ func (a *Activity) generateOllama(ctx context.Context, prompt string) (string, e
 	baseURL := strings.TrimRight(a.settings.LLMBaseURL, "/")
 	url := baseURL + "/api/generate"
 
+	// Honor the configured temperature/maxTokens (the Ollama path previously ignored both) and keep the model resident to avoid cold reloads.
 	reqBody, _ := json.Marshal(ollamaGenerateRequest{
-		Model:  a.settings.LLMModel,
-		Prompt: prompt,
-		Stream: false,
+		Model:     a.settings.LLMModel,
+		Prompt:    prompt,
+		Stream:    false,
+		Options:   map[string]interface{}{"temperature": a.settings.Temperature, "num_predict": a.settings.MaxTokens},
+		KeepAlive: "10m",
 	})
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(reqBody))
