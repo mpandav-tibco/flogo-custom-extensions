@@ -1,0 +1,12 @@
+{
+    "name": "Git Repo Scaffolder",
+    "version": "1.0.0",
+    "category": "Git",
+    "description": "Scaffold a repository, or a folder in a shared repository, from a template stored in Git, with token replacement in contents and paths. One commit, pure Go.",
+    "contributions": [
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/gitreposcaffolder"
+        }
+    ]
+}

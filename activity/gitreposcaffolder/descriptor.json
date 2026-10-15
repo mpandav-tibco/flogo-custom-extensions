@@ -1,0 +1,308 @@
+{
+    "name": "git-repo-scaffolder",
+    "title": "Git Repo Scaffolder",
+    "version": "1.0.0",
+    "author": "TIBCO Software Inc.",
+    "type": "flogo:activity",
+    "description": "Generates a project from a template folder in any Git repository: applies a token -> value map to file contents and paths, then pushes the result as one commit into a folder of a shared repository or into a new repository. Pure Go (no git CLI).",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/gitreposcaffolder",
+    "display": {
+        "category": "Git",
+        "visible": true,
+        "smallIcon": "icons/gitreposcaffolder.svg",
+        "largeIcon": "icons/gitreposcaffolder.svg",
+        "description": "Scaffold a repository (or a folder in one) from a Git template with token replacement"
+    },
+    "inputs": [
+        {
+            "name": "authToken",
+            "type": "string",
+            "required": false,
+            "description": "Token used for git over HTTPS and for the repository API (map from a secret app property)"
+        },
+        {
+            "name": "templateAuthToken",
+            "type": "string",
+            "required": false,
+            "description": "Optional separate token for reading the template repository; defaults to authToken"
+        },
+        {
+            "name": "templateRepoURL",
+            "type": "string",
+            "required": true,
+            "description": "HTTPS clone URL of the repository holding the templates"
+        },
+        {
+            "name": "templateRef",
+            "type": "string",
+            "required": false,
+            "value": "",
+            "description": "Branch or tag to read; empty = the repository's default branch"
+        },
+        {
+            "name": "templatePath",
+            "type": "string",
+            "required": false,
+            "value": "",
+            "description": "Folder inside the template repository to use as the template root; empty = whole repository"
+        },
+        {
+            "name": "replacements",
+            "type": "object",
+            "required": false,
+            "description": "Token -> value map applied to text file contents and to file/folder names (longest token first)"
+        },
+        {
+            "name": "replacementList",
+            "type": "array",
+            "required": false,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "description": "Same as replacements but as [{token, value}] so token names can be computed at runtime (e.g. <templateName>.module); entries override replacements"
+        },
+        {
+            "name": "ignoreEmptyValues",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "description": "Skip tokens whose value is empty instead of replacing them with an empty string"
+        },
+        {
+            "name": "replacementMode",
+            "type": "string",
+            "required": false,
+            "value": "sequential",
+            "allowed": [
+                "sequential",
+                "singlePass"
+            ],
+            "description": "sequential: each token is applied to the result of the previous one (tokens may produce other tokens); singlePass: one scan, replaced text is never re-matched"
+        },
+        {
+            "name": "renamePaths",
+            "type": "boolean",
+            "required": false,
+            "value": true,
+            "description": "Also apply the replacements to file and folder names (tokens containing / or \\ are content-only)"
+        },
+        {
+            "name": "excludePatterns",
+            "type": "array",
+            "required": false,
+            "items": {
+                "type": "string"
+            },
+            "description": "Files to leave out: \"name\" or \"*.ext\" (any depth), \"dir/\" (directory at any depth), \"a/b/*.x\" (full path), \"**/a/*.x\" (any trailing path)"
+        },
+        {
+            "name": "binaryExtensions",
+            "type": "array",
+            "required": false,
+            "items": {
+                "type": "string"
+            },
+            "description": "Extra extensions to copy without replacement (common binary types and files containing NUL bytes are always skipped)"
+        },
+        {
+            "name": "maxTextBytes",
+            "type": "integer",
+            "required": false,
+            "value": 5242880,
+            "description": "Files larger than this are copied without replacement"
+        },
+        {
+            "name": "targetMode",
+            "type": "string",
+            "required": true,
+            "value": "subfolder",
+            "allowed": [
+                "subfolder",
+                "newRepo"
+            ],
+            "description": "subfolder: write into targetFolder of an existing repository; newRepo: create the repository (GitHub API) and write into it"
+        },
+        {
+            "name": "targetRepoURL",
+            "type": "string",
+            "required": true,
+            "description": "HTTPS URL of the target repository, e.g. https://github.com/owner/name"
+        },
+        {
+            "name": "targetBranch",
+            "type": "string",
+            "required": false,
+            "value": "main",
+            "description": "Branch to commit to"
+        },
+        {
+            "name": "targetFolder",
+            "type": "string",
+            "required": false,
+            "value": "",
+            "description": "Folder in the target repository (required in subfolder mode; optional in newRepo mode)"
+        },
+        {
+            "name": "cleanTargetFolder",
+            "type": "boolean",
+            "required": false,
+            "value": true,
+            "description": "Remove the folder's existing files first, so files no longer produced by the template are deleted"
+        },
+        {
+            "name": "newRepoPrivate",
+            "type": "boolean",
+            "required": false,
+            "value": true,
+            "description": "newRepo mode: create the repository as private"
+        },
+        {
+            "name": "newRepoDescription",
+            "type": "string",
+            "required": false,
+            "value": "",
+            "description": "newRepo mode: repository description"
+        },
+        {
+            "name": "failIfRepoExists",
+            "type": "boolean",
+            "required": false,
+            "value": true,
+            "description": "newRepo mode: fail if the repository already exists (otherwise write into it)"
+        },
+        {
+            "name": "apiBaseURL",
+            "type": "string",
+            "required": false,
+            "value": "https://api.github.com",
+            "description": "Repository API base URL (GitHub Enterprise: https://<host>/api/v3)"
+        },
+        {
+            "name": "commitMessage",
+            "type": "string",
+            "required": false,
+            "value": "Scaffold from template",
+            "description": "Commit message"
+        },
+        {
+            "name": "authorName",
+            "type": "string",
+            "required": false,
+            "value": "Flogo Git Repo Scaffolder",
+            "description": "Commit author name"
+        },
+        {
+            "name": "authorEmail",
+            "type": "string",
+            "required": false,
+            "value": "git-repo-scaffolder@flogo.local",
+            "description": "Commit author email"
+        },
+        {
+            "name": "dryRun",
+            "type": "boolean",
+            "required": false,
+            "value": false,
+            "description": "Fetch and transform only; nothing is created or pushed"
+        },
+        {
+            "name": "pushRetries",
+            "type": "integer",
+            "required": false,
+            "value": 3,
+            "description": "Attempts when another writer pushes to the branch at the same time"
+        },
+        {
+            "name": "writeStrategy",
+            "type": "string",
+            "required": false,
+            "value": "auto",
+            "allowed": ["auto", "api", "git"],
+            "description": "api: commit through the GitHub Git Data API (no clone, only changed files are sent; cost independent of the target repository size). git: clone + push (any Git host). auto: api for github.com or a configured apiBaseURL, git otherwise and for empty repositories"
+        },
+        {
+            "name": "timeoutSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 120,
+            "description": "Overall timeout for the activity"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "repoURL",
+            "type": "string",
+            "description": "Web URL of the target repository"
+        },
+        {
+            "name": "folderURL",
+            "type": "string",
+            "description": "Web URL of the generated folder (or the repository)"
+        },
+        {
+            "name": "branch",
+            "type": "string"
+        },
+        {
+            "name": "commitSHA",
+            "type": "string",
+            "description": "New commit, or the current branch tip when nothing changed"
+        },
+        {
+            "name": "templateCommit",
+            "type": "string",
+            "description": "Template repository commit that was used"
+        },
+        {
+            "name": "pushed",
+            "type": "boolean",
+            "description": "false when the output was identical to what is already in the repository (or dryRun)"
+        },
+        {
+            "name": "writeMode",
+            "type": "string",
+            "description": "How the commit was written: api or git"
+        },
+        {
+            "name": "repoCreated",
+            "type": "boolean"
+        },
+        {
+            "name": "filesTotal",
+            "type": "integer"
+        },
+        {
+            "name": "filesModified",
+            "type": "integer",
+            "description": "Files whose content changed through replacements"
+        },
+        {
+            "name": "pathsRenamed",
+            "type": "integer"
+        },
+        {
+            "name": "filesExcluded",
+            "type": "integer"
+        },
+        {
+            "name": "files",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Generated file paths inside the target repository"
+        },
+        {
+            "name": "durationMs",
+            "type": "integer"
+        }
+    ]
+}
