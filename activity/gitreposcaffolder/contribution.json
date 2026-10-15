@@ -1,7 +1,7 @@
 {
     "name": "Git Repo Scaffolder",
     "version": "1.0.0",
-    "category": "Git",
+    "category": "gitreposcaffolder",
     "description": "Scaffold a repository, or a folder in a shared repository, from a template stored in Git, with token replacement in contents and paths. One commit, pure Go.",
     "contributions": [
         {

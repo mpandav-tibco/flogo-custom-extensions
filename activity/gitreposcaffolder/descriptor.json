@@ -7,7 +7,7 @@
     "description": "Generates a project from a template folder in any Git repository: applies a token -> value map to file contents and paths, then pushes the result as one commit into a folder of a shared repository or into a new repository. Pure Go (no git CLI).",
     "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/gitreposcaffolder",
     "display": {
-        "category": "Git",
+        "category": "gitreposcaffolder",
         "visible": true,
         "smallIcon": "icons/gitreposcaffolder.svg",
         "largeIcon": "icons/gitreposcaffolder.svg",
