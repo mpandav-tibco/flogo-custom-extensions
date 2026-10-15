@@ -1,0 +1,76 @@
+{
+    "name": "run",
+    "version": "1.1.0",
+    "type": "flogo:activity",
+    "title": "SSH Run",
+    "author": "Mark Mussett",
+    "display": {
+        "category": "SSH",
+        "visible": true,
+        "description": "This activity executes run operation on a SSH server",
+        "smallIcon": "icons/ssh-run@2x.png",
+        "largeIcon": "icons/ssh-run@3x.png"
+    },
+    "feature": {
+        "retry": {
+            "enabled": true
+        }
+    },
+    "ref": "github.com/mmussett/extensions/SSH/activity/run",
+    "inputs": [
+        {
+            "name": "SSH Connection",
+            "type": "connection",
+            "required": true,
+            "allowed": [],
+            "display": {
+                "name": "SSH Connection",
+                "description": "Select SSH Connection",
+                "type": "connection",
+                "selection": "single"
+            }
+        },
+        {
+            "name": "cmd",
+            "type": "string"
+        },
+        {
+            "name": "stdin",
+            "type": "string",
+            "required": false,
+            "description": "Data written to the command's standard input. Prefer this over embedding user data in cmd: it is never interpreted by the remote shell."
+        },
+        {
+            "name": "timeoutSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 0,
+            "description": "Kill the command after this many seconds (0 = no limit)"
+        },
+        {
+            "name": "failOnNonZeroExit",
+            "type": "boolean",
+            "required": false,
+            "value": true,
+            "description": "Fail the activity when the command exits with a non-zero status (error code SSH-4004, stderr in the message). Set to false to read exitCode/stdErr in the flow."
+        }
+    ],
+    "outputs": [
+        {
+            "name": "stdOut",
+            "type": "string"
+        },
+        {
+            "name": "stdErr",
+            "type": "string"
+        },
+        {
+            "name": "exitCode",
+            "type": "integer"
+        },
+        {
+            "name": "durationMs",
+            "type": "integer"
+        }
+    ]
+}
