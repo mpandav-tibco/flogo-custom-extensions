@@ -120,6 +120,26 @@
             "description": "Files larger than this are copied without replacement"
         },
         {
+            "name": "outputPrefix",
+            "type": "string",
+            "required": false,
+            "value": "",
+            "description": "Sub-path (inside the target folder) where the template output is placed, e.g. code/<name>"
+        },
+        {
+            "name": "extraFiles",
+            "type": "array",
+            "required": false,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string"},
+                    "content": {"type": "string"}
+                }
+            },
+            "description": "Additional generated files [{path, content}] written in the same commit (paths relative to the target folder; replaces a template file at the same path)"
+        },
+        {
             "name": "targetMode",
             "type": "string",
             "required": true,
@@ -225,7 +245,11 @@
             "type": "string",
             "required": false,
             "value": "auto",
-            "allowed": ["auto", "api", "git"],
+            "allowed": [
+                "auto",
+                "api",
+                "git"
+            ],
             "description": "api: commit through the GitHub Git Data API (no clone, only changed files are sent; cost independent of the target repository size). git: clone + push (any Git host). auto: api for github.com or a configured apiBaseURL, git otherwise and for empty repositories"
         },
         {

@@ -276,3 +276,53 @@ func TestValidateGuardsSharedRepoRoot(t *testing.T) {
 		t.Fatalf("newRepo at root should be allowed: folder=%q err=%v", folder, err)
 	}
 }
+
+func TestPlaceFilesPrefixAndExtras(t *testing.T) {
+	res := &TransformResult{Files: []FileEntry{{Path: "a.txt", Data: []byte("a")}, {Path: "m/b.txt", Data: []byte("b")}}}
+	extra := []FileEntry{
+		{Path: "configs/generation.properties", Data: []byte("k=v")},
+		{Path: "code/repo/a.txt", Data: []byte("override")},
+	}
+	if err := placeFiles(res, "code/repo/", extra); err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, f := range res.Files {
+		got[f.Path] = string(f.Data)
+	}
+	want := map[string]string{"code/repo/a.txt": "override", "code/repo/m/b.txt": "b", "configs/generation.properties": "k=v"}
+	if len(got) != len(want) {
+		t.Fatalf("got %v", got)
+	}
+	for k, v := range want {
+		if got[k] != v {
+			t.Fatalf("%s: got %q want %q", k, got[k], v)
+		}
+	}
+}
+
+func TestPlaceFilesRejectsEscapingPaths(t *testing.T) {
+	for _, bad := range []string{"../x", "/etc/passwd", "a/../../b"} {
+		if err := placeFiles(&TransformResult{}, "", []FileEntry{{Path: bad, Data: []byte("x")}}); err == nil {
+			t.Errorf("extra file %q should be rejected", bad)
+		}
+		if err := placeFiles(&TransformResult{}, bad, nil); err == nil {
+			t.Errorf("prefix %q should be rejected", bad)
+		}
+	}
+}
+
+func TestExtraFilesInput(t *testing.T) {
+	in := newInput()
+	err := in.FromMap(map[string]interface{}{
+		"outputPrefix": "code/r",
+		"extraFiles": []interface{}{
+			map[string]interface{}{"path": "configs/a.properties", "content": "x=1"},
+			map[string]interface{}{"path": "", "content": "skipped"},
+		},
+	})
+	extra, _ := toExtraFiles(in.ExtraFiles)
+	if err != nil || in.OutputPrefix != "code/r" || len(extra) != 1 || string(extra[0].Data) != "x=1" {
+		t.Fatalf("%v %+v", err, extra)
+	}
+}

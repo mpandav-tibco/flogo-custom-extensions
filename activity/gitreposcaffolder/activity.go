@@ -132,6 +132,13 @@ func run(parent context.Context, in *Input, logger log.Logger) (*Output, error) 
 	if err != nil {
 		return nil, activity.NewError(err.Error(), ErrCodeTransform, nil)
 	}
+	extra, err := toExtraFiles(in.ExtraFiles)
+	if err == nil {
+		err = placeFiles(res, in.OutputPrefix, extra)
+	}
+	if err != nil {
+		return nil, activity.NewError(err.Error(), ErrCodeConfig, nil)
+	}
 
 	out := &Output{
 		Branch:         in.TargetBranch,

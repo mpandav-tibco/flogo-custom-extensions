@@ -241,3 +241,46 @@ func Transform(files []FileEntry, opts TransformOptions) (*TransformResult, erro
 	sort.Slice(res.Files, func(i, j int) bool { return res.Files[i].Path < res.Files[j].Path })
 	return res, nil
 }
+
+// cleanRelPath normalises a relative path and rejects absolute or escaping paths.
+func cleanRelPath(p string) (string, error) {
+	p = strings.ReplaceAll(strings.TrimSpace(p), "\\", "/")
+	if strings.HasPrefix(p, "/") {
+		return "", fmt.Errorf("path %q must be relative", p)
+	}
+	for _, s := range strings.Split(p, "/") {
+		if s == ".." {
+			return "", fmt.Errorf("path %q must not contain ..", p)
+		}
+	}
+	return strings.Trim(path.Clean("/"+p), "/"), nil
+}
+
+// placeFiles moves the transformed template under prefix and adds extra files
+// (an extra file replaces a template file at the same path).
+func placeFiles(res *TransformResult, prefix string, extra []FileEntry) error {
+	prefix, err := cleanRelPath(prefix)
+	if err != nil {
+		return fmt.Errorf("outputPrefix: %w", err)
+	}
+	index := make(map[string]int, len(res.Files)+len(extra))
+	for i := range res.Files {
+		res.Files[i].Path = path.Join(prefix, res.Files[i].Path)
+		index[res.Files[i].Path] = i
+	}
+	for _, f := range extra {
+		p, err := cleanRelPath(f.Path)
+		if err != nil || p == "" {
+			return fmt.Errorf("extraFiles: invalid path %q", f.Path)
+		}
+		f.Path = p
+		if i, ok := index[p]; ok {
+			res.Files[i] = f
+			continue
+		}
+		index[p] = len(res.Files)
+		res.Files = append(res.Files, f)
+	}
+	sort.Slice(res.Files, func(i, j int) bool { return res.Files[i].Path < res.Files[j].Path })
+	return nil
+}

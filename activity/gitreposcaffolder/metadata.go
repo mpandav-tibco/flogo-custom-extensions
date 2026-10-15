@@ -31,6 +31,8 @@ type Input struct {
 	ExcludePatterns   []string          `md:"excludePatterns"`
 	BinaryExtensions  []string          `md:"binaryExtensions"`
 	MaxTextBytes      int               `md:"maxTextBytes"`
+	OutputPrefix      string            `md:"outputPrefix"`
+	ExtraFiles        []interface{}     `md:"extraFiles"`
 	TargetMode        string            `md:"targetMode"`
 	TargetRepoURL     string            `md:"targetRepoURL"`
 	TargetBranch      string            `md:"targetBranch"`
@@ -85,6 +87,8 @@ func (i *Input) ToMap() map[string]interface{} {
 		"excludePatterns":    i.ExcludePatterns,
 		"binaryExtensions":   i.BinaryExtensions,
 		"maxTextBytes":       i.MaxTextBytes,
+		"outputPrefix":       i.OutputPrefix,
+		"extraFiles":         i.ExtraFiles,
 		"targetMode":         i.TargetMode,
 		"targetRepoURL":      i.TargetRepoURL,
 		"targetBranch":       i.TargetBranch,
@@ -119,6 +123,7 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		"newRepoDescription": &i.NewRepoDesc,
 		"apiBaseURL":         &i.APIBaseURL,
 		"writeStrategy":      &i.WriteStrategy,
+		"outputPrefix":       &i.OutputPrefix,
 		"commitMessage":      &i.CommitMessage,
 		"authorName":         &i.AuthorName,
 		"authorEmail":        &i.AuthorEmail,
@@ -214,6 +219,14 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 	}
 
 	var err error
+	if v := values["extraFiles"]; v != nil && v != "" {
+		if i.ExtraFiles, err = coerce.ToArray(v); err != nil {
+			return fmt.Errorf("input extraFiles: %w", err)
+		}
+		if _, err = toExtraFiles(i.ExtraFiles); err != nil {
+			return fmt.Errorf("input extraFiles: %w", err)
+		}
+	}
 	if i.ExcludePatterns, err = toStrings(values["excludePatterns"]); err != nil {
 		return fmt.Errorf("input excludePatterns: %w", err)
 	}
@@ -221,6 +234,34 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		return fmt.Errorf("input binaryExtensions: %w", err)
 	}
 	return nil
+}
+
+// toExtraFiles reads [{path, content}] (content as text) into file entries.
+func toExtraFiles(v interface{}) ([]FileEntry, error) {
+	if v == nil || v == "" {
+		return nil, nil
+	}
+	arr, err := coerce.ToArray(v)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]FileEntry, 0, len(arr))
+	for n, item := range arr {
+		obj, err := coerce.ToObject(item)
+		if err != nil {
+			return nil, fmt.Errorf("[%d]: %w", n, err)
+		}
+		p, _ := coerce.ToString(obj["path"])
+		if p == "" {
+			continue
+		}
+		content, err := coerce.ToString(obj["content"])
+		if err != nil {
+			return nil, fmt.Errorf("[%d] content: %w", n, err)
+		}
+		out = append(out, FileEntry{Path: p, Data: []byte(content)})
+	}
+	return out, nil
 }
 
 func toStrings(v interface{}) ([]string, error) {
