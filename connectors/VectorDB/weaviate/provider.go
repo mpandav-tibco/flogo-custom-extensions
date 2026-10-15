@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -686,9 +687,15 @@ func weaviateGraphQLToResults(result *models.GraphQLResponse, className string) 
 			} else if cert, ok := add["certainty"].(float64); ok {
 				sr.Score = cert
 			}
-			// HybridSearch returns "score" (BM25+vector fusion rank score).
-			if hybridScore, ok := add["score"].(float64); ok {
-				sr.Score = hybridScore
+			// HybridSearch returns "score" (BM25+vector fusion rank score). Weaviate's GraphQL
+			// API serialises it as a string (e.g. "0.86898935"), not a number.
+			switch hs := add["score"].(type) {
+			case float64:
+				sr.Score = hs
+			case string:
+				if f, err := strconv.ParseFloat(hs, 64); err == nil {
+					sr.Score = f
+				}
 			}
 		}
 
