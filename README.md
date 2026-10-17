@@ -41,6 +41,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [XSD Schema Transform](activity/schema-transform/xsdschematransform/) | 1.0.0 | Schema Transform | Transform XSD schemas to JSON Schema, Avro, and OpenAPI 3.1.x/3.0.x formats with equivalent restriction mapping |
 | [SOAP Client](activity/soapclient/) | 1.0.0 | Web Services | SOAP 1.1/1.2 client with WSDL support, JSON/XML modes, mutual TLS, WS-Security headers, OpenTelemetry tracing, and Flogo retry/circuit-breaker |
 | [REST Fire & Forget](activity/rest-fire-forget/) | 1.0.0 | HTTP | Asynchronous fire-and-forget HTTP client — dispatches a request (any method) with mappable headers, query params, and JSON body, then returns immediately without waiting for the response; bounded concurrency and a hardened HTTP client |
+| [Git Repo Scaffolder](activity/gitreposcaffolder/) | 1.0.0 | Source Control | Scaffold a project from a template folder in a Git repository — token replacement in file contents and paths, then one commit into a folder of a shared repository or into a new GitHub repository; GitHub Git Data API or pure-Go git (no CLI), idempotent re-runs, conflict retry and template caching |
 
 ### 🎯 Triggers
 
