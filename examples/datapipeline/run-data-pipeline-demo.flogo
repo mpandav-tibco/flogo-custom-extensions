@@ -1,0 +1,237 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/mpandav-tibco/flogo-custom-extensions/activity/datapipeline",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest"
+  ],
+  "name": "run-data-pipeline-demo",
+  "description": "Demo app: a REST-triggered flow runs a pipeline of a Flogo Data Pipeline engine with the Run Data Pipeline activity, waits for its result and replies with it.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "HTTP entry point: GET /run runs the pipeline and replies with its result.",
+      "settings": {
+        "port": 9999,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "RestTrigger",
+      "handlers": [
+        {
+          "description": "Runs the filter-and-map pipeline on the engine and replies with how the run went.",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/run",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:RunPipelineFlow"
+            },
+            "output": {
+              "data": "=$.data",
+              "code": "=$.code"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "RunPipelineFlow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:RunPipelineFlow",
+      "data": {
+        "name": "RunPipelineFlow",
+        "description": "Runs a data pipeline, waits for its result, and returns it to the caller.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "RunDataPipeline",
+            "type": "label",
+            "label": "StartActivity to RunDataPipeline"
+          },
+          {
+            "id": 2,
+            "from": "RunDataPipeline",
+            "to": "Return",
+            "type": "label",
+            "label": "RunDataPipeline to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "RunDataPipeline",
+            "name": "RunDataPipeline",
+            "description": "Run the filter-and-map pipeline and wait for its result",
+            "activity": {
+              "ref": "#datapipeline",
+              "input": {
+                "engineUrl": "=$property[\"DataPipeline.EngineURL\"]",
+                "apiToken": "=$property[\"DataPipeline.Token\"]",
+                "pipeline": "filter-and-map",
+                "mode": "wait",
+                "overlap": "queue",
+                "waitTimeoutSeconds": 600,
+                "pollIntervalSeconds": 2,
+                "failOnRunFailure": true
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return how the run went",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": 200,
+                  "data": {
+                    "mapping": {
+                      "runId": "=$activity[RunDataPipeline].runId",
+                      "status": "=$activity[RunDataPipeline].status",
+                      "rowsProcessed": "=$activity[RunDataPipeline].rowsProcessed",
+                      "rowsWritten": "=$activity[RunDataPipeline].rowsWritten",
+                      "rowsDropped": "=$activity[RunDataPipeline].rowsDropped",
+                      "durationMs": "=$activity[RunDataPipeline].durationMs"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUnVuRGF0YVBpcGVsaW5lIjp7IngiOjM0MCwieSI6MTAwfSwiUmV0dXJuIjp7IngiOjU4MCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"data\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "DataPipeline.EngineURL",
+      "type": "string",
+      "value": "http://localhost:9080"
+    },
+    {
+      "name": "DataPipeline.Token",
+      "type": "string",
+      "value": ""
+    }
+  ],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9tcGFuZCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wIiwibmFtZSI6IlJ1biBEYXRhIFBpcGVsaW5lIiwiaWQiOiJkYXRhcGlwZWxpbmUiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vZGF0YXBpcGVsaW5lIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9999",
+        "spec": {
+          "name": "run-data-pipeline-demo",
+          "version": "1.0.0"
+        },
+        "title": "RestTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "run-data-pipeline-demo",
+            "version": "1.0.0",
+            "description": "HTTP entry point: GET /run runs the pipeline and replies with its result."
+          },
+          "paths": {
+            "/run": {
+              "get": {
+                "summary": "RunPipelineFlow",
+                "operationId": "get_run",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Runs the filter-and-map pipeline on the engine and replies with how the run went."
+              }
+            }
+          },
+          "definitions": {}
+        }
+      }
+    ],
+    "flogoVersion": "2.26.5"
+  }
+}

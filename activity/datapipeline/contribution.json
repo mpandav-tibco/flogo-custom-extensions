@@ -1,0 +1,12 @@
+{
+    "name": "Run Data Pipeline",
+    "version": "1.0.0",
+    "category": "datapipeline",
+    "description": "Run a pipeline of a Flogo Data Pipeline engine from a flow — wait for its result or start it — with overlap policy, result callback and trace propagation.",
+    "contributions": [
+        {
+            "type": "flogo:activity",
+            "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/datapipeline"
+        }
+    ]
+}
