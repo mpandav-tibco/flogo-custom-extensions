@@ -42,6 +42,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [SOAP Client](activity/soapclient/) | 1.0.0 | Web Services | SOAP 1.1/1.2 client with WSDL support, JSON/XML modes, mutual TLS, WS-Security headers, OpenTelemetry tracing, and Flogo retry/circuit-breaker |
 | [REST Fire & Forget](activity/rest-fire-forget/) | 1.0.0 | HTTP | Asynchronous fire-and-forget HTTP client — dispatches a request (any method) with mappable headers, query params, and JSON body, then returns immediately without waiting for the response; bounded concurrency and a hardened HTTP client |
 | [Git Repo Scaffolder](activity/gitreposcaffolder/) | 1.0.0 | Source Control | Scaffold a project from a template folder in a Git repository — token replacement in file contents and paths, then one commit into a folder of a shared repository or into a new GitHub repository; GitHub Git Data API or pure-Go git (no CLI), idempotent re-runs, conflict retry and template caching |
+| [Run Data Pipeline](activity/datapipeline/) | 1.0.0 | Data Pipeline | Run a pipeline of a Flogo Data Pipeline engine from a flow — wait for its result or just start it — with an overlap policy (allow / skip / queue), safe retries by run id, a result callback and trace propagation into the engine's run |
 
 ### 🎯 Triggers
 
@@ -87,6 +88,7 @@ This repository provides custom Flogo extensions including activities, triggers,
 | [Custom Functions Demo](examples/functions/) | All custom function packages | Timer-triggered flow exercising custom functions across math, array, string, util, datetime, number, and json packages |
 | [SOAP Client Demo](examples/soap-client/) | SOAP Client Activity | Timer-triggered SOAP 1.1 call to a public calculator service in both JSON mode and XML mode with namespace attributes |
 | [REST Fire & Forget Demo](examples/rest-fire-forget/) | REST Fire & Forget Activity | REST-triggered flow that dispatches a fire-and-forget HTTP POST to a bundled mock receiver service and returns immediately without waiting for the response |
+| [Run Data Pipeline Demo](examples/datapipeline/) | Run Data Pipeline Activity | REST-triggered flow that runs a pipeline of a Flogo Data Pipeline engine, waits for its result (queued behind a run in flight) and replies with the counts |
 | [VectorDB Demo](examples/vectordb/) | VectorDB Connectors (TIBCO ActiveSpaces, Qdrant, Weaviate, Chroma, Milvus, pgvector, Pinecone, Redis, Elasticsearch, OpenSearch, Azure AI Search, LanceDB) | End-to-end RAG demo across all 12 dedicated connectors: create collection, ingest documents, vector search, hybrid search, and full RAG query pipeline |
 
 ## 🤝 Contributing

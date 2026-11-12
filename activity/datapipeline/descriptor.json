@@ -1,0 +1,167 @@
+{
+    "name": "run-data-pipeline",
+    "title": "Run Data Pipeline",
+    "version": "1.0.0",
+    "author": "mpandav",
+    "type": "flogo:activity",
+    "description": "Runs a pipeline of a Flogo Data Pipeline engine through its REST API: starts the run (params, input path, overlap policy, result callback) and waits for its result, or returns once the engine has taken it. The run joins the flow's trace.",
+    "ref": "github.com/mpandav-tibco/flogo-custom-extensions/activity/datapipeline",
+    "homepage": "https://github.com/mpandav-tibco/flogo-custom-extensions/tree/main/activity/datapipeline",
+    "display": {
+        "category": "datapipeline",
+        "visible": true,
+        "smallIcon": "icons/datapipeline.svg",
+        "largeIcon": "icons/datapipeline.svg",
+        "description": "Run a data pipeline from a flow and get its result"
+    },
+    "feature": {
+        "retry": {
+            "enabled": true
+        }
+    },
+    "inputs": [
+        {
+            "name": "engineUrl",
+            "type": "string",
+            "required": true,
+            "description": "Base URL of the data pipeline engine's REST API, e.g. http://orders-etl.data:9080 (map from an app property)"
+        },
+        {
+            "name": "apiToken",
+            "type": "string",
+            "required": false,
+            "description": "The engine's DP_API_TOKEN — a deployed engine runs pipelines only for a caller that has it (map from a secret app property)"
+        },
+        {
+            "name": "pipeline",
+            "type": "string",
+            "required": true,
+            "description": "The pipeline: its name (daily-tx) or its ref (res://pipeline:daily-tx)"
+        },
+        {
+            "name": "runId",
+            "type": "string",
+            "required": false,
+            "description": "The run's id; empty: a new one. A run id still in flight is not run twice — the activity follows that run — and a checkpointed run given the id of one that stopped resumes where it stopped"
+        },
+        {
+            "name": "params",
+            "type": "object",
+            "required": false,
+            "description": "Values for the ${…} of the pipeline's source path, e.g. {\"date\": \"2026-11-12\"}"
+        },
+        {
+            "name": "inputPath",
+            "type": "string",
+            "required": false,
+            "description": "Replaces the pipeline's source path for this run (a file a partner dropped)"
+        },
+        {
+            "name": "mode",
+            "type": "string",
+            "required": false,
+            "value": "wait",
+            "allowed": [
+                "wait",
+                "start"
+            ],
+            "description": "wait: return the run's result once it has ended; start: return once the engine has taken the run (status running or queued)"
+        },
+        {
+            "name": "overlap",
+            "type": "string",
+            "required": false,
+            "value": "allow",
+            "allowed": [
+                "allow",
+                "skip",
+                "queue"
+            ],
+            "description": "While a run of the pipeline is in flight — allow: run alongside it; skip: do not run (status skipped); queue: wait for it, then run"
+        },
+        {
+            "name": "callbackUrl",
+            "type": "string",
+            "required": false,
+            "description": "Where the engine posts the run's result as it ends (a flow's REST trigger) — must be under the engine's DP_API_CALLBACK_URLS"
+        },
+        {
+            "name": "waitTimeoutSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 3600,
+            "description": "wait mode: how long to wait for the result; a run that outlasts it goes on, and the activity fails with DATAPIPELINE-4005"
+        },
+        {
+            "name": "pollIntervalSeconds",
+            "type": "integer",
+            "required": false,
+            "value": 2,
+            "description": "wait mode: how often to ask the engine how the run goes"
+        },
+        {
+            "name": "failOnRunFailure",
+            "type": "boolean",
+            "required": false,
+            "value": true,
+            "description": "A run that ends failed or cancelled fails the activity (DATAPIPELINE-4004, the run in $error.data); false: read status instead"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "runId",
+            "type": "string",
+            "description": "The run's id"
+        },
+        {
+            "name": "status",
+            "type": "string",
+            "description": "completed, partial, failed or cancelled — running or queued in start mode — or skipped when the engine did not run it (overlap skip while the pipeline ran, a suspended pipeline)"
+        },
+        {
+            "name": "rowsProcessed",
+            "type": "integer",
+            "description": "Rows read from the source"
+        },
+        {
+            "name": "rowsWritten",
+            "type": "integer",
+            "description": "Rows written to the sinks"
+        },
+        {
+            "name": "rowsFailed",
+            "type": "integer",
+            "description": "Rows that failed: dead-lettered or rejected"
+        },
+        {
+            "name": "rowsDropped",
+            "type": "integer",
+            "description": "Rows a stage dropped on purpose (a filter)"
+        },
+        {
+            "name": "durationMs",
+            "type": "integer",
+            "description": "How long the run took, in milliseconds"
+        },
+        {
+            "name": "error",
+            "type": "string",
+            "description": "Why the run failed, was cancelled or skipped; for a partial run, the first reason rows failed"
+        },
+        {
+            "name": "startedAt",
+            "type": "string",
+            "description": "When the run started (RFC 3339)"
+        },
+        {
+            "name": "finishedAt",
+            "type": "string",
+            "description": "When the run ended (RFC 3339)"
+        },
+        {
+            "name": "result",
+            "type": "object",
+            "description": "The run as the engine reports it, every field: validationReport, stageTimings, graphStats, …"
+        }
+    ]
+}
